@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+
+
+@theme {
+  --blue-950: #000814;
+  --blue-900: #001d3d;
+  --blue-800: #003566;
+
+  --yellow-500: #ffc300;
+  --yellow-400: #ffd60a;
+  --yellow-300: #ffe345;
+}
+
+*{
+  font-family: 'prompt'sans-serif;
+}
