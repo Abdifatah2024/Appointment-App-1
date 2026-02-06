@@ -194,3 +194,52 @@ exports.deleteCustomerPermanent = async (req, res) => {
     });
   }
 };
+
+/* =========================
+   SEARCH CUSTOMER (NAME / PHONE)
+   ?q=ali  OR  ?q=061
+========================= */
+exports.searchCustomers = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query must be at least 2 characters",
+      });
+    }
+
+    const customers = await Customer.find({
+      $and: [
+        {
+          $or: [
+            { fullName: { $regex: q, $options: "i" } },
+            { phone: { $regex: q, $options: "i" } },
+          ],
+        },
+        {
+          $or: [
+            { isActive: true },
+            { isActive: { $exists: false } }, // 🔥 KEY FIX
+          ],
+        },
+      ],
+    })
+      .select("fullName phone email")
+      .limit(10)
+      .sort({ fullName: 1 });
+
+    res.json({
+      success: true,
+      count: customers.length,
+      data: customers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
