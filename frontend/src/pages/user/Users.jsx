@@ -418,7 +418,7 @@ import {
   updateUserStatus,
   deleteUserPermanent,
   registerUser,
-} from "../Redux/slices/userSlice";
+} from "../../Redux/slices/userSlices/userSlice";
 
 export default function Users() {
   const dispatch = useDispatch();

@@ -9,8 +9,8 @@ const {
   deleteUser,
   loginUser,
   deleteUserPermanent,
-} = require("../controller/user.controller");
-const { authMiddleware, isAdmin } = require("../middlewares/auth.middleware");
+} = require("../../controller/User/user.controller");
+const { authMiddleware, isAdmin } = require("../../middlewares/auth.middleware");
 
 router.post("/", createUser);
 

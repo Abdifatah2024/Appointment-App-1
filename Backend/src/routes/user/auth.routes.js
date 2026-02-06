@@ -1,10 +1,10 @@
 const express = require("express");
 const passport = require("passport");
-const { googleCallback, completeProfile, approveUser } = require("../controller/auth.controller");
+const { googleCallback, completeProfile, approveUser } = require("../../controller/User/auth.controller");
 const {
   authMiddleware,
   isAdmin,
-} = require("../middlewares/auth.middleware");
+} = require("../../middlewares/auth.middleware");
 
 
 

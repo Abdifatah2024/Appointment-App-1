@@ -45,12 +45,16 @@
 // export default systemRoutes;
 
 import React from "react";
-import Login from "../pages/Login";
-import Users from "../pages/Users";
+import Login from "../pages/user/Login";
+import Users from "../pages/user/Users";
 
 import PublicRoute from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
+import Customers from "../pages/customer/Customers";
+import Services from "../pages/Service/Services";
+import CreateAppointment from "../pages/customer/CreateAppointment";
+import PendingAppointments from "../pages/customer/PendingAppointments.JSX";
 
 /* ================================
    SIMPLE PAGES
@@ -92,6 +96,13 @@ const systemRoutes = [
         children: [
           { index: true, element: <DashboardHome /> },
           { path: "users", element: <Users /> },
+          { path: "customers", element: <Customers /> },
+          { path: "services", element: <Services /> },
+          { path: "create-appointment", element: <CreateAppointment /> },
+          { path: "pending-appointments", element: <PendingAppointments /> },
+
+
+
         ],
       },
     ],

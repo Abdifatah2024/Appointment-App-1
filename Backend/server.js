@@ -6,8 +6,12 @@ const cors = require("cors");
 const connectDB = require("./src/config/db");
 const passport = require("./src/config/passport");
 
-const userRoutes = require("./src/routes/user.routes");
-const authRoutes = require("./src/routes/auth.routes");
+const userRoutes = require("./src/routes/user/user.routes");
+const authRoutes = require("./src/routes/user/auth.routes");
+const customerRoutes = require("./src/routes/customerRoutes/customerRoutes");
+const serviceRoutes = require("./src/routes/customerRoutes/serviceRoutes");
+const appointmentRoutes = require("./src/routes/appointment.routes");
+
 
 const app = express();
 
@@ -62,6 +66,10 @@ app.use(passport.session());
 ========================= */
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/appointments", appointmentRoutes)
+
 
 /* =========================
    ROOT TEST

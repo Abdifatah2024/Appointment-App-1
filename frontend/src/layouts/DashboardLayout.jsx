@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../Redux/slices/authSlice";
+import { logout } from "../Redux/slices/userSlices/authSlice";
 
 export default function DashboardLayout() {
   const dispatch = useDispatch();
@@ -35,10 +35,10 @@ export default function DashboardLayout() {
         <nav className="flex-1 p-4 space-y-1">
           <NavItem to="/dashboard" label="Dashboard" />
           <NavItem to="/dashboard/users" label="Users" />
-          <NavItem to="/dashboard/students" label="Students" />
-          <NavItem to="/dashboard/teachers" label="Teachers" />
-          <NavItem to="/dashboard/payments" label="Payments" />
-          <NavItem to="/dashboard/reports" label="Reports" />
+          <NavItem to="/dashboard/customers" label="Customers" />
+          <NavItem to="/dashboard/services" label="services" />
+          <NavItem to="/dashboard/create-appointment" label="Add appointment" />
+          <NavItem to="/dashboard/pending-appointments" label="pending-appointments" />
         </nav>
 
         <div className="p-4 border-t text-sm text-gray-500 text-center">
