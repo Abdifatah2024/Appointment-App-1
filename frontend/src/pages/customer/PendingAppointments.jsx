@@ -1,220 +1,192 @@
+
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchAppointments,
   updateAppointment,
 } from "../../Redux/slices/cusomerSlice/appointmentSlice";
-import { CheckCircle, XCircle, Clock, FileText, User, Calendar, Phone } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  User,
+  Calendar,
+  Phone,
+  AlertTriangle,
+} from "lucide-react";
 
 export default function PendingAppointments() {
   const dispatch = useDispatch();
-  const { list, loading, updatingId } = useSelector((state) => state.appointments);
+  const { list, loading, updatingId } = useSelector(
+    (state) => state.appointments
+  );
 
   useEffect(() => {
     dispatch(fetchAppointments());
   }, [dispatch]);
 
   const changeStatus = (id, status) => {
-    dispatch(updateAppointment({ id, data: { status } }))
-      .then(() => {
-        dispatch(fetchAppointments());
-      });
+    dispatch(updateAppointment({ id, data: { status } })).then(() =>
+      dispatch(fetchAppointments())
+    );
   };
 
+  /* =======================
+     LOADING STATE
+  ======================== */
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex justify-center items-center h-[300px]">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading appointments...</p>
+          <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-500 font-medium">Loading appointments...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-      <div className="flex items-center justify-between mb-8">
+    <div className="bg-white rounded-2xl shadow p-6 border">
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
             Pending Appointments
           </h2>
-          <p className="text-gray-500 text-sm mt-1">
-            Manage and review all pending appointment requests
+          <p className="text-sm text-gray-500">
+            Review appointments & check missing documents
           </p>
         </div>
-        <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full font-medium">
-          {list.length} pending
-        </div>
+
+        <span className="px-4 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold text-sm">
+          {list.length} Pending
+        </span>
       </div>
 
+      {/* EMPTY STATE */}
       {list.length === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl">
-          <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">No pending appointments</p>
-          <p className="text-gray-400 text-sm mt-1">All appointments are processed</p>
+        <div className="border border-dashed rounded-xl py-12 text-center">
+          <Clock className="mx-auto w-12 h-12 text-gray-300 mb-3" />
+          <p className="font-medium text-gray-500">
+            No pending appointments
+          </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-                <tr>
-                  <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    #
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Customer Details
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Service & Date
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Documents Status
-                  </th>
-                  <th className="p-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
+        <div className="overflow-x-auto">
+          <table className="w-full border rounded-xl overflow-hidden">
+            <thead className="bg-gray-100 text-xs text-gray-600 uppercase">
+              <tr>
+                <th className="p-4 text-left">Customer</th>
+                <th className="p-4 text-left">Service & Date</th>
+                <th className="p-4 text-left">Documents</th>
+                <th className="p-4 text-center">Actions</th>
+              </tr>
+            </thead>
 
-              <tbody className="divide-y divide-gray-100">
-                {list.map((a, index) => (
-                  <tr
-                    key={a._id}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
-                    {/* Serial Number */}
-                    <td className="p-4">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-700 font-semibold rounded-full">
-                          {index + 1}
-                        </div>
-                      </div>
-                    </td>
+            <tbody className="divide-y">
+              {list.map((a) => {
+                const missingDocs =
+                  !a.documentsSubmitted ||
+                  !a.identityProvided ||
+                  !a.passportProvided;
 
-                    {/* Customer Details */}
+                return (
+                  <tr key={a._id} className="hover:bg-gray-50">
+                    {/* CUSTOMER */}
                     <td className="p-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                           <User className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
-                            {a.customerId?.fullName || "N/A"}
+                          <p className="font-semibold text-gray-800">
+                            {a.customerId?.fullName || "Unknown"}
                           </p>
-                          <div className="flex items-center mt-1 text-gray-500 text-sm">
-                            <Phone className="w-3 h-3 mr-1" />
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
                             {a.customerId?.phone || "No phone"}
-                          </div>
-                          <div className="text-xs text-gray-400 mt-1">
-                            ID: {a._id?.substring(0, 8)}...
-                          </div>
+                          </p>
                         </div>
                       </div>
                     </td>
 
-                    {/* Service & Date */}
+                    {/* SERVICE */}
                     <td className="p-4">
-                      <div className="space-y-2">
-                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium">
-                          {a.serviceId?.name || "Unknown Service"}
-                        </div>
-                        <div className="flex items-center text-gray-600 text-sm">
-                          <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                          {new Date(a.appointmentDate).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </div>
+                      <p className="inline-block bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium mb-2">
+                        {a.serviceId?.name || "Unknown Service"}
+                      </p>
+                      <p className="text-sm text-gray-600 flex items-center gap-1">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        {new Date(a.appointmentDate).toLocaleString()}
+                      </p>
                     </td>
 
-                    {/* Documents Status */}
+                    {/* DOCUMENT STATUS */}
                     <td className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center">
-                          <FileText className="w-4 h-4 mr-2 text-gray-400" />
-                          <span className="text-sm text-gray-700">Documents:</span>
-                          <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${a.documentsSubmitted
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                            }`}>
-                            {a.documentsSubmitted ? "Submitted" : "Pending"}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className={`flex items-center px-2 py-1 rounded ${a.identityProvided
-                              ? 'bg-green-50 text-green-700'
-                              : 'bg-gray-100 text-gray-500'
-                            }`}>
-                            {a.identityProvided ? (
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                            ) : (
-                              <XCircle className="w-3 h-3 mr-1" />
-                            )}
-                            <span className="text-xs">ID</span>
+                      {missingDocs ? (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-red-700 font-medium mb-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            Required Documents
                           </div>
-                          <div className={`flex items-center px-2 py-1 rounded ${a.passportProvided
-                              ? 'bg-green-50 text-green-700'
-                              : 'bg-gray-100 text-gray-500'
-                            }`}>
-                            {a.passportProvided ? (
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                            ) : (
-                              <XCircle className="w-3 h-3 mr-1" />
-                            )}
-                            <span className="text-xs">Passport</span>
-                          </div>
+
+                          <ul className="text-sm space-y-1">
+                            <li className="flex items-center gap-1">
+                              {a.identityProvided ? (
+                                <CheckCircle className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-red-500" />
+                              )}
+                              Identity Card
+                            </li>
+                            <li className="flex items-center gap-1">
+                              {a.passportProvided ? (
+                                <CheckCircle className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-red-500" />
+                              )}
+                              Passport
+                            </li>
+                          </ul>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700 font-medium flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
+                          All documents submitted
+                        </div>
+                      )}
                     </td>
 
-                    {/* Actions */}
-                    <td className="p-4">
-                      <div className="flex flex-col space-y-2 min-w-[200px]">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => changeStatus(a._id, "APPROVED")}
-                            disabled={updatingId === a._id}
-                            className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
-                          >
-                            {updatingId === a._id ? (
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                            ) : (
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                            )}
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => changeStatus(a._id, "REJECTED")}
-                            disabled={updatingId === a._id}
-                            className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                          >
-                            Reject
-                          </button>
-                        </div>
+                    {/* ACTIONS */}
+                    <td className="p-4 text-center">
+                      <div className="flex flex-col gap-2 min-w-[160px]">
                         <button
-                          onClick={() => changeStatus(a._id, "COMPLETED")}
                           disabled={updatingId === a._id}
-                          className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                          onClick={() => changeStatus(a._id, "APPROVED")}
+                          className="bg-green-600 hover:bg-green-700 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50"
                         >
-                          Mark Complete
+                          Approve
                         </button>
-                      </div>
+
+                        <button
+                          disabled={updatingId === a._id}
+                          onClick={() => changeStatus(a._id, "REJECTED")}
+                          className="bg-red-600 hover:bg-red-700 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+                        >
+                          Reject
+                        </button>
+
+                                           </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
   );
 }
+

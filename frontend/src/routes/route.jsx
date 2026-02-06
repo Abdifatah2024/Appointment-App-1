@@ -54,7 +54,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import Customers from "../pages/customer/Customers";
 import Services from "../pages/Service/Services";
 import CreateAppointment from "../pages/customer/CreateAppointment";
-import PendingAppointments from "../pages/customer/PendingAppointments.JSX";
+import PendingAppointments from "../pages/customer/PendingAppointments.jsx";
 
 /* ================================
    SIMPLE PAGES
