@@ -55,6 +55,7 @@ import Customers from "../pages/customer/Customers";
 import Services from "../pages/Service/Services";
 import CreateAppointment from "../pages/customer/CreateAppointment";
 import PendingAppointments from "../pages/customer/PendingAppointments.jsx";
+import ApprovedAppointments from "../pages/customer/AprovedAppointments.jsx";
 
 /* ================================
    SIMPLE PAGES
@@ -100,6 +101,7 @@ const systemRoutes = [
           { path: "services", element: <Services /> },
           { path: "create-appointment", element: <CreateAppointment /> },
           { path: "pending-appointments", element: <PendingAppointments /> },
+          { path: "aproved-appointments", element: <ApprovedAppointments /> },
 
 
 

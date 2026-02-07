@@ -70,6 +70,7 @@ const {
 
 const { authMiddleware } = require("../../middlewares/auth.middleware");
 
+
 /* =========================
    SEARCH (MUST BE FIRST)
 ========================= */

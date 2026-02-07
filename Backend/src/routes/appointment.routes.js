@@ -8,6 +8,7 @@ const {
   updateAppointment,
   deleteAppointment,
   deleteAppointmentPermanent,
+  getAppointmentsByStatus,
 } = require("../controller/Customer/appointment.controller");
 
 /* ================================
@@ -19,9 +20,10 @@ router.post("/", createAppointment);
 
 // READ ALL
 router.get("/", getAppointments);
+router.get("/appointments", getAppointmentsByStatus);
 
 // READ ONE
-router.get("/:id", getAppointmentById);
+router.get("/:id", getAppointmentById); 
 
 // UPDATE
 router.put("/:id", updateAppointment);

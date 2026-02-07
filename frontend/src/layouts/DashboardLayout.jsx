@@ -39,6 +39,7 @@ export default function DashboardLayout() {
           <NavItem to="/dashboard/services" label="services" />
           <NavItem to="/dashboard/create-appointment" label="Add appointment" />
           <NavItem to="/dashboard/pending-appointments" label="pending-appointments" />
+          <NavItem to="/dashboard/aproved-appointments" label="aproved-appointments" />
         </nav>
 
         <div className="p-4 border-t text-sm text-gray-500 text-center">

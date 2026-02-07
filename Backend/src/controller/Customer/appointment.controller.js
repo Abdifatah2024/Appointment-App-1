@@ -161,6 +161,45 @@ exports.getAppointments = async (req, res) => {
   }
 };
 
+
+/* =========================
+   GET APPOINTMENTS BY STATUS
+========================= */
+exports.getAppointmentsByStatus = async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    const allowedStatuses = [
+      "PENDING",
+      "APPROVED",
+      "COMPLETED",
+      "REJECTED",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`,
+      });
+    }
+
+    const appointments = await Appointment.find({ status })
+      .populate("customerId", "fullName phone")
+      .populate("serviceId", "name code")
+      .sort({ appointmentDate: -1 });
+
+    res.json({
+      success: true,
+      data: appointments,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch appointments",
+    });
+  }
+};
+
 /* =========================
    GET APPOINTMENT BY ID
 ========================= */
