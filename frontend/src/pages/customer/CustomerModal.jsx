@@ -11,24 +11,35 @@ export default function CustomerModal({
     fullName: "",
     phone: "",
     email: "",
+    gender: "MALE",
   });
 
+  /* ================================
+     LOAD DATA FOR EDIT
+  ================================ */
   useEffect(() => {
     if (initialData) {
       setForm({
         fullName: initialData.fullName || "",
         phone: initialData.phone || "",
         email: initialData.email || "",
+        gender: initialData.gender || "MALE",
       });
     } else {
-      setForm({ fullName: "", phone: "", email: "" });
+      setForm({
+        fullName: "",
+        phone: "",
+        email: "",
+        gender: "MALE",
+      });
     }
   }, [initialData]);
 
   if (!open) return null;
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -44,6 +55,7 @@ export default function CustomerModal({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* FULL NAME */}
           <input
             name="fullName"
             required
@@ -53,6 +65,7 @@ export default function CustomerModal({
             className="w-full border rounded-lg px-4 py-2"
           />
 
+          {/* PHONE */}
           <input
             name="phone"
             required
@@ -62,6 +75,7 @@ export default function CustomerModal({
             className="w-full border rounded-lg px-4 py-2"
           />
 
+          {/* EMAIL */}
           <input
             name="email"
             placeholder="Email (optional)"
@@ -70,6 +84,19 @@ export default function CustomerModal({
             className="w-full border rounded-lg px-4 py-2"
           />
 
+          {/* GENDER */}
+          <select
+            name="gender"
+            required
+            value={form.gender}
+            onChange={handleChange}
+            className="w-full border rounded-lg px-4 py-2 bg-white"
+          >
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+          </select>
+
+          {/* ACTIONS */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
@@ -82,7 +109,7 @@ export default function CustomerModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60"
             >
               {loading ? "Saving..." : "Save"}
             </button>
@@ -92,4 +119,3 @@ export default function CustomerModal({
     </div>
   );
 }
-

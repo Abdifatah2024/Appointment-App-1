@@ -65,6 +65,7 @@ const {
   deleteCustomer,
   deleteCustomerPermanent,
   searchCustomers,
+  searchCustomersWithAppointmentStatus,
 } = require("../../controller/Customer/customerController");
 
 const { authMiddleware } = require("../../middlewares/auth.middleware");
@@ -73,6 +74,11 @@ const { authMiddleware } = require("../../middlewares/auth.middleware");
    SEARCH (MUST BE FIRST)
 ========================= */
 router.get("/search", searchCustomers);
+router.get(
+  "/search-with-status",
+  searchCustomersWithAppointmentStatus
+);
+
 
 /* =========================
    CRUD

@@ -3,19 +3,37 @@ const Customer = require("../../model/Customer");
 /* =========================
    CREATE CUSTOMER
 ========================= */
+/* =========================
+   CREATE CUSTOMER
+========================= */
 exports.createCustomer = async (req, res) => {
   try {
-    const { fullName, phone, email } = req.body;
+    const { fullName, phone, email, gender } = req.body;
 
-    // Validation
-    if (!fullName || !phone) {
+    /* =========================
+       BASIC VALIDATION
+    ========================= */
+    if (!fullName || !phone || !gender) {
       return res.status(400).json({
         success: false,
-        message: "Full name and phone are required",
+        message: "Full name, phone, and gender are required",
       });
     }
 
-    // Optional: prevent duplicate phone
+    /* =========================
+       ENUM VALIDATION
+    ========================= */
+    const allowedGenders = ["MALE", "FEMALE"];
+    if (!allowedGenders.includes(gender)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid gender. Allowed: ${allowedGenders.join(", ")}`,
+      });
+    }
+
+    /* =========================
+       DUPLICATE PHONE CHECK
+    ========================= */
     const exists = await Customer.findOne({ phone });
     if (exists) {
       return res.status(409).json({
@@ -24,10 +42,14 @@ exports.createCustomer = async (req, res) => {
       });
     }
 
+    /* =========================
+       CREATE CUSTOMER
+    ========================= */
     const customer = await Customer.create({
       fullName,
       phone,
       email,
+      gender,
     });
 
     res.status(201).json({
@@ -42,6 +64,7 @@ exports.createCustomer = async (req, res) => {
     });
   }
 };
+
 
 /* =========================
    GET ALL CUSTOMERS
@@ -93,9 +116,13 @@ exports.getCustomerById = async (req, res) => {
 ========================= */
 exports.updateCustomer = async (req, res) => {
   try {
-    const { fullName, phone, email, status } = req.body;
+    const { fullName, phone, email, status, gender } = req.body;
 
-    // Optional enum validation (if you use status)
+    /* =========================
+       ENUM VALIDATIONS
+    ========================= */
+
+    // Status enum (if used)
     const allowedStatuses = ["ACTIVE", "INACTIVE", "BLOCKED"];
     if (status && !allowedStatuses.includes(status)) {
       return res.status(400).json({
@@ -104,6 +131,18 @@ exports.updateCustomer = async (req, res) => {
       });
     }
 
+    // Gender enum
+    const allowedGenders = ["MALE", "FEMALE"];
+    if (gender && !allowedGenders.includes(gender)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid gender. Allowed: ${allowedGenders.join(", ")}`,
+      });
+    }
+
+    /* =========================
+       UPDATE CUSTOMER
+    ========================= */
     const customer = await Customer.findByIdAndUpdate(
       req.params.id,
       {
@@ -111,6 +150,7 @@ exports.updateCustomer = async (req, res) => {
         ...(phone !== undefined && { phone }),
         ...(email !== undefined && { email }),
         ...(status !== undefined && { status }),
+        ...(gender !== undefined && { gender }),
       },
       {
         new: true,
@@ -137,6 +177,7 @@ exports.updateCustomer = async (req, res) => {
     });
   }
 };
+
 
 /* =========================
    SOFT DELETE CUSTOMER
@@ -239,6 +280,83 @@ exports.searchCustomers = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+const Appointment = require("../../model/Appointment")
+
+/* =========================
+   SEARCH CUSTOMER
+   + APPOINTMENT STATUS
+   ?q=name_or_phone
+========================= */
+exports.searchCustomersWithAppointmentStatus = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query must be at least 2 characters",
+      });
+    }
+
+    /* -------------------------
+       FIND CUSTOMERS
+    ------------------------- */
+    const customers = await Customer.find({
+      $and: [
+        {
+          $or: [
+            { fullName: { $regex: q, $options: "i" } },
+            { phone: { $regex: q, $options: "i" } },
+          ],
+        },
+        {
+          $or: [
+            { isActive: true },
+            { isActive: { $exists: false } },
+          ],
+        },
+      ],
+    })
+      .select("fullName phone email")
+      .limit(10)
+      .sort({ fullName: 1 });
+
+    /* -------------------------
+       ATTACH APPOINTMENT STATUS
+    ------------------------- */
+    const results = await Promise.all(
+      customers.map(async (customer) => {
+        const appointment = await Appointment.findOne({
+          customerId: customer._id,
+        })
+          .populate("serviceId", "name")
+          .sort({ appointmentDate: -1 }); // latest appointment
+
+        return {
+          _id: customer._id,
+          fullName: customer.fullName,
+          phone: customer.phone,
+          email: customer.email,
+          appointmentStatus: appointment?.status || "NO_APPOINTMENT",
+          appointmentDate: appointment?.appointmentDate || null,
+          serviceName: appointment?.serviceId?.name || null,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      count: results.length,
+      data: results,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to search customers",
     });
   }
 };

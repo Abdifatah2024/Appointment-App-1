@@ -5,6 +5,12 @@ const Service = require("../../model/Service");
 /* =========================
    CREATE APPOINTMENT
 ========================= */
+
+
+/* =========================
+   CREATE APPOINTMENT
+   WITH DAILY LIMIT HANDLING
+========================= */
 exports.createAppointment = async (req, res) => {
   try {
     const {
@@ -17,7 +23,9 @@ exports.createAppointment = async (req, res) => {
       notes,
     } = req.body;
 
-    // Validation
+    /* -------------------------
+       BASIC VALIDATION
+    ------------------------- */
     if (!customerId || !serviceId || !appointmentDate) {
       return res.status(400).json({
         success: false,
@@ -25,7 +33,9 @@ exports.createAppointment = async (req, res) => {
       });
     }
 
-    // Check customer exists
+    /* -------------------------
+       CHECK CUSTOMER
+    ------------------------- */
     const customer = await Customer.findById(customerId);
     if (!customer) {
       return res.status(404).json({
@@ -34,7 +44,9 @@ exports.createAppointment = async (req, res) => {
       });
     }
 
-    // Check service exists
+    /* -------------------------
+       CHECK SERVICE
+    ------------------------- */
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({
@@ -43,19 +55,61 @@ exports.createAppointment = async (req, res) => {
       });
     }
 
+    /* -------------------------
+       DATE HANDLING
+    ------------------------- */
+    let finalDate = new Date(appointmentDate);
+    finalDate.setHours(0, 0, 0, 0); // normalize to day
+
+    const maxPerDay = Number(service.maxCustomersPerDay || 0);
+
+    /* -------------------------
+       IF LIMITED SERVICE
+    ------------------------- */
+    if (maxPerDay > 0) {
+      let isSlotAvailable = false;
+
+      while (!isSlotAvailable) {
+        const startOfDay = new Date(finalDate);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(finalDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const count = await Appointment.countDocuments({
+          serviceId,
+          appointmentDate: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+          },
+        });
+
+        if (count < maxPerDay) {
+          isSlotAvailable = true;
+        } else {
+          // 🔁 Move to next day
+          finalDate.setDate(finalDate.getDate() + 1);
+        }
+      }
+    }
+
+    /* -------------------------
+       CREATE APPOINTMENT
+    ------------------------- */
     const appointment = await Appointment.create({
       customerId,
       serviceId,
-      appointmentDate,
-      documentsSubmitted,
-      identityProvided,
-      passportProvided,
+      appointmentDate: finalDate,
+      documentsSubmitted: !!documentsSubmitted,
+      identityProvided: !!identityProvided,
+      passportProvided: !!passportProvided,
       notes,
     });
 
     res.status(201).json({
       success: true,
       message: "Appointment created successfully",
+      adjustedDate: finalDate, // 👈 IMPORTANT FOR FRONTEND
       data: appointment,
     });
   } catch (error) {
@@ -65,6 +119,7 @@ exports.createAppointment = async (req, res) => {
     });
   }
 };
+
 
 /* =========================
    GET ALL APPOINTMENTS
