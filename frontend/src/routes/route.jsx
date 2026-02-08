@@ -56,6 +56,7 @@ import Services from "../pages/Service/Services";
 import CreateAppointment from "../pages/customer/CreateAppointment";
 import PendingAppointments from "../pages/customer/PendingAppointments.jsx";
 import ApprovedAppointments from "../pages/customer/AprovedAppointments.jsx";
+import AppointmentDashboard from "../Components/Dashboard.jsx";
 
 /* ================================
    SIMPLE PAGES
@@ -92,7 +93,7 @@ const systemRoutes = [
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/dashboard",
+        path: "/Dashboard",
         element: <DashboardLayout />,
         children: [
           { index: true, element: <DashboardHome /> },
@@ -102,6 +103,7 @@ const systemRoutes = [
           { path: "create-appointment", element: <CreateAppointment /> },
           { path: "pending-appointments", element: <PendingAppointments /> },
           { path: "aproved-appointments", element: <ApprovedAppointments /> },
+          { path: "Dashboard", element: <AppointmentDashboard/> },
 
 
 

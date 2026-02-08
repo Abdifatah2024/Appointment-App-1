@@ -4,6 +4,7 @@ import authReducer from "./slices/userSlices/authSlice";
 import customerReducer from "./slices/cusomerSlice/customerSlice";
 import serviceReducer from "./slices/cusomerSlice/serviceSlice";
 import appointmentReducer from "./slices/cusomerSlice/appointmentSlice";
+import appointmentDashboardReducer from "./slices/cusomerSlice/appointmentDashboardSlice";
 
 
 export const store = configureStore({
@@ -13,5 +14,6 @@ export const store = configureStore({
        customers: customerReducer,
        services: serviceReducer,
         appointments: appointmentReducer,
+        appointmentDashboard: appointmentDashboardReducer,
   },
 });
