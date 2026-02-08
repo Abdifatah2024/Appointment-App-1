@@ -14,6 +14,13 @@ const AppointmentSchema = new mongoose.Schema(
       required: true,
     },
 
+    // 👇 USER (STAFF) ASSIGNED TO THIS APPOINTMENT
+    assignedUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+     default: null, // 👈 IMPORTANT
+    },
+
     appointmentDate: {
       type: Date,
       required: true,
@@ -25,11 +32,21 @@ const AppointmentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED", "COMPLETED", "CANCELLED", "NO_SHOW"],
+      enum: [
+        "PENDING",
+        "APPROVED",
+        "REJECTED",
+        "COMPLETED",
+        "CANCELLED",
+        "NO_SHOW",
+      ],
       default: "PENDING",
     },
 
-    notes: String,
+    notes: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true }
 );

@@ -9,7 +9,9 @@ const {
   deleteAppointment,
   deleteAppointmentPermanent,
   getAppointmentsByStatus,
+  updateAssignedUser,
 } = require("../controller/Customer/appointment.controller");
+const { getAppointmentDashboard } = require("../controller/Dashboard/appointmentDashboard.controller");
 
 /* ================================
    APPOINTMENT ROUTES
@@ -18,13 +20,16 @@ const {
 // CREATE
 router.post("/", createAppointment);
 
+router.get("/dashboard", getAppointmentDashboard) 
 // READ ALL
 router.get("/", getAppointments);
 router.get("/appointments", getAppointmentsByStatus);
 
+
 // READ ONE
 router.get("/:id", getAppointmentById); 
 
+router.put("/:id/assign-user", updateAssignedUser);
 // UPDATE
 router.put("/:id", updateAppointment);
 
