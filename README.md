@@ -103,5 +103,125 @@ backend/
 │── package.json
 │── .env
 
+
+
+---
+
+## 🔐 Authentication & Security
+
+- JWT-based authentication
+- Session-based authentication using Passport
+- Role-Based Access Control (RBAC)
+- Password hashing with bcrypt
+- Protected API routes
+- Secure cookies (`httpOnly`)
+- Environment variables for secrets
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the backend root:
+
+```env
+PORT=4000
+MONGO_URI=mongodb://127.0.0.1:27017/appointment_app
+JWT_SECRET=your_jwt_secret
+SESSION_SECRET=your_session_secret
+GOOGLE_CLIENT_ID=xxxxxxxx
+GOOGLE_CLIENT_SECRET=xxxxxxxx
+
+
+📡 API Endpoints
+👤 Users (/api/users)
+Method	Endpoint	Description
+POST	/	Create user
+GET	/	Get all users
+GET	/:id	Get user by ID
+PUT	/:id	Update user
+DELETE	/:id	Soft delete user
+DELETE	/users/permanent/:id	Permanent delete (Admin only)
+🔐 Auth (/api/auth)
+Method	Endpoint	Description
+POST	/login	User login
+👥 Customers (/api/customers)
+Method	Endpoint	Description
+POST	/	Register customer
+GET	/	Get all customers
+PUT	/:id	Update customer
+DELETE	/:id	Delete customer
+🧾 Services (/api/services)
+Method	Endpoint	Description
+POST	/	Create service
+GET	/	Get services
+PUT	/:id	Update service
+DELETE	/:id	Delete service
+📅 Appointments (/api/appointments)
+Method	Endpoint	Description
+POST	/	Create appointment
+GET	/	Get appointments
+PUT	/:id	Update appointment
+DELETE	/:id	Delete appointment
+⚙️ How to Run the Project
+Backend
+cd backend
+npm install
+npm run dev
+
+
+Backend runs on:
+👉 http://localhost:4000
+
+Frontend
+cd frontend
+npm install
+npm run dev
+
+
+Frontend runs on:
+👉 http://localhost:5173
+
+🚀 Deployment
+
+Deployed using Railway
+
+Supports:
+
+Environment variable management
+
+Continuous deployment from GitHub
+
+Automated builds
+
+🧪 Testing & Validation
+
+All API endpoints tested
+
+Authentication & authorization verified
+
+Appointment limits validated
+
+Bug fixes applied
+
+System stability confirmed
+
+📌 Future Improvements
+
+Email & SMS notifications
+
+Appointment analytics dashboard
+
+Multi-branch support
+
+Advanced reporting
+
+Public appointment tracking
+
+🏫 Course Provider
+
+TELESOM ACADEMY
+Est. 2020
+
+
 ## 📁 Folder Structure
 
