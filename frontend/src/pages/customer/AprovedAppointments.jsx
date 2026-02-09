@@ -1,298 +1,103 @@
-// import { useEffect, useMemo, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import {
-//   fetchAppointmentsByStatus,
-//   updateAppointment,
-// } from "../../Redux/slices/cusomerSlice/appointmentSlice";
-
-// import {
-//   User,
-//   Phone,
-//   Calendar,
-//   ClipboardList,
-// } from "lucide-react";
-
-// /* ❌ PENDING intentionally excluded */
-// const STATUS_OPTIONS = [
-//   { value: "APPROVED", label: "Approved" },
-//   { value: "COMPLETED", label: "Completed" },
-//   { value: "REJECTED", label: "Rejected" },
-//   { value: "CANCELLED", label: "Cancelled" },
-//   { value: "NO_SHOW", label: "No Show" },
-// ];
-
-// export default function AppointmentsByStatus() {
-//   const dispatch = useDispatch();
-
-//   const { byStatus, loading, updatingId } = useSelector(
-//     (state) => state.appointments
-//   );
-
-//   /* ================================
-//      STATUS DROPDOWN STATE
-//      (NOT fixed to APPROVED)
-//   ================================ */
-//   const [status, setStatus] = useState("APPROVED"); // default can be changed
-
-//   /* ================================
-//      FETCH WHEN STATUS CHANGES
-//      Backend: /api/appointments?status=
-//   ================================ */
-//   useEffect(() => {
-//     if (status) {
-//       dispatch(fetchAppointmentsByStatus(status));
-//     }
-//   }, [status, dispatch]);
-
-//   const list = byStatus?.[status] || [];
-
-//   const count = useMemo(
-//     () => (Array.isArray(list) ? list.length : 0),
-//     [list]
-//   );
-
-//   const handleStatusChange = (id, newStatus) => {
-//     dispatch(updateAppointment({ id, data: { status: newStatus } })).then(() =>
-//       dispatch(fetchAppointmentsByStatus(status))
-//     );
-//   };
-
-//   /* =======================
-//      LOADING STATE
-//   ======================== */
-//   if (loading) {
-//     return (
-//       <div className="bg-white rounded-2xl border shadow-sm p-10">
-//         <div className="flex flex-col items-center justify-center gap-3 min-h-[260px]">
-//           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-//           <p className="text-gray-600 font-medium">
-//             Loading appointments...
-//           </p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-//       {/* ================= HEADER ================= */}
-//       <div className="p-6 md:p-7 border-b bg-gradient-to-r from-blue-50 to-white">
-//         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-//           <div className="flex items-start gap-3">
-//             <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center">
-//               <ClipboardList className="w-5 h-5" />
-//             </div>
-//             <div>
-//               <h2 className="text-2xl font-bold text-gray-900">
-//                 Appointments
-//               </h2>
-//               <p className="text-sm text-gray-500">
-//                 View appointments by status
-//               </p>
-//             </div>
-//           </div>
-
-//           {/* STATUS DROPDOWN */}
-//           <div className="flex items-center gap-3">
-//             <select
-//               value={status}
-//               onChange={(e) => setStatus(e.target.value)}
-//               className="border rounded-xl px-4 py-2 text-sm font-semibold bg-white"
-//             >
-//               {STATUS_OPTIONS.map((opt) => (
-//                 <option key={opt.value} value={opt.value}>
-//                   {opt.label}
-//                 </option>
-//               ))}
-//             </select>
-
-//             <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-semibold">
-//               {count} Records
-//             </span>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* ================= EMPTY ================= */}
-//       {count === 0 ? (
-//         <div className="p-10 text-center text-gray-500">
-//           No appointments found for <b>{status}</b>
-//         </div>
-//       ) : (
-//         <div className="p-6 overflow-x-auto">
-//           <table className="w-full border rounded-2xl overflow-hidden">
-//             <thead className="bg-gray-50 text-xs text-gray-600 uppercase">
-//               <tr className="[&>th]:px-5 [&>th]:py-4 text-left">
-//                 <th>Customer</th>
-//                 <th>Service & Date</th>
-//                 <th className="text-center">Update Status</th>
-//               </tr>
-//             </thead>
-
-//             <tbody className="divide-y">
-//               {list.map((a) => (
-//                 <tr key={a._id} className="hover:bg-gray-50">
-//                   {/* CUSTOMER */}
-//                   <td className="px-5 py-5">
-//                     <div className="flex gap-3">
-//                       <div className="w-11 h-11 rounded-2xl bg-blue-50 border flex items-center justify-center">
-//                         <User className="w-5 h-5 text-blue-700" />
-//                       </div>
-//                       <div>
-//                         <p className="font-semibold text-gray-900">
-//                           {a.customerId?.fullName || "Unknown"}
-//                         </p>
-//                         <p className="text-sm text-gray-500 flex items-center gap-2">
-//                           <Phone className="w-4 h-4" />
-//                           {a.customerId?.phone || "No phone"}
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </td>
-
-//                   {/* SERVICE */}
-//                   <td className="px-5 py-5">
-//                     <p className="inline-block mb-2 px-3 py-1 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-700">
-//                       {a.serviceId?.name || "Unknown Service"}
-//                     </p>
-//                     <p className="text-sm text-gray-600 flex items-center gap-2">
-//                       <Calendar className="w-4 h-4" />
-//                       {new Date(a.appointmentDate).toLocaleString()}
-//                     </p>
-//                   </td>
-
-//                   {/* UPDATE STATUS */}
-//                   <td className="px-5 py-5 text-center">
-//                     <select
-//                       disabled={updatingId === a._id}
-//                       value={a.status}
-//                       onChange={(e) =>
-//                         handleStatusChange(a._id, e.target.value)
-//                       }
-//                       className="border rounded-xl px-4 py-2 text-sm font-semibold bg-white disabled:opacity-50"
-//                     >
-//                       {STATUS_OPTIONS.map((opt) => (
-//                         <option key={opt.value} value={opt.value}>
-//                           {opt.label}
-//                         </option>
-//                       ))}
-//                     </select>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import {
   fetchAppointmentsByStatus,
   updateAppointment,
 } from "../../Redux/slices/cusomerSlice/appointmentSlice";
-
 import {
   User,
   Phone,
   Calendar,
   ClipboardList,
   UserCheck,
+  ChevronDown,
+  Loader2,
+  Filter,
 } from "lucide-react";
 
-/* ❌ PENDING intentionally excluded */
 const STATUS_OPTIONS = [
-  { value: "APPROVED", label: "Approved" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "REJECTED", label: "Rejected" },
-  { value: "CANCELLED", label: "Cancelled" },
-  { value: "NO_SHOW", label: "No Show" },
+  {
+    value: "APPROVED",
+    label: "Approved",
+    color: "bg-blue-50 text-blue-700 border-blue-100",
+  },
+  {
+    value: "COMPLETED",
+    label: "Completed",
+    color: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  },
+  {
+    value: "REJECTED",
+    label: "Rejected",
+    color: "bg-rose-50 text-rose-700 border-rose-100",
+  },
+  {
+    value: "CANCELLED",
+    label: "Cancelled",
+    color: "bg-slate-50 text-slate-700 border-slate-100",
+  },
+  {
+    value: "NO_SHOW",
+    label: "No Show",
+    color: "bg-amber-50 text-amber-700 border-amber-100",
+  },
 ];
 
 export default function AppointmentsByStatus() {
   const dispatch = useDispatch();
-
-  /* ================================
-     SAFE REDUX SELECTOR
-  ================================ */
   const {
     byStatus = {},
     loading,
     updatingId,
   } = useSelector((state) => state.appointments || {});
-
-  /* ================================
-     STATUS STATE
-  ================================ */
   const [status, setStatus] = useState("APPROVED");
 
-  /* ================================
-     FETCH WHEN STATUS CHANGES
-  ================================ */
   useEffect(() => {
-    if (status) {
-      dispatch(fetchAppointmentsByStatus(status));
-    }
+    if (status) dispatch(fetchAppointmentsByStatus(status));
   }, [status, dispatch]);
 
-  const list = Array.isArray(byStatus?.[status])
-    ? byStatus[status]
-    : [];
-
+  const list = Array.isArray(byStatus?.[status]) ? byStatus[status] : [];
   const count = useMemo(() => list.length, [list]);
 
-  /* ================================
-     UPDATE STATUS
-  ================================ */
   const handleStatusChange = async (id, newStatus) => {
     await dispatch(updateAppointment({ id, data: { status: newStatus } }));
     dispatch(fetchAppointmentsByStatus(status));
   };
 
-  /* ================================
-     LOADING
-  ================================ */
-  if (loading) {
-    return (
-      <div className="bg-white rounded-2xl border shadow-sm p-10">
-        <div className="flex flex-col items-center justify-center gap-3 min-h-[260px]">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-600 font-medium">
-            Loading appointments…
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const currentStatusTheme = STATUS_OPTIONS.find(
+    (opt) => opt.value === status,
+  )?.color;
 
   return (
-    <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-      {/* ================= HEADER ================= */}
-      <div className="p-6 md:p-7 border-b bg-gradient-to-r from-blue-50 to-white">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center">
-              <ClipboardList className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Appointments
-              </h2>
-              <p className="text-sm text-gray-500">
-                View and manage appointments by status
-              </p>
-            </div>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* --- MODERN HEADER --- */}
+      <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center">
+            <ClipboardList size={22} />
           </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">
+              Records Vault
+            </h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              Filter & Manage History
+            </p>
+          </div>
+        </div>
 
-          {/* STATUS DROPDOWN */}
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+          <div className="flex items-center gap-2 px-3 text-slate-400">
+            <Filter size={16} />
+            <span className="text-[10px] font-black uppercase tracking-wider">
+              Status:
+            </span>
+          </div>
+          <div className="relative">
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="border rounded-xl px-4 py-2 text-sm font-semibold bg-white"
+              className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2 pr-10 text-xs font-black text-slate-700 outline-none focus:ring-4 focus:ring-slate-100 transition-all cursor-pointer"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -300,101 +105,125 @@ export default function AppointmentsByStatus() {
                 </option>
               ))}
             </select>
-
-            <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-semibold">
-              {count} Records
-            </span>
+            <ChevronDown
+              size={14}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+          </div>
+          <div className="px-4 py-2 bg-green-700 rounded-xl text-white text-[10px] font-black uppercase tracking-tighter">
+            {count} items
           </div>
         </div>
       </div>
 
-      {/* ================= EMPTY STATE ================= */}
-      {count === 0 ? (
-        <div className="p-12 text-center text-gray-500">
-          No appointments found for <b>{status}</b>
+      {/* --- CONTENT AREA --- */}
+      {loading ? (
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 p-20 flex flex-col items-center justify-center gap-4 shadow-sm">
+          <Loader2 className="w-10 h-10 text-slate-200 animate-spin" />
+          <p className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">
+            Retrieving Data...
+          </p>
+        </div>
+      ) : count === 0 ? (
+        <div className="bg-white rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
+          <p className="text-slate-400 font-bold italic">
+            No records found for this category.
+          </p>
         </div>
       ) : (
-        <div className="p-6 overflow-x-auto">
-          <table className="w-full border rounded-2xl overflow-hidden">
-            <thead className="bg-gray-50 text-xs text-gray-600 uppercase">
-              <tr className="[&>th]:px-5 [&>th]:py-4 text-left">
-                <th>Customer</th>
-                <th>Service & Date</th>
-                <th>Assigned User</th>
-                <th className="text-center">Update Status</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y">
-              {list.map((a) => (
-                <tr key={a._id} className="hover:bg-gray-50">
-                  {/* CUSTOMER */}
-                  <td className="px-5 py-5">
-                    <div className="flex gap-3">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border flex items-center justify-center">
-                        <User className="w-5 h-5 text-blue-700" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          {a.customerId?.fullName || "Unknown"}
-                        </p>
-                        <p className="text-sm text-gray-500 flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          {a.customerId?.phone || "—"}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* SERVICE */}
-                  <td className="px-5 py-5">
-                    <p className="inline-block mb-2 px-3 py-1 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-700">
-                      {a.serviceId?.name || "Unknown Service"}
-                    </p>
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(a.appointmentDate).toLocaleString()}
-                    </p>
-                  </td>
-
-                  {/* ASSIGNED USER */}
-                  <td className="px-5 py-5">
-                    {a.assignedUserId ? (
-                      <div className="flex items-center gap-2 text-green-700 font-semibold">
-                        <UserCheck className="w-4 h-4" />
-                        {a.assignedUserId.fullName}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400 italic">
-                        Unassigned
-                      </span>
-                    )}
-                  </td>
-
-                  {/* UPDATE STATUS */}
-                  <td className="px-5 py-5 text-center">
-                    <select
-                      disabled={updatingId === a._id}
-                      value={a.status}
-                      onChange={(e) =>
-                        handleStatusChange(a._id, e.target.value)
-                      }
-                      className="border rounded-xl px-4 py-2 text-sm font-semibold bg-white disabled:opacity-50"
-                    >
-                      {STATUS_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-50 [&>th]:px-8 [&>th]:py-6 text-left">
+                  <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Customer
+                  </th>
+                  <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Service & Date
+                  </th>
+                  <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Assignment
+                  </th>
+                  <th className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    Update
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {list.map((a) => (
+                  <tr
+                    key={a._id}
+                    className="group hover:bg-slate-50/50 transition-colors"
+                  >
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold group-hover:bg-white transition-colors">
+                          <User size={18} />
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-700 text-sm">
+                            {a.customerId?.fullName || "Guest"}
+                          </p>
+                          <p className="text-xs font-bold text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Phone size={12} className="text-slate-300" />{" "}
+                            {a.customerId?.phone || "N/A"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-8 py-6">
+                      <span className="inline-block px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase mb-1.5 border border-indigo-100/50">
+                        {a.serviceId?.name}
+                      </span>
+                      <div className="flex items-center gap-2 text-slate-500 font-bold text-xs">
+                        <Calendar size={14} className="text-slate-300" />
+                        {new Date(a.appointmentDate).toLocaleString([], {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </div>
+                    </td>
+
+                    <td className="px-8 py-6">
+                      {a.assignedUserId ? (
+                        <div className="flex items-center gap-2 text-slate-600 text-xs font-bold bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl w-fit">
+                          <UserCheck size={14} className="text-emerald-500" />
+                          {a.assignedUserId.fullName}
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-black text-slate-300 uppercase italic">
+                          Not Assigned
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="px-8 py-6">
+                      <div className="flex justify-center">
+                        <select
+                          disabled={updatingId === a._id}
+                          value={a.status}
+                          onChange={(e) =>
+                            handleStatusChange(a._id, e.target.value)
+                          }
+                          className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-tighter text-slate-600 outline-none focus:border-slate-900 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          {STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
   );
 }
-
