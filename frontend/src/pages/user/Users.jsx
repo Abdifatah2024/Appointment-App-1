@@ -327,6 +327,7 @@ export default function Users() {
                   >
                     <option value="USER">USER</option>
                     <option value="ADMIN">ADMIN</option>
+                    <option value="STAFF">STAFF</option>
                   </select>
                 </div>
                 <div className="space-y-1">
