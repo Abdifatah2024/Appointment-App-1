@@ -1,129 +1,13 @@
-// import { useEffect, useState } from "react";
-
-// export default function ServiceModal({
-//   open,
-//   onClose,
-//   onSubmit,
-//   loading,
-//   initialData,
-// }) {
-//   const [form, setForm] = useState({
-//     name: "",
-//     code: "",
-//     description: "",
-//     requiresDocuments: true,
-//     requiresIdentity: false,
-//     requiresPassport: false,
-//     approvalRequired: true,
-//     maxCustomersPerDay: 0,
-//     isActive: true,
-//   });
-
-//   useEffect(() => {
-//     if (initialData) {
-//       setForm({
-//         ...initialData,
-//         maxCustomersPerDay: initialData.maxCustomersPerDay || 0,
-//       });
-//     } else {
-//       setForm({
-//         name: "",
-//         code: "",
-//         description: "",
-//         requiresDocuments: true,
-//         requiresIdentity: false,
-//         requiresPassport: false,
-//         approvalRequired: true,
-//         maxCustomersPerDay: 0,
-//         isActive: true,
-//       });
-//     }
-//   }, [initialData]);
-
-//   if (!open) return null;
-
-//   const handleChange = (e) => {
-//     const { name, value, type, checked } = e.target;
-//     setForm({
-//       ...form,
-//       [name]: type === "checkbox" ? checked : value,
-//     });
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     onSubmit(form);
-//   };
-
-//   return (
-//     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-//       <div className="bg-white w-full max-w-xl rounded-xl p-6">
-//         <h2 className="text-lg font-semibold mb-4">
-//           {initialData ? "Edit Service" : "Register Service"}
-//         </h2>
-
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//           <div className="grid grid-cols-2 gap-4">
-//             <input
-//               name="name"
-//               required
-//               placeholder="Service Name"
-//               value={form.name}
-//               onChange={handleChange}
-//               className="border rounded-lg px-4 py-2"
-//             />
-
-//             <input
-//               name="code"
-//               required
-//               placeholder="Service Code"
-//               value={form.code}
-//               onChange={handleChange}
-//               className="border rounded-lg px-4 py-2"
-//             />
-//           </div>
-
-//           <textarea
-//             name="description"
-//             placeholder="Description"
-//             value={form.description}
-//             onChange={handleChange}
-//             className="w-full border rounded-lg px-4 py-2"
-//           />
-
-//           <div className="grid grid-cols-2 gap-3 text-sm">
-//             <label><input type="checkbox" name="requiresDocuments" checked={form.requiresDocuments} onChange={handleChange} /> Requires Documents</label>
-//             <label><input type="checkbox" name="requiresIdentity" checked={form.requiresIdentity} onChange={handleChange} /> Requires Identity</label>
-//             <label><input type="checkbox" name="requiresPassport" checked={form.requiresPassport} onChange={handleChange} /> Requires Passport</label>
-//             <label><input type="checkbox" name="approvalRequired" checked={form.approvalRequired} onChange={handleChange} /> Approval Required</label>
-//             <label><input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} /> Active</label>
-//           </div>
-
-//           <input
-//             type="number"
-//             name="maxCustomersPerDay"
-//             min="0"
-//             value={form.maxCustomersPerDay}
-//             onChange={handleChange}
-//             className="w-full border rounded-lg px-4 py-2"
-//             placeholder="Max Customers Per Day (0 = unlimited)"
-//           />
-
-//           <div className="flex justify-end gap-3 pt-4">
-//             <button type="button" onClick={onClose} className="border px-4 py-2 rounded-lg">
-//               Cancel
-//             </button>
-//             <button disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
-//               {loading ? "Saving..." : "Save"}
-//             </button>
-//           </div>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useEffect, useState } from "react";
+import {
+  X,
+  Wrench,
+  Settings,
+  FileText,
+  Users,
+  Loader2,
+  Check,
+} from "lucide-react";
 
 export default function ServiceModal({
   open,
@@ -144,9 +28,6 @@ export default function ServiceModal({
     isActive: true,
   });
 
-  /* ================================
-     PREFILL ON EDIT
-  ================================ */
   useEffect(() => {
     if (initialData) {
       setForm({
@@ -173,153 +54,192 @@ export default function ServiceModal({
         isActive: true,
       });
     }
-  }, [initialData]);
+  }, [initialData, open]);
 
   if (!open) return null;
 
-  /* ================================
-     HANDLE CHANGE
-  ================================ */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     setForm((prev) => ({
       ...prev,
       [name]:
         type === "checkbox"
           ? checked
           : name === "maxCustomersPerDay"
-          ? Number(value)
-          : value,
+            ? Number(value)
+            : value,
     }));
   };
 
-  /* ================================
-     SUBMIT
-  ================================ */
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(form);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-xl rounded-xl p-6 shadow-lg">
-        <h2 className="text-lg font-semibold mb-4">
-          {initialData ? "Edit Service" : "Register Service"}
-        </h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* BACKDROP */}
+      <div
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300"
+        onClick={onClose}
+      />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* NAME & CODE */}
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              name="name"
-              required
-              placeholder="Service Name"
-              value={form.name}
-              onChange={handleChange}
-              className="border rounded-lg px-4 py-2"
-            />
+      {/* MODAL CARD */}
+      <div className="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300">
+        {/* HEADER */}
+        <div className="px-10 pt-10 pb-6 flex justify-between items-center border-b border-slate-50">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+              <Wrench size={24} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-800 tracking-tight">
+                {initialData ? "Update Service" : "Register Service"}
+              </h2>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">
+                Service Catalog Config
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 text-slate-400 rounded-full transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-            <input
-              name="code"
-              required
-              placeholder="Service Code"
-              value={form.code}
-              onChange={handleChange}
-              className="border rounded-lg px-4 py-2"
-            />
+        <form onSubmit={handleSubmit} className="p-10 space-y-8">
+          {/* CORE INFO SECTION */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1.5">
+                <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  Service Name
+                </label>
+                <input
+                  name="name"
+                  required
+                  placeholder="e.g. Visa Processing"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-700"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                  Internal Code
+                </label>
+                <input
+                  name="code"
+                  required
+                  placeholder="VP-001"
+                  value={form.code}
+                  onChange={handleChange}
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-emerald-500 transition-all font-mono font-bold text-emerald-600 uppercase"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <FileText size={12} /> Brief Description
+              </label>
+              <textarea
+                name="description"
+                placeholder="Describe the service requirements and process..."
+                value={form.description}
+                onChange={handleChange}
+                rows="2"
+                className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 outline-none focus:bg-white focus:border-emerald-500 transition-all font-medium text-slate-600 resize-none"
+              />
+            </div>
           </div>
 
-          {/* DESCRIPTION */}
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full border rounded-lg px-4 py-2"
-          />
+          {/* CONFIGURATION GRID */}
+          <div className="bg-slate-50/50 rounded-[2rem] p-6 border border-slate-100">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2 px-2">
+              <Settings size={12} /> Service Parameters
+            </h4>
 
-          {/* FLAGS */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="requiresDocuments"
-                checked={form.requiresDocuments}
-                onChange={handleChange}
-              />
-              Requires Documents
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <ToggleOption
+                label="Requires Identity"
                 name="requiresIdentity"
                 checked={form.requiresIdentity}
                 onChange={handleChange}
               />
-              Requires Identity
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <ToggleOption
+                label="Requires Documents"
+                name="requiresDocuments"
+                checked={form.requiresDocuments}
+                onChange={handleChange}
+              />
+              <ToggleOption
+                label="Passport Required"
                 name="requiresPassport"
                 checked={form.requiresPassport}
                 onChange={handleChange}
               />
-              Requires Passport
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <ToggleOption
+                label="Manual Approval"
                 name="approvalRequired"
                 checked={form.approvalRequired}
                 onChange={handleChange}
               />
-              Approval Required
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <ToggleOption
+                label="Status: Active"
                 name="isActive"
                 checked={form.isActive}
                 onChange={handleChange}
               />
-              Active
-            </label>
+            </div>
           </div>
 
-          {/* MAX PER DAY */}
-          <input
-            type="number"
-            name="maxCustomersPerDay"
-            min="0"
-            value={form.maxCustomersPerDay}
-            onChange={handleChange}
-            className="w-full border rounded-lg px-4 py-2"
-            placeholder="Max Customers Per Day (0 = unlimited)"
-          />
+          {/* CAPACITY SECTION */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center ml-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <Users size={12} /> Daily Quota
+              </label>
+              <span className="text-[10px] font-bold text-emerald-500 italic">
+                0 = No limit
+              </span>
+            </div>
+            <input
+              type="number"
+              name="maxCustomersPerDay"
+              min="0"
+              value={form.maxCustomersPerDay}
+              onChange={handleChange}
+              className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 outline-none focus:bg-white focus:border-emerald-500 transition-all font-bold text-slate-700"
+            />
+          </div>
 
-          {/* ACTIONS */}
-          <div className="flex justify-end gap-3 pt-4">
+          {/* FOOTER */}
+          <div className="flex items-center gap-4 pt-4 border-t border-slate-50">
             <button
               type="button"
               onClick={onClose}
-              className="border px-4 py-2 rounded-lg"
+              className="flex-1 px-4 py-4 border border-slate-100 text-slate-400 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-colors"
             >
-              Cancel
+              Discard
             </button>
 
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-60"
+              className="flex-[2] bg-slate-900 hover:bg-black text-white px-4 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <>
+                  {initialData ? "Save Changes" : "Register Service"}
+                  <Check size={18} />
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -328,3 +248,23 @@ export default function ServiceModal({
   );
 }
 
+/* SUB-COMPONENT FOR CLEANER TOGGLES */
+function ToggleOption({ label, name, checked, onChange }) {
+  return (
+    <label className="flex items-center justify-between group cursor-pointer p-2 hover:bg-white rounded-xl transition-all">
+      <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">
+        {label}
+      </span>
+      <div className="relative">
+        <input
+          type="checkbox"
+          name={name}
+          checked={checked}
+          onChange={onChange}
+          className="sr-only peer"
+        />
+        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+      </div>
+    </label>
+  );
+}
