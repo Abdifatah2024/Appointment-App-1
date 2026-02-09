@@ -1,245 +1,19 @@
-// import { useEffect, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-
-// import {
-//   fetchCustomers,
-//   createCustomer,
-//   updateCustomer,
-//   deleteCustomer,
-//   searchCustomersWithStatus,
-//   clearCustomerSearch,
-// } from "../../Redux/slices/cusomerSlice/customerSlice";
-
-// import CustomerModal from "./CustomerModal";
-
-// export default function Customers() {
-//   const dispatch = useDispatch();
-
-//   const {
-//     list,
-//     loading,
-//     creating,
-//     updatingId,
-//     deletingId,
-//     searchResults,
-//     searching,
-//   } = useSelector((state) => state.customers);
-
-//   const [openModal, setOpenModal] = useState(false);
-//   const [selectedCustomer, setSelectedCustomer] = useState(null);
-//   const [search, setSearch] = useState("");
-
-//   /* ================================
-//      FETCH CUSTOMERS ON LOAD
-//   ================================ */
-//   useEffect(() => {
-//     dispatch(fetchCustomers());
-//   }, [dispatch]);
-
-//   /* ================================
-//      SEARCH CUSTOMER STATUS
-//   ================================ */
-//   useEffect(() => {
-//     if (search.trim().length >= 2) {
-//       dispatch(searchCustomersWithStatus(search));
-//     } else {
-//       dispatch(clearCustomerSearch());
-//     }
-//   }, [search, dispatch]);
-
-//   /* ================================
-//      CREATE / UPDATE
-//   ================================ */
-//   const handleSave = (data) => {
-//     if (selectedCustomer) {
-//       dispatch(updateCustomer({ id: selectedCustomer._id, data }));
-//     } else {
-//       dispatch(createCustomer(data));
-//     }
-
-//     setOpenModal(false);
-//     setSelectedCustomer(null);
-//   };
-
-//   /* ================================
-//      DELETE
-//   ================================ */
-//   const handleDelete = (id) => {
-//     if (window.confirm("Are you sure you want to delete this customer?")) {
-//       dispatch(deleteCustomer(id));
-//     }
-//   };
-
-//   return (
-//     <div className="space-y-10">
-//       {/* =================================================
-//           SECTION 1: REGISTER / MANAGE CUSTOMERS
-//       ================================================= */}
-//       <div className="space-y-6">
-//         <div className="flex justify-between items-center">
-//           <h1 className="text-xl font-semibold">Customers</h1>
-
-//           <button
-//             onClick={() => {
-//               setSelectedCustomer(null);
-//               setOpenModal(true);
-//             }}
-//             className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-//           >
-//             + Register Customer
-//           </button>
-//         </div>
-
-//         {loading ? (
-//           <p className="text-gray-500">Loading customers...</p>
-//         ) : (
-//           <div className="overflow-x-auto bg-white rounded-lg shadow">
-//             <table className="w-full">
-//               <thead className="bg-gray-100">
-//                 <tr className="border-b text-sm text-gray-600">
-//                   <th className="p-3 text-left">Full Name</th>
-//                   <th className="p-3 text-left">Phone</th>
-//                   <th className="p-3 text-left">Email</th>
-//                   <th className="p-3 text-right">Actions</th>
-//                 </tr>
-//               </thead>
-
-//               <tbody>
-//                 {list.length === 0 ? (
-//                   <tr>
-//                     <td
-//                       colSpan="4"
-//                       className="p-4 text-center text-gray-500"
-//                     >
-//                       No customers found
-//                     </td>
-//                   </tr>
-//                 ) : (
-//                   list.map((c) => (
-//                     <tr key={c._id} className="border-b hover:bg-gray-50">
-//                       <td className="p-3">{c.fullName}</td>
-//                       <td className="p-3">{c.phone}</td>
-//                       <td className="p-3">{c.email || "-"}</td>
-//                       <td className="p-3 text-right space-x-4">
-//                         <button
-//                           onClick={() => {
-//                             setSelectedCustomer(c);
-//                             setOpenModal(true);
-//                           }}
-//                           className="text-blue-600 hover:underline"
-//                         >
-//                           {updatingId === c._id ? "Updating..." : "Edit"}
-//                         </button>
-
-//                         <button
-//                           onClick={() => handleDelete(c._id)}
-//                           className="text-red-600 hover:underline"
-//                         >
-//                           {deletingId === c._id ? "Deleting..." : "Delete"}
-//                         </button>
-//                       </td>
-//                     </tr>
-//                   ))
-//                 )}
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* =================================================
-//           SECTION 2: SEARCH & VIEW APPOINTMENT STATUS
-//       ================================================= */}
-//       <div className="bg-white rounded-lg shadow p-6 space-y-4">
-//         <h2 className="text-lg font-semibold">
-//           Search Customer Appointment Status
-//         </h2>
-
-//         <input
-//           type="text"
-//           placeholder="Search by name or phone..."
-//           value={search}
-//           onChange={(e) => setSearch(e.target.value)}
-//           className="w-full border rounded-lg px-4 py-2"
-//         />
-
-//         {searching && (
-//           <p className="text-sm text-gray-500">Searching...</p>
-//         )}
-
-//         {!searching && searchResults.length === 0 && search.length >= 2 && (
-//           <p className="text-sm text-gray-500">
-//             No appointment records found
-//           </p>
-//         )}
-
-//         {searchResults.length > 0 && (
-//           <div className="overflow-x-auto">
-//             <table className="w-full text-sm border rounded-lg">
-//               <thead className="bg-gray-100">
-//                 <tr>
-//                   <th className="p-3 text-left">Name</th>
-//                   <th className="p-3 text-left">Phone</th>
-//                   <th className="p-3 text-left">Service</th>
-//                   <th className="p-3 text-left">Date</th>
-//                   <th className="p-3 text-left">Status</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {searchResults.map((r) => (
-//                   <tr key={r._id} className="border-b">
-//                     <td className="p-3">{r.fullName}</td>
-//                     <td className="p-3">{r.phone}</td>
-//                     <td className="p-3">{r.serviceName || "-"}</td>
-//                     <td className="p-3">
-//                       {r.appointmentDate
-//                         ? new Date(r.appointmentDate).toLocaleDateString()
-//                         : "-"}
-//                     </td>
-//                     <td className="p-3">
-//                       <span
-//                         className={`px-3 py-1 rounded-full text-xs font-semibold
-//                           ${
-//                             r.appointmentStatus === "PENDING"
-//                               ? "bg-yellow-100 text-yellow-800"
-//                               : r.appointmentStatus === "APPROVED"
-//                               ? "bg-blue-100 text-blue-800"
-//                               : r.appointmentStatus === "COMPLETED"
-//                               ? "bg-green-100 text-green-800"
-//                               : r.appointmentStatus === "REJECTED"
-//                               ? "bg-red-100 text-red-800"
-//                               : "bg-gray-100 text-gray-600"
-//                           }`}
-//                       >
-//                         {r.appointmentStatus}
-//                       </span>
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* =================================================
-//           CUSTOMER MODAL
-//       ================================================= */}
-//       <CustomerModal
-//         open={openModal}
-//         initialData={selectedCustomer}
-//         loading={creating || Boolean(updatingId)}
-//         onClose={() => {
-//           setOpenModal(false);
-//           setSelectedCustomer(null);
-//         }}
-//         onSubmit={handleSave}
-//       />
-//     </div>
-//   );
-// }
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  Users,
+  UserPlus,
+  Search,
+  Phone,
+  Mail,
+  Calendar,
+  Edit3,
+  Trash2,
+  Loader2,
+  ChevronRight,
+  TrendingUp,
+  Filter,
+} from "lucide-react";
 
 import {
   fetchCustomers,
@@ -254,7 +28,6 @@ import CustomerModal from "./CustomerModal";
 
 export default function Customers() {
   const dispatch = useDispatch();
-
   const {
     list,
     loading,
@@ -287,7 +60,6 @@ export default function Customers() {
     } else {
       dispatch(createCustomer(data));
     }
-
     setOpenModal(false);
     setSelectedCustomer(null);
   };
@@ -298,31 +70,41 @@ export default function Customers() {
     }
   };
 
-  const stats = useMemo(() => {
-    return {
+  const stats = useMemo(
+    () => ({
       total: list.length,
       male: list.filter((c) => c.gender === "MALE").length,
       female: list.filter((c) => c.gender === "FEMALE").length,
-    };
-  }, [list]);
+    }),
+    [list],
+  );
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-600"></div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+        <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">
+          Syncing Customer Database...
+        </p>
       </div>
     );
-  }
 
   return (
-    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 animate-in fade-in duration-700">
       {/* HEADER */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900">Customers</h1>
-          <p className="text-slate-500">
-            Register, manage and track customer appointments
-          </p>
+      <div className="bg-white border border-slate-200 rounded-[2rem] p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+        <div className="flex items-center gap-5">
+          <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl shadow-inner">
+            <Users size={28} />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight">
+              Customer Directory
+            </h1>
+            <p className="text-slate-500 text-sm font-medium">
+              Manage records and audit client history
+            </p>
+          </div>
         </div>
 
         <button
@@ -330,188 +112,205 @@ export default function Customers() {
             setSelectedCustomer(null);
             setOpenModal(true);
           }}
-          className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:scale-[1.02] transition-all"
+          className="flex items-center gap-2 px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-xl shadow-slate-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all"
         >
-          + Register Customer
+          <UserPlus size={20} /> Register Customer
         </button>
       </div>
 
-      {/* STATS */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-white border rounded-xl p-4">
-          <p className="text-sm text-slate-400">Total Customers</p>
-          <p className="text-2xl font-bold">{stats.total}</p>
-        </div>
-
-        <div className="bg-white border rounded-xl p-4">
-          <p className="text-sm text-slate-400">Male</p>
-          <p className="text-2xl font-bold">{stats.male}</p>
-        </div>
-
-        <div className="bg-white border rounded-xl p-4">
-          <p className="text-sm text-slate-400">Female</p>
-          <p className="text-2xl font-bold">{stats.female}</p>
-        </div>
-      </div>
-
-      {/* CUSTOMER TABLE */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="text-xl font-bold text-slate-900">Customer List</h3>
-
-          <input
-            placeholder="Search customers..."
-            className="border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-100">
-                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase">
-                  Customer
-                </th>
-
-                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase">
-                  Phone
-                </th>
-
-                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase">
-                  Email
-                </th>
-
-                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase text-center">
-                  Gender
-                </th>
-
-                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-50">
-              {list.map((c) => (
-                <tr key={c._id} className="hover:bg-slate-50 transition-colors">
-                  {/* NAME COLUMN */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-bold">
-                        {c.fullName?.charAt(0).toUpperCase()}
-                      </div>
-
-                      <p className="font-semibold text-slate-900">
-                        {c.fullName}
-                      </p>
-                    </div>
-                  </td>
-
-                  {/* PHONE COLUMN */}
-                  <td className="px-6 py-4 text-sm text-slate-700">
-                    {c.phone}
-                  </td>
-
-                  {/* EMAIL COLUMN */}
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {c.email || (
-                      <span className="text-slate-400 italic">No email</span>
-                    )}
-                  </td>
-
-                  {/* GENDER COLUMN */}
-                  <td className="px-6 py-4 text-center">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        c.gender === "MALE"
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-pink-50 text-pink-700"
-                      }`}
-                    >
-                      {c.gender}
-                    </span>
-                  </td>
-
-                  {/* ACTIONS COLUMN */}
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedCustomer(c);
-                          setOpenModal(true);
-                        }}
-                        className="px-3 py-1.5 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-semibold"
-                      >
-                        {updatingId === c._id ? "Updating..." : "Edit"}
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(c._id)}
-                        className="px-3 py-1.5 text-sm bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 font-semibold"
-                      >
-                        {deletingId === c._id ? "Deleting..." : "Delete"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {list.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="p-6 text-center text-slate-500">
-                    No customers found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* SEARCH APPOINTMENTS */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
-        <h2 className="text-xl font-bold">Appointment Lookup</h2>
-
-        <input
-          type="text"
-          placeholder="Search by name or phone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-100"
+      {/* STATS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <QuickStat
+          label="Total Database"
+          value={stats.total}
+          trend="Total Records"
+          color="blue"
         />
+        <QuickStat
+          label="Male Clients"
+          value={stats.male}
+          trend="Demographic"
+          color="indigo"
+        />
+        <QuickStat
+          label="Female Clients"
+          value={stats.female}
+          trend="Demographic"
+          color="emerald"
+        />
+      </div>
 
-        {searching && <p className="text-sm text-gray-500">Searching...</p>}
+      {/* MAIN CONTENT SPLIT */}
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
+        {/* LEFT: CUSTOMER LIST (2/3) */}
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">
+              Active Directory
+            </h3>
+            <div className="p-2 bg-white rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+              <Filter size={16} className="text-slate-500" />
+            </div>
+          </div>
 
-        {searchResults.length > 0 && (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border rounded-lg">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-3 text-left">Name</th>
-                  <th className="p-3 text-left">Phone</th>
-                  <th className="p-3 text-left">Service</th>
-                  <th className="p-3 text-left">Date</th>
-                  <th className="p-3 text-left">Status</th>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-50">
+                  <th className="px-8 py-4 text-[10px] font-black uppercase text-slate-400 tracking-tighter">
+                    Client Identity
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-tighter">
+                    Contact Info
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-tighter text-center">
+                    Gender
+                  </th>
+                  <th className="px-8 py-4 text-[10px] font-black uppercase text-slate-400 tracking-tighter text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
-              <tbody>
-                {searchResults.map((r) => (
-                  <tr key={r._id} className="border-b">
-                    <td className="p-3">{r.fullName}</td>
-                    <td className="p-3">{r.phone}</td>
-                    <td className="p-3">{r.serviceName || "-"}</td>
-                    <td className="p-3">
-                      {r.appointmentDate
-                        ? new Date(r.appointmentDate).toLocaleDateString()
-                        : "-"}
+              <tbody className="divide-y divide-slate-50">
+                {list.map((c) => (
+                  <tr
+                    key={c._id}
+                    className="group hover:bg-slate-50/80 transition-all"
+                  >
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center font-black group-hover:bg-blue-600 group-hover:text-white transition-all">
+                          {c.fullName?.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-700 text-sm">
+                            {c.fullName}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                            ID: {c._id.slice(-6)}
+                          </p>
+                        </div>
+                      </div>
                     </td>
-                    <td className="p-3">{r.appointmentStatus}</td>
+                    <td className="px-6 py-5">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                          <Phone size={12} className="text-slate-300" />{" "}
+                          {c.phone}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                          <Mail size={12} className="text-slate-300" />{" "}
+                          {c.email || "N/A"}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
+                          c.gender === "MALE"
+                            ? "bg-blue-50 text-blue-600 border border-blue-100"
+                            : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        }`}
+                      >
+                        {c.gender}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          onClick={() => {
+                            setSelectedCustomer(c);
+                            setOpenModal(true);
+                          }}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(c._id)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
+        </div>
+
+        {/* RIGHT: LOOKUP TOOL (1/3) */}
+        <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm sticky top-8">
+          <div className="mb-6">
+            <h2 className="text-lg font-black text-slate-800 tracking-tight">
+              Quick Lookup
+            </h2>
+            <p className="text-xs font-medium text-slate-400">
+              Check appointment status by client
+            </p>
+          </div>
+
+          <div className="relative group mb-6">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"
+              size={18}
+            />
+            <input
+              placeholder="Search name or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium text-sm"
+            />
+          </div>
+
+          <div className="space-y-4">
+            {searching && (
+              <div className="flex items-center gap-3 text-blue-600 font-bold text-xs animate-pulse">
+                <Loader2 className="animate-spin" size={14} /> Fetching
+                records...
+              </div>
+            )}
+
+            {searchResults.map((r) => (
+              <div
+                key={r._id}
+                className="p-4 rounded-2xl border border-slate-50 bg-slate-50/50 hover:bg-white hover:border-blue-100 hover:shadow-md transition-all cursor-default group"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <p className="font-bold text-slate-700 text-sm">
+                    {r.fullName}
+                  </p>
+                  <span className="text-[10px] font-black px-2 py-0.5 bg-white rounded-md border border-slate-100 text-blue-600">
+                    {r.appointmentStatus}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                  <div className="flex items-center gap-1">
+                    <Calendar size={12} />{" "}
+                    {r.appointmentDate
+                      ? new Date(r.appointmentDate).toLocaleDateString()
+                      : "No Date"}
+                  </div>
+                  <ChevronRight
+                    size={12}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
+                  <span className="text-slate-600">
+                    {r.serviceName || "Standard"}
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {search.length >= 2 && searchResults.length === 0 && !searching && (
+              <p className="text-center py-8 text-xs font-bold text-slate-300 uppercase tracking-widest">
+                No Matches Found
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       <CustomerModal
@@ -524,6 +323,29 @@ export default function Customers() {
         }}
         onSubmit={handleSave}
       />
+    </div>
+  );
+}
+
+function QuickStat({ label, value, trend, color }) {
+  const isBlue = color === "blue";
+  const isIndigo = color === "indigo";
+  return (
+    <div className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm relative overflow-hidden group">
+      <div
+        className={`absolute top-0 right-0 p-4 transition-transform group-hover:scale-110 ${isBlue ? "text-blue-100" : isIndigo ? "text-indigo-100" : "text-emerald-100"}`}
+      >
+        <TrendingUp size={48} />
+      </div>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">
+        {label}
+      </p>
+      <p className="text-3xl font-black text-slate-800 tracking-tighter relative z-10">
+        {value}
+      </p>
+      <p className="text-[10px] font-bold text-slate-400 mt-2 relative z-10">
+        {trend}
+      </p>
     </div>
   );
 }
