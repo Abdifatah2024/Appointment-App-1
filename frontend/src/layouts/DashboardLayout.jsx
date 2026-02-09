@@ -18,6 +18,7 @@ import {
   LogOut,
   Bell,
   Search,
+  IdCardLanyard,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -102,7 +103,7 @@ export default function DashboardLayout() {
             />
             <NavItem
               to="/dashboard/EmployeeDashboard"
-              icon={<Clock size={20} />}
+              icon={<IdCardLanyard size={20} />}
               label="Employee Dashboard"
             />
           </div>
