@@ -10,8 +10,11 @@ const {
   deleteAppointmentPermanent,
   getAppointmentsByStatus,
   updateAssignedUser,
+  getMyApprovedAppointments,
+  getEmployeeDashboardAnalytics,
 } = require("../controller/Customer/appointment.controller");
 const { getAppointmentDashboard } = require("../controller/Dashboard/appointmentDashboard.controller");
+const { authMiddleware } = require("../middlewares/auth.middleware");
 
 /* ================================
    APPOINTMENT ROUTES
@@ -32,6 +35,20 @@ router.get("/:id", getAppointmentById);
 router.put("/:id/assign-user", updateAssignedUser);
 // UPDATE
 router.put("/:id", updateAppointment);
+router.get(
+  "/my/appointments",
+  authMiddleware,
+  getMyApprovedAppointments
+);
+
+router.get(
+  "/my/dashboard/analytics",
+  authMiddleware,
+  getEmployeeDashboardAnalytics
+);
+
+
+
 
 // SOFT DELETE (CANCEL)
 router.delete("/:id", deleteAppointment);

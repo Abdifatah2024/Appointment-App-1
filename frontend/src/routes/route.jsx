@@ -134,6 +134,7 @@ import AppointmentDashboard from "../Components/Dashboard";
 import PublicRoute from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
+import EmployeeDashboard from "../pages/Employee/EmployeeDashboard";
 
 /* ================================
    FALLBACK PAGE
@@ -180,6 +181,7 @@ const systemRoutes = [
           { path: "create-appointment", element: <CreateAppointment /> },
           { path: "pending-appointments", element: <PendingAppointments /> },
           { path: "approved-appointments", element: <ApprovedAppointments /> },
+          {path: "EmployeeDashboard", element: <EmployeeDashboard />},
         ],
       },
     ],

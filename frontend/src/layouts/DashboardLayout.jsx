@@ -100,6 +100,11 @@ export default function DashboardLayout() {
               icon={<CheckCircle size={20} />}
               label="Approved"
             />
+            <NavItem
+              to="/dashboard/EmployeeDashboard"
+              icon={<Clock size={20} />}
+              label="Employee Dashboard"
+            />
           </div>
         </nav>
 
