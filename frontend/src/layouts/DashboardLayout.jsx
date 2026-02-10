@@ -1,3 +1,4 @@
+
 // import {
 //   Outlet,
 //   NavLink,
@@ -18,6 +19,7 @@
 //   LogOut,
 //   Bell,
 //   Search,
+//   IdCardLanyard,
 // } from "lucide-react";
 
 // export default function DashboardLayout() {
@@ -28,11 +30,15 @@
 //   const { token, user } = useSelector((state) => state.auth);
 
 //   /* =======================
-//      AUTH SAFETY
+//      AUTH GUARD
 //   ======================= */
 //   if (!token || !user) {
 //     return <Navigate to="/" replace />;
 //   }
+
+//   const isAdmin = user.role === "ADMIN" || user.role === "SUPERADMIN";
+//   const isStaff = user.role === "STAFF";
+//   const isUser = user.role === "USER";
 
 //   const handleLogout = () => {
 //     dispatch(logout());
@@ -43,7 +49,7 @@
 //     <div className="min-h-screen flex bg-[#F8FAFC]">
 //       {/* ================= SIDEBAR ================= */}
 //       <aside className="w-72 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen shadow-sm">
-//         {/* Logo */}
+//         {/* LOGO */}
 //         <div className="h-20 flex items-center px-8 gap-3 border-b border-slate-100">
 //           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
 //             <CheckCircle className="text-white" size={24} />
@@ -55,13 +61,15 @@
 
 //         {/* NAVIGATION */}
 //         <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
-//           {/* ================= ADMIN MENU ================= */}
-//           {user.role === "ADMIN" && (
+
+//           {/* ================= ADMIN ================= */}
+//           {isAdmin && (
 //             <>
 //               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
 //                 Management
 //               </p>
 
+// <<<<<<< HEAD
 //               <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" />
 //               <NavItem to="/dashboard/users" icon={<Users />} label="Users" />
 //               <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
@@ -71,39 +79,70 @@
 //                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
 //                   Appointments
 //                 </p>
-//                 <NavItem
-//                   to="/dashboard/create-appointment"
-//                   icon={<PlusCircle />}
-//                   label="New Booking"
-//                 />
-//                 <NavItem
-//                   to="/dashboard/pending-appointments"
-//                   icon={<Clock />}
-//                   label="Pending"
-//                 />
-//                 <NavItem
-//                   to="/dashboard/approved-appointments"
-//                   icon={<CheckCircle />}
-//                   label="Approved"
-//                 />
+//                 <NavItem to="/dashboard/create-appointment" icon={<PlusCircle />} label="New Booking" />
+//                 <NavItem to="/dashboard/pending-appointments" icon={<Clock />} label="Pending" />
+//                 <NavItem to="/dashboard/approved-appointments" icon={<CheckCircle />} label="Approved" />
+//               </div>
+
+//               <div className="pt-6">
+//                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
+//                   My Area
+//                 </p>
+//                 <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
 //               </div>
 //             </>
 //           )}
 
-//           {/* ================= USER MENU ================= */}
-//           {user.role === "USER" && (
+//           {/* ================= STAFF ================= */}
+//           {isStaff && (
+//             <>
+//               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
+//                 Staff Area
+//               </p>
+
+//               <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
+//               <NavItem to="/dashboard/create-appointment" icon={<PlusCircle />} label="New Booking" />
+        
+//             </>
+//           )}
+
+//           {/* ================= USER ================= */}
+//           {isUser && (
 //             <>
 //               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
 //                 My Area
 //               </p>
 
-//               <NavItem
-//                 to="/dashboard/employee"
-//                 icon={<Clock />}
-//                 label="My Dashboard"
-//               />
+//               <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
 //             </>
 //           )}
+// =======
+//           <div className="pt-6">
+//             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
+//               Appointments
+//             </p>
+//             <NavItem
+//               to="/dashboard/create-appointment"
+//               icon={<PlusCircle size={20} />}
+//               label="New Booking"
+//             />
+//             <NavItem
+//               to="/dashboard/pending-appointments"
+//               icon={<Clock size={20} />}
+//               label="Pending"
+//             />
+//             <NavItem
+//               to="/dashboard/approved-appointments"
+//               icon={<CheckCircle size={20} />}
+//               label="Approved"
+//             />
+//             <NavItem
+//               to="/dashboard/EmployeeDashboard"
+//               icon={<IdCardLanyard size={20} />}
+//               label="Employee Dashboard"
+//             />
+//           </div>
+// >>>>>>> 5fe4e196f48ff940d2dc37e60cb7ec069af0a212
 //         </nav>
 
 //         {/* FOOTER */}
@@ -249,89 +288,57 @@ export default function DashboardLayout() {
         </div>
 
         {/* NAVIGATION */}
-        <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-6 space-y-6 overflow-y-auto">
 
-          {/* ================= ADMIN ================= */}
+          {/* ================= ADMIN / SUPERADMIN ================= */}
           {isAdmin && (
             <>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                Management
-              </p>
+              <Section title="Management">
+                <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" />
+                <NavItem to="/dashboard/users" icon={<Users />} label="Users" />
+                <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
+                <NavItem to="/dashboard/services" icon={<Wrench />} label="Services" />
+              </Section>
 
-<<<<<<< HEAD
-              <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" />
-              <NavItem to="/dashboard/users" icon={<Users />} label="Users" />
-              <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
-              <NavItem to="/dashboard/services" icon={<Wrench />} label="Services" />
-
-              <div className="pt-6">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                  Appointments
-                </p>
+              <Section title="Appointments">
                 <NavItem to="/dashboard/create-appointment" icon={<PlusCircle />} label="New Booking" />
                 <NavItem to="/dashboard/pending-appointments" icon={<Clock />} label="Pending" />
                 <NavItem to="/dashboard/approved-appointments" icon={<CheckCircle />} label="Approved" />
-              </div>
+              </Section>
 
-              <div className="pt-6">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                  My Area
-                </p>
-                <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
-              </div>
+              <Section title="Staff">
+                <NavItem
+                  to="/dashboard/EmployeeDashboard"
+                  icon={<IdCardLanyard />}
+                  label="Employee Dashboard"
+                />
+              </Section>
             </>
           )}
 
           {/* ================= STAFF ================= */}
           {isStaff && (
-            <>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                Staff Area
-              </p>
-
+            <Section title="Staff Area">
               <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
               <NavItem to="/dashboard/create-appointment" icon={<PlusCircle />} label="New Booking" />
-        
-            </>
+              <NavItem
+                to="/dashboard/EmployeeDashboard"
+                icon={<IdCardLanyard />}
+                label="My Dashboard"
+              />
+            </Section>
           )}
 
           {/* ================= USER ================= */}
           {isUser && (
-            <>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                My Area
-              </p>
-
-              <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
-            </>
+            <Section title="My Area">
+              <NavItem
+                to="/dashboard/employee"
+                icon={<Clock />}
+                label="My Dashboard"
+              />
+            </Section>
           )}
-=======
-          <div className="pt-6">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-              Appointments
-            </p>
-            <NavItem
-              to="/dashboard/create-appointment"
-              icon={<PlusCircle size={20} />}
-              label="New Booking"
-            />
-            <NavItem
-              to="/dashboard/pending-appointments"
-              icon={<Clock size={20} />}
-              label="Pending"
-            />
-            <NavItem
-              to="/dashboard/approved-appointments"
-              icon={<CheckCircle size={20} />}
-              label="Approved"
-            />
-            <NavItem
-              to="/dashboard/EmployeeDashboard"
-              icon={<IdCardLanyard size={20} />}
-              label="Employee Dashboard"
-            />
-          </div>
->>>>>>> 5fe4e196f48ff940d2dc37e60cb7ec069af0a212
         </nav>
 
         {/* FOOTER */}
@@ -394,8 +401,19 @@ export default function DashboardLayout() {
 }
 
 /* =========================
-    NAV ITEM
+    HELPERS
 ========================= */
+function Section({ title, children }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
+        {title}
+      </p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
 function NavItem({ to, label, icon }) {
   return (
     <NavLink
@@ -415,6 +433,7 @@ function NavItem({ to, label, icon }) {
     </NavLink>
   );
 }
+
 
 
 
