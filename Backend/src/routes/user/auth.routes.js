@@ -5,6 +5,7 @@ const {
   authMiddleware,
   isAdmin,
 } = require("../../middlewares/auth.middleware");
+const { getMe } = require("../../controller/User/user.controller");
 
 
 
@@ -33,6 +34,7 @@ router.get(
 );
 
 router.put("/complete-profile/:id", completeProfile);
+router.get("/me", authMiddleware, getMe);
 
 
 module.exports = router;
