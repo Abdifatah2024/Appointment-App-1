@@ -109,140 +109,112 @@ export default function ServiceModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 space-y-8">
-          {/* CORE INFO SECTION */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-1.5">
-                <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                  Service Name
-                </label>
-                <input
-                  name="name"
-                  required
-                  placeholder="e.g. Visa Processing"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-700"
-                />
-              </div>
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+  {/* CORE INFO SECTION */}
+  <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-1">
+        <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+          Service Name
+        </label>
+        <input
+          name="name"
+          required
+          placeholder="e.g. Visa Processing"
+          value={form.name}
+          onChange={handleChange}
+          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 outline-none focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 transition-all font-medium text-slate-700"
+        />
+      </div>
 
-              <div className="space-y-1.5">
-                <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                  Internal Code
-                </label>
-                <input
-                  name="code"
-                  required
-                  placeholder="VP-001"
-                  value={form.code}
-                  onChange={handleChange}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-emerald-500 transition-all font-mono font-bold text-emerald-600 uppercase"
-                />
-              </div>
-            </div>
+      <div className="space-y-1">
+        <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+          Internal Code
+        </label>
+        <input
+          name="code"
+          required
+          placeholder="VP-001"
+          value={form.code}
+          onChange={handleChange}
+          className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 outline-none focus:bg-white focus:border-emerald-500 transition-all font-mono font-bold text-emerald-600 uppercase"
+        />
+      </div>
+    </div>
 
-            <div className="space-y-1.5">
-              <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <FileText size={12} /> Brief Description
-              </label>
-              <textarea
-                name="description"
-                placeholder="Describe the service requirements and process..."
-                value={form.description}
-                onChange={handleChange}
-                rows="2"
-                className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 outline-none focus:bg-white focus:border-emerald-500 transition-all font-medium text-slate-600 resize-none"
-              />
-            </div>
-          </div>
+    <div className="space-y-1">
+      <label className="ml-1 text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <FileText size={12} /> Brief Description
+      </label>
+      <textarea
+        name="description"
+        placeholder="Describe the service requirements and process..."
+        value={form.description}
+        onChange={handleChange}
+        rows="1"
+        className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 outline-none focus:bg-white focus:border-emerald-500 transition-all font-medium text-slate-600 resize-none"
+      />
+    </div>
+  </div>
 
-          {/* CONFIGURATION GRID */}
-          <div className="bg-slate-50/50 rounded-[2rem] p-6 border border-slate-100">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2 px-2">
-              <Settings size={12} /> Service Parameters
-            </h4>
+  {/* CONFIGURATION GRID */}
+  <div className="bg-slate-50/50 rounded-[2rem] p-5 border border-slate-100">
+    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 px-2">
+      <Settings size={12} /> Service Parameters
+    </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-              <ToggleOption
-                label="Requires Identity"
-                name="requiresIdentity"
-                checked={form.requiresIdentity}
-                onChange={handleChange}
-              />
-              <ToggleOption
-                label="Requires Documents"
-                name="requiresDocuments"
-                checked={form.requiresDocuments}
-                onChange={handleChange}
-              />
-              <ToggleOption
-                label="Passport Required"
-                name="requiresPassport"
-                checked={form.requiresPassport}
-                onChange={handleChange}
-              />
-              <ToggleOption
-                label="Manual Approval"
-                name="approvalRequired"
-                checked={form.approvalRequired}
-                onChange={handleChange}
-              />
-              <ToggleOption
-                label="Status: Active"
-                name="isActive"
-                checked={form.isActive}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+      <ToggleOption label="Requires Identity" name="requiresIdentity" checked={form.requiresIdentity} onChange={handleChange} />
+      <ToggleOption label="Requires Documents" name="requiresDocuments" checked={form.requiresDocuments} onChange={handleChange} />
+      <ToggleOption label="Passport Required" name="requiresPassport" checked={form.requiresPassport} onChange={handleChange} />
+      <ToggleOption label="Manual Approval" name="approvalRequired" checked={form.approvalRequired} onChange={handleChange} />
+      <ToggleOption label="Status: Active" name="isActive" checked={form.isActive} onChange={handleChange} />
+    </div>
+  </div>
 
-          {/* CAPACITY SECTION */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center ml-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <Users size={12} /> Daily Quota
-              </label>
-              <span className="text-[10px] font-bold text-emerald-500 italic">
-                0 = No limit
-              </span>
-            </div>
-            <input
-              type="number"
-              name="maxCustomersPerDay"
-              min="0"
-              value={form.maxCustomersPerDay}
-              onChange={handleChange}
-              className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 outline-none focus:bg-white focus:border-emerald-500 transition-all font-bold text-slate-700"
-            />
-          </div>
+  {/* CAPACITY SECTION */}
+  <div className="space-y-1">
+    <div className="flex justify-between items-center ml-1">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <Users size={12} /> Daily Quota
+      </label>
+      <span className="text-[10px] font-bold text-emerald-500 italic">
+        0 = No limit
+      </span>
+    </div>
+    <input
+      type="number"
+      name="maxCustomersPerDay"
+      min="0"
+      value={form.maxCustomersPerDay}
+      onChange={handleChange}
+      className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 outline-none focus:bg-white focus:border-emerald-500 transition-all font-bold text-slate-700"
+    />
+  </div>
 
-          {/* FOOTER */}
-          <div className="flex items-center gap-4 pt-4 border-t border-slate-50">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-4 border border-slate-100 text-slate-400 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-colors"
-            >
-              Discard
-            </button>
+  {/* FOOTER */}
+  <div className="flex items-center gap-4 pt-3 border-t border-slate-50">
+    <button
+      type="button"
+      onClick={onClose}
+      className="flex-1 px-4 py-3 border border-slate-100 text-slate-400 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-colors"
+    >
+      Discard
+    </button>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-[2] bg-slate-900 hover:bg-black text-white px-4 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-            >
-              {loading ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <>
-                  {initialData ? "Save Changes" : "Register Service"}
-                  <Check size={18} />
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+    <button
+      type="submit"
+      disabled={loading}
+      className="flex-[2] bg-slate-900 hover:bg-black text-white px-4 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+    >
+      {loading ? <Loader2 className="animate-spin" size={18} /> : <>
+        {initialData ? "Save Changes" : "Register Service"}
+        <Check size={18} />
+      </>}
+    </button>
+  </div>
+</form>
+
       </div>
     </div>
   );
