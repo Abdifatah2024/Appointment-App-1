@@ -208,6 +208,7 @@ import {
   LogOut,
   Bell,
   Search,
+  IdCardLanyard,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -257,6 +258,7 @@ export default function DashboardLayout() {
                 Management
               </p>
 
+<<<<<<< HEAD
               <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" />
               <NavItem to="/dashboard/users" icon={<Users />} label="Users" />
               <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
@@ -303,6 +305,33 @@ export default function DashboardLayout() {
               <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
             </>
           )}
+=======
+          <div className="pt-6">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
+              Appointments
+            </p>
+            <NavItem
+              to="/dashboard/create-appointment"
+              icon={<PlusCircle size={20} />}
+              label="New Booking"
+            />
+            <NavItem
+              to="/dashboard/pending-appointments"
+              icon={<Clock size={20} />}
+              label="Pending"
+            />
+            <NavItem
+              to="/dashboard/approved-appointments"
+              icon={<CheckCircle size={20} />}
+              label="Approved"
+            />
+            <NavItem
+              to="/dashboard/EmployeeDashboard"
+              icon={<IdCardLanyard size={20} />}
+              label="Employee Dashboard"
+            />
+          </div>
+>>>>>>> 5fe4e196f48ff940d2dc37e60cb7ec069af0a212
         </nav>
 
         {/* FOOTER */}
