@@ -94,7 +94,7 @@ export default function CustomerModal({
             <input
               name="fullName"
               required
-              placeholder="e.g. John Doe"
+              placeholder="Magaca Macamiilka oo dhameystiran"
               value={form.fullName}
               onChange={handleChange}
               className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium text-slate-700"
@@ -112,7 +112,7 @@ export default function CustomerModal({
                 name="phone"
                 required
                 type="tel"
-                placeholder="+1 (555) 000-0000"
+                placeholder="+25263xxxxxx"
                 value={form.phone}
                 onChange={handleChange}
                 className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium text-slate-700 font-mono"
@@ -127,7 +127,7 @@ export default function CustomerModal({
               <input
                 name="email"
                 type="email"
-                placeholder="optional@example.com"
+                placeholder="Tijaabo@gmail.com"
                 value={form.email}
                 onChange={handleChange}
                 className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium text-slate-700"

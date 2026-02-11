@@ -1,4 +1,6 @@
 const Customer = require("../../model/Customer");
+const Appointment = require("../../model/Appointment");
+
 
 /* =========================
    CREATE CUSTOMER
@@ -182,13 +184,54 @@ exports.updateCustomer = async (req, res) => {
 /* =========================
    SOFT DELETE CUSTOMER
 ========================= */
+// exports.deleteCustomer = async (req, res) => {
+//   try {
+//     const customer = await Customer.findByIdAndUpdate(
+//       req.params.id,
+//       { isActive: false },
+//       { new: true }
+//     );
+
+//     if (!customer) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Customer not found",
+//       });
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "Customer deactivated successfully",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to deactivate customer",
+//     });
+//   }
+// };
+
+
+
 exports.deleteCustomer = async (req, res) => {
   try {
-    const customer = await Customer.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { new: true }
-    );
+    const customerId = req.params.id;
+
+    // 🔍 Check if customer has any appointments
+    const hasAppointments = await Appointment.exists({
+      customerId: customerId,
+    });
+
+    if (hasAppointments) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Customer cannot be deleted because they have existing appointments",
+      });
+    }
+
+    // 🗑️ Permanent delete (HARD DELETE)
+    const customer = await Customer.findByIdAndDelete(customerId);
 
     if (!customer) {
       return res.status(404).json({
@@ -197,14 +240,14 @@ exports.deleteCustomer = async (req, res) => {
       });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: "Customer deactivated successfully",
+      message: "Customer deleted permanently",
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to deactivate customer",
+      message: error.message || "Failed to delete customer",
     });
   }
 };
@@ -284,7 +327,6 @@ exports.searchCustomers = async (req, res) => {
   }
 };
 
-const Appointment = require("../../model/Appointment")
 
 /* =========================
    SEARCH CUSTOMER
