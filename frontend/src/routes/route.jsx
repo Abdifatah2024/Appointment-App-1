@@ -1,174 +1,40 @@
-// // import React from "react";
-
-// // import Login from "../pages/user/Login";
-// // import Users from "../pages/user/Users";
-// // import Customers from "../pages/customer/Customers";
-// // import Services from "../pages/Service/Services";
-// // import CreateAppointment from "../pages/customer/CreateAppointment";
-// // import PendingAppointments from "../pages/customer/PendingAppointments";
-// // import ApprovedAppointments from "../pages/customer/AprovedAppointments";
-// // import AppointmentDashboard from "../Components/Dashboard";
-
-// // import PublicRoute from "./PublicRoute";
-// // import ProtectedRoute from "./ProtectedRoute";
-// // import DashboardLayout from "../layouts/DashboardLayout";
-// // import EmployeeDashboard from "../pages/Employee/EmployeeDashboard";
-
-// // /* ================================
-// //    FALLBACK PAGE
-// // ================================ */
-// // const NotFound = () => (
-// //   <div className="min-h-screen flex items-center justify-center text-xl font-semibold">
-// //     404 - Page Not Found
-// //   </div>
-// // );
-
-// // /* ================================
-// //    ROUTES CONFIG
-// // ================================ */
-// // const systemRoutes = [
-// //   /* ---------- PUBLIC ---------- */
-// //   {
-// //     element: <PublicRoute />,
-// //     children: [
-// //       {
-// //         path: "/",
-// //         element: <Login />,
-// //       },
-// //     ],
-// //   },
-
-// //   /* ---------- PROTECTED ---------- */
-// //   {
-// //     element: <ProtectedRoute />,
-// //     children: [
-// //       {
-// //         path: "/dashboard",
-// //         element: <DashboardLayout />,
-// //         children: [
-// //           /* ✅ DEFAULT DASHBOARD */
-// //           {
-// //             index: true,
-// //             element: <AppointmentDashboard />,
-// //           },
-
-// //           /* OTHER PAGES */
-// //           { path: "users", element: <Users /> },
-// //           { path: "customers", element: <Customers /> },
-// //           { path: "services", element: <Services /> },
-// //           { path: "create-appointment", element: <CreateAppointment /> },
-// //           { path: "pending-appointments", element: <PendingAppointments /> },
-// //           { path: "approved-appointments", element: <ApprovedAppointments /> },
-// //           {path: "EmployeeDashboard", element: <EmployeeDashboard />},
-// //         ],
-// //       },
-// //     ],
-// //   },
-
-// //   /* ---------- FALLBACK ---------- */
-// //   {
-// //     path: "*",
-// //     element: <NotFound />,
-// //   },
-// // ];
-
-// // export default systemRoutes;
-// import React from "react";
-
-// import Login from "../pages/user/Login";
-// import Users from "../pages/user/Users";
-// import Customers from "../pages/customer/Customers";
-// import Services from "../pages/Service/Services";
-// import CreateAppointment from "../pages/customer/CreateAppointment";
-// import PendingAppointments from "../pages/customer/PendingAppointments";
-// import ApprovedAppointments from "../pages/customer/AprovedAppointments";
-// import AppointmentDashboard from "../Components/Dashboard";
-// import EmployeeDashboard from "../pages/Employee/EmployeeDashboard";
-
-// import PublicRoute from "./PublicRoute";
-// import ProtectedRoute from "./ProtectedRoute";
-// import DashboardLayout from "../layouts/DashboardLayout";
-
-// /* ================================
-//    FALLBACK
-// ================================ */
-// const NotFound = () => (
-//   <div className="min-h-screen flex items-center justify-center text-xl font-semibold">
-//     404 - Page Not Found
-//   </div>
-// );
-
-// const systemRoutes = [
-//   /* ---------- PUBLIC ---------- */
-//   {
-//     element: <PublicRoute />,
-//     children: [
-//       { path: "/", element: <Login /> },
-//     ],
-//   },
-
-//   /* ---------- ADMIN ---------- */
-//   {
-//     element: <ProtectedRoute allowedRoles={["ADMIN"]} />,
-//     children: [
-//       {
-//         path: "/dashboard",
-//         element: <DashboardLayout />,
-//         children: [
-//           { index: true, element: <AppointmentDashboard /> },
-//           { path: "users", element: <Users /> },
-//           { path: "customers", element: <Customers /> },
-//           { path: "services", element: <Services /> },
-//           { path: "create-appointment", element: <CreateAppointment /> },
-//           { path: "pending-appointments", element: <PendingAppointments /> },
-//           { path: "approved-appointments", element: <ApprovedAppointments /> },
-//         ],
-//       },
-//     ],
-//   },
-
-//   /* ---------- USER ---------- */
-//   {
-//     element: <ProtectedRoute allowedRoles={["USER"]} />,
-//     children: [
-//       {
-//         path: "/dashboard/employee",
-//         element: <DashboardLayout />,
-//         children: [{ index: true, element: <EmployeeDashboard /> }],
-//       },
-//     ],
-//   },
-
-//   /* ---------- FALLBACK ---------- */
-//   { path: "*", element: <NotFound /> },
-// ];
-
-// export default systemRoutes;
 import React from "react";
 
+/* ================= PAGES ================= */
 import Login from "../pages/user/Login";
 import Users from "../pages/user/Users";
 import Customers from "../pages/customer/Customers";
 import Services from "../pages/Service/Services";
 import CreateAppointment from "../pages/customer/CreateAppointment";
 import PendingAppointments from "../pages/customer/PendingAppointments";
+
+// ⚠️ Hubi magaca file-ka: AprovedAppointments vs ApprovedAppointments
 import ApprovedAppointments from "../pages/customer/AprovedAppointments";
+
+import CompletedAppointments from "../pages/customer/CompletedAppointments";
+
 import AppointmentDashboard from "../Components/Dashboard";
 import EmployeeDashboard from "../pages/Employee/EmployeeDashboard";
 
+/* ================= ROUTE GUARDS ================= */
 import PublicRoute from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
 
-/* ================================
-   FALLBACK
-================================ */
+/* ================= FALLBACK ================= */
 const NotFound = () => (
   <div className="min-h-screen flex items-center justify-center text-xl font-semibold">
-    404 - Page Not Found
+    404 - Page Not Found (Page-kan lama helin)
   </div>
 );
 
+const Unauthorized = () => (
+  <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">
+    You are not authorized to view this page
+  </div>
+);
+
+/* ================= ROUTES ================= */
 const systemRoutes = [
   /* ---------- PUBLIC ---------- */
   {
@@ -176,7 +42,7 @@ const systemRoutes = [
     children: [{ path: "/", element: <Login /> }],
   },
 
-  /* ---------- DASHBOARD (ADMIN + STAFF) ---------- */
+  /* ---------- ADMIN + STAFF DASHBOARD ---------- */
   {
     element: <ProtectedRoute allowedRoles={["ADMIN", "STAFF"]} />,
     children: [
@@ -186,10 +52,9 @@ const systemRoutes = [
         children: [
           { index: true, element: <AppointmentDashboard /> },
 
-          /* SHARED (ADMIN + STAFF) */
+          /* SHARED */
           { path: "customers", element: <Customers /> },
           { path: "create-appointment", element: <CreateAppointment /> },
-     
 
           /* ADMIN ONLY */
           {
@@ -197,8 +62,11 @@ const systemRoutes = [
             children: [
               { path: "users", element: <Users /> },
               { path: "services", element: <Services /> },
-                   { path: "pending-appointments", element: <PendingAppointments /> },
-          { path: "approved-appointments", element: <ApprovedAppointments /> },
+              { path: "pending-appointments", element: <PendingAppointments /> },
+              { path: "approved-appointments", element: <ApprovedAppointments /> },
+
+              // ✅ NEW: COMPLETED
+              { path: "completed-appointments", element: <CompletedAppointments /> },
             ],
           },
         ],
@@ -206,9 +74,9 @@ const systemRoutes = [
     ],
   },
 
-  /* ---------- USER (EMPLOYEE) ---------- */
+  /* ---------- EMPLOYEE ---------- */
   {
-    element: <ProtectedRoute allowedRoles={["USER"]} />,
+    element: <ProtectedRoute allowedRoles={["USER", "ADMIN"]} />,
     children: [
       {
         path: "/dashboard/employee",
@@ -218,11 +86,11 @@ const systemRoutes = [
     ],
   },
 
+  /* ---------- UNAUTHORIZED ---------- */
+  { path: "/unauthorized", element: <Unauthorized /> },
+
   /* ---------- FALLBACK ---------- */
   { path: "*", element: <NotFound /> },
 ];
 
 export default systemRoutes;
-
-
-

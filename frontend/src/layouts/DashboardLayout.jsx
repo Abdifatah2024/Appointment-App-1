@@ -1,10 +1,6 @@
-// import {
-//   Outlet,
-//   NavLink,
-//   useLocation,
-//   useNavigate,
-//   Navigate,
-// } from "react-router-dom";
+// kii hore e nivegationka so saaraya
+
+// import { Outlet, NavLink, useLocation, useNavigate, Navigate } from "react-router-dom";
 // import { useDispatch, useSelector } from "react-redux";
 // import { logout } from "../Redux/slices/userSlices/authSlice";
 // import {
@@ -18,96 +14,467 @@
 //   LogOut,
 //   Bell,
 //   Search,
+//   IdCardLanyard,
+//   Menu,
+//   X,
 // } from "lucide-react";
+
+// import axios from "axios";
+// import { useEffect, useMemo, useState, useCallback } from "react";
+
+// const SEEN_KEY = "appointment_app_seen_counts_v1";
+
+// /* =========================
+//   LocalStorage helpers
+// ========================= */
+// function readSeen() {
+//   try {
+//     const raw = localStorage.getItem(SEEN_KEY);
+//     if (!raw) return {};
+//     const obj = JSON.parse(raw);
+//     return obj && typeof obj === "object" ? obj : {};
+//   } catch {
+//     return {};
+//   }
+// }
+// function writeSeen(obj) {
+//   try {
+//     localStorage.setItem(SEEN_KEY, JSON.stringify(obj));
+//   } catch {}
+// }
+
+// /* =========================
+//   Time ago helper (Just now / 2m ago)
+// ========================= */
+// function timeAgo(input) {
+//   if (!input) return "Just now";
+//   if (typeof input === "string" && /ago|just now/i.test(input)) return input;
+
+//   const d = new Date(input);
+//   if (Number.isNaN(d.getTime())) return "Just now";
+
+//   const diffMs = Date.now() - d.getTime();
+//   const sec = Math.floor(diffMs / 1000);
+
+//   if (sec < 10) return "Just now";
+//   if (sec < 60) return `${sec}s ago`;
+
+//   const min = Math.floor(sec / 60);
+//   if (min < 60) return `${min}m ago`;
+
+//   const hr = Math.floor(min / 60);
+//   if (hr < 24) return `${hr}h ago`;
+
+//   const day = Math.floor(hr / 24);
+//   return `${day}d ago`;
+// }
+
+// /* =========================
+//   Notification text mapping
+// ========================= */
+// function defaultTitle(status) {
+//   switch ((status || "").toUpperCase()) {
+//     case "PENDING":
+//       return "New pending appointment";
+//     case "APPROVED":
+//       return "Appointment approved";
+//     case "COMPLETED":
+//       return "Appointment completed";
+//     case "NO_SHOW":
+//       return "Customer did not attend";
+//     case "REJECTED":
+//       return "Appointment rejected";
+//     case "CUSTOMERS":
+//       return "New customer added";
+//     case "BOOKINGS":
+//       return "New booking created";
+//     case "SERVICES":
+//       return "Service provided";
+//     default:
+//       return "New update";
+//   }
+// }
+
+// function defaultDesc(status) {
+//   switch ((status || "").toUpperCase()) {
+//     case "PENDING":
+//       return "Appointment cusub ayaa yimid oo pending ah.";
+//     case "APPROVED":
+//       return "Mid ka mid ah appointments waa la approved gareeyay.";
+//     case "COMPLETED":
+//       return "Appointment ayaa la completed gareeyay.";
+//     case "NO_SHOW":
+//       return "Customer-ku ma iman ballantii (No show).";
+//     case "REJECTED":
+//       return "Appointment-ka waa la diiday (Rejected).";
+//     case "CUSTOMERS":
+//       return "Customer cusub ayaa la diiwaan geliyay.";
+//     case "BOOKINGS":
+//       return "Booking cusub ayaa la sameeyay.";
+//     case "SERVICES":
+//       return "Customer ayaa service la siiyay.";
+//     default:
+//       return "Update cusub ayaa yimid.";
+//   }
+// }
+
+// function defaultTo(status) {
+//   switch ((status || "").toUpperCase()) {
+//     case "PENDING":
+//       return "/dashboard/pending-appointments";
+//     case "APPROVED":
+//       return "/dashboard/approved-appointments";
+//     case "COMPLETED":
+//       return "/dashboard/completed-appointments";
+//     case "NO_SHOW":
+//       // haddii aad page gaar ah u leedahay, beddel halkan
+//       return "/dashboard/approved-appointments";
+//     case "REJECTED":
+//       return "/dashboard/approved-appointments";
+//     case "CUSTOMERS":
+//       return "/dashboard/customers";
+//     case "BOOKINGS":
+//       return "/dashboard/create-appointment";
+//     case "SERVICES":
+//       return "/dashboard/services";
+//     default:
+//       return "/dashboard";
+//   }
+// }
 
 // export default function DashboardLayout() {
 //   const dispatch = useDispatch();
 //   const navigate = useNavigate();
 //   const location = useLocation();
 
-//   const { token, user } = useSelector((state) => state.auth);
+//   const { token, user, loading } = useSelector((state) => state.auth);
 
-//   /* =======================
-//      AUTH SAFETY
-//   ======================= */
-//   if (!token || !user) {
-//     return <Navigate to="/" replace />;
-//   }
+//   const API_BASE =
+//     import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:4000";
+
+//   /* ✅ Hooks MUST be before any return */
+//   const [mobileOpen, setMobileOpen] = useState(false);
+//   const [notifOpen, setNotifOpen] = useState(false);
+
+//   /* =========================
+//     Counts from backend
+//   ========================= */
+//   const [serverCounts, setServerCounts] = useState({
+//     PENDING: 0,
+//     APPROVED: 0,
+//     COMPLETED: 0,
+//     CUSTOMERS: 0,
+//     BOOKINGS: 0,
+//     SERVICES: 0,
+//   });
+
+//   /* =========================
+//     Seen counts (local)
+//   ========================= */
+//   const [seenCounts, setSeenCounts] = useState(() => readSeen());
+
+//   /* =========================
+//     Dropdown updates
+//   ========================= */
+//   const [notifications, setNotifications] = useState([]);
+
+//   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+//   const isStaff = user?.role === "STAFF";
+//   const isUser = user?.role === "USER";
+
+//   /* =========================
+//     Fetch helpers (callback)
+//   ========================= */
+//   const fetchCounts = useCallback(async () => {
+//     try {
+//       const { data } = await axios.get(`${API_BASE}/api/dashboard/counts`, {
+//         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+//       });
+
+//       if (data?.success && data?.data) {
+//         setServerCounts((prev) => ({
+//           ...prev,
+//           PENDING: Number(data.data.PENDING || 0),
+//           APPROVED: Number(data.data.APPROVED || 0),
+//           COMPLETED: Number(data.data.COMPLETED || 0),
+//         }));
+//       }
+//     } catch (err) {
+//       console.log("Counts error:", err?.response?.data || err?.message);
+//     }
+//   }, [API_BASE, token]);
+
+//   const fetchUpdates = useCallback(async () => {
+//     try {
+//       const { data } = await axios.get(`${API_BASE}/api/dashboard/updates`, {
+//         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+//       });
+
+//       const arr = Array.isArray(data?.data)
+//         ? data.data
+//         : Array.isArray(data)
+//         ? data
+//         : [];
+
+//       const normalized = arr.map((n, idx) => {
+//         const status = (n.status || n.type || "").toUpperCase() || "PENDING";
+//         const createdAt = n.createdAt || n.updatedAt || n.time || n.date;
+//         return {
+//           id: n.id || n._id || `${status}-${idx}`,
+//           status,
+//           title: n.title || defaultTitle(status),
+//           desc: n.desc || n.message || defaultDesc(status),
+//           time: timeAgo(createdAt),
+//           to: n.to || n.link || defaultTo(status),
+//         };
+//       });
+
+//       setNotifications(normalized);
+//     } catch {
+//       setNotifications([]);
+//     }
+//   }, [API_BASE, token]);
+
+//   /* =========================
+//     Unread = max(server - seen, 0)
+//   ========================= */
+//   const unreadCounts = useMemo(() => {
+//     const keys = ["PENDING", "APPROVED", "COMPLETED", "CUSTOMERS", "BOOKINGS", "SERVICES"];
+//     const out = {};
+//     for (const k of keys) {
+//       const s = Number(serverCounts[k] || 0);
+//       const seen = Number(seenCounts[k] || 0);
+//       out[k] = Math.max(s - seen, 0);
+//     }
+//     return out;
+//   }, [serverCounts, seenCounts]);
+
+//   const totalUnread = useMemo(() => {
+//     return (
+//       (unreadCounts.PENDING || 0) +
+//       (unreadCounts.APPROVED || 0) +
+//       (unreadCounts.COMPLETED || 0) +
+//       (unreadCounts.CUSTOMERS || 0) +
+//       (unreadCounts.BOOKINGS || 0) +
+//       (unreadCounts.SERVICES || 0)
+//     );
+//   }, [unreadCounts]);
+
+//   /* =========================
+//     Mark as seen helper
+//   ========================= */
+//   const markSeen = (key) => {
+//     setSeenCounts((prev) => {
+//       const next = { ...prev, [key]: Number(serverCounts[key] || 0) };
+//       writeSeen(next);
+//       return next;
+//     });
+//   };
+
+//   /* =========================
+//     Auto mark as seen when user visits page
+//   ========================= */
+//   useEffect(() => {
+//     const path = location.pathname;
+
+//     const matchAndMark = (key, match) => {
+//       if (path.includes(match)) markSeen(key);
+//     };
+
+//     matchAndMark("PENDING", "/dashboard/pending-appointments");
+//     matchAndMark("APPROVED", "/dashboard/approved-appointments");
+//     matchAndMark("COMPLETED", "/dashboard/completed-appointments");
+
+//     matchAndMark("CUSTOMERS", "/dashboard/customers");
+//     matchAndMark("BOOKINGS", "/dashboard/create-appointment");
+//     matchAndMark("SERVICES", "/dashboard/services");
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [location.pathname, serverCounts]);
+
+//   /* =========================
+//     ✅ Fetch on mount + POLLING (fix: badges appear without refresh)
+//   ========================= */
+//   useEffect(() => {
+//     if (!token) return;
+
+//     // initial load
+//     fetchCounts();
+//     fetchUpdates();
+
+//     // ✅ polling every 10s (you can make 5s if you want)
+//     const id = setInterval(() => {
+//       fetchCounts();
+//       fetchUpdates();
+//     }, 10000);
+
+//     return () => clearInterval(id);
+//   }, [token, fetchCounts, fetchUpdates]);
+
+//   /* =========================
+//     If user opens bell => refresh immediately
+//   ========================= */
+//   useEffect(() => {
+//     if (!token) return;
+//     if (notifOpen) {
+//       fetchCounts();
+//       fetchUpdates();
+//     }
+//   }, [notifOpen, token, fetchCounts, fetchUpdates]);
 
 //   const handleLogout = () => {
 //     dispatch(logout());
 //     navigate("/", { replace: true });
 //   };
 
+//   const handleNotifClick = (to, status) => {
+//     setNotifOpen(false);
+//     if (status) markSeen(status);
+//     navigate(to);
+//   };
+
+//   const handleNavClick = (key) => {
+//     if (key) markSeen(key);
+//     setMobileOpen(false);
+//   };
+
+//   /* ✅ Now safe to return conditionally */
+//   if (loading) return null;
+//   if (!token || !user) return <Navigate to="/" replace />;
+
 //   return (
 //     <div className="min-h-screen flex bg-[#F8FAFC]">
+//       {/* MOBILE OVERLAY */}
+//       {mobileOpen && (
+//         <div
+//           onClick={() => setMobileOpen(false)}
+//           className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+//         />
+//       )}
+
 //       {/* ================= SIDEBAR ================= */}
-//       <aside className="w-72 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen shadow-sm">
-//         {/* Logo */}
-//         <div className="h-20 flex items-center px-8 gap-3 border-b border-slate-100">
-//           <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-//             <CheckCircle className="text-white" size={24} />
+//       <aside
+//         className={`
+//           fixed lg:sticky top-0 left-0 z-40
+//           w-72 bg-white border-r border-slate-200
+//           flex flex-col h-screen shadow-sm
+//           transform transition-transform duration-300
+//           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+//           lg:translate-x-0
+//         `}
+//       >
+//         {/* LOGO + CLOSE */}
+//         <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+//           <div className="flex items-center gap-3">
+//             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+//               <CheckCircle className="text-white" size={24} />
+//             </div>
+//             <h1 className="text-xl font-black text-slate-800">
+//               Appoint<span className="text-emerald-500">ment</span>
+//             </h1>
 //           </div>
-//           <h1 className="text-xl font-black text-slate-800">
-//             Appoint<span className="text-emerald-500">ment</span>
-//           </h1>
+
+//           <button className="lg:hidden text-slate-500" onClick={() => setMobileOpen(false)}>
+//             <X />
+//           </button>
 //         </div>
 
 //         {/* NAVIGATION */}
-//         <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
-//           {/* ================= ADMIN MENU ================= */}
-//           {user.role === "ADMIN" && (
+//         <nav className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
+//           {isAdmin && (
 //             <>
-//               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-//                 Management
-//               </p>
+//               <Section title="Management">
+//                 <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" onNav={() => handleNavClick(null)} />
+//                 <NavItem to="/dashboard/users" icon={<Users />} label="Users" onNav={() => handleNavClick(null)} />
+//                 <NavItem
+//                   to="/dashboard/customers"
+//                   icon={<UserSquare2 />}
+//                   label="Customers"
+//                   badge={unreadCounts.CUSTOMERS}
+//                   onNav={() => handleNavClick("CUSTOMERS")}
+//                 />
+//                 <NavItem
+//                   to="/dashboard/services"
+//                   icon={<Wrench />}
+//                   label="Services"
+//                   badge={unreadCounts.SERVICES}
+//                   onNav={() => handleNavClick("SERVICES")}
+//                 />
+//               </Section>
 
-//               <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" />
-//               <NavItem to="/dashboard/users" icon={<Users />} label="Users" />
-//               <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
-//               <NavItem to="/dashboard/services" icon={<Wrench />} label="Services" />
-
-//               <div className="pt-6">
-//                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-//                   Appointments
-//                 </p>
+//               <Section title="Appointments">
 //                 <NavItem
 //                   to="/dashboard/create-appointment"
 //                   icon={<PlusCircle />}
 //                   label="New Booking"
+//                   badge={unreadCounts.BOOKINGS}
+//                   onNav={() => handleNavClick("BOOKINGS")}
 //                 />
+
 //                 <NavItem
 //                   to="/dashboard/pending-appointments"
 //                   icon={<Clock />}
 //                   label="Pending"
+//                   badge={unreadCounts.PENDING}
+//                   onNav={() => handleNavClick("PENDING")}
 //                 />
+
 //                 <NavItem
 //                   to="/dashboard/approved-appointments"
 //                   icon={<CheckCircle />}
 //                   label="Approved"
+//                   badge={unreadCounts.APPROVED}
+//                   onNav={() => handleNavClick("APPROVED")}
 //                 />
-//               </div>
+
+//                 <NavItem
+//                   to="/dashboard/completed-appointments"
+//                   icon={<CheckCircle />}
+//                   label="Completed"
+//                   badge={unreadCounts.COMPLETED}
+//                   onNav={() => handleNavClick("COMPLETED")}
+//                 />
+//               </Section>
+
+//               <Section title="Staff">
+//                 <NavItem
+//                   to="/dashboard/employee"
+//                   icon={<IdCardLanyard />}
+//                   label="Employee Dashboard"
+//                   onNav={() => handleNavClick(null)}
+//                 />
+//               </Section>
 //             </>
 //           )}
 
-//           {/* ================= USER MENU ================= */}
-//           {user.role === "USER" && (
-//             <>
-//               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-//                 My Area
-//               </p>
-
+//           {isStaff && (
+//             <Section title="Staff Area">
 //               <NavItem
-//                 to="/dashboard/employee"
-//                 icon={<Clock />}
-//                 label="My Dashboard"
+//                 to="/dashboard/customers"
+//                 icon={<UserSquare2 />}
+//                 label="Customers"
+//                 badge={unreadCounts.CUSTOMERS}
+//                 onNav={() => handleNavClick("CUSTOMERS")}
 //               />
-//             </>
+//               <NavItem
+//                 to="/dashboard/create-appointment"
+//                 icon={<PlusCircle />}
+//                 label="New Booking"
+//                 badge={unreadCounts.BOOKINGS}
+//                 onNav={() => handleNavClick("BOOKINGS")}
+//               />
+//               <NavItem to="/dashboard/employee" icon={<IdCardLanyard />} label="My Dashboard" onNav={() => handleNavClick(null)} />
+//             </Section>
+//           )}
+
+//           {isUser && (
+//             <Section title="My Area">
+//               <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" onNav={() => handleNavClick(null)} />
+//             </Section>
 //           )}
 //         </nav>
 
 //         {/* FOOTER */}
-//         <div className="p-6 border-t border-slate-100">
+//         <div className="p-4 md:p-6 border-t border-slate-100">
 //           <button
 //             onClick={handleLogout}
 //             className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl font-bold"
@@ -119,35 +486,83 @@
 //       </aside>
 
 //       {/* ================= MAIN ================= */}
-//       <div className="flex-1 flex flex-col overflow-hidden">
+//       <div className="flex-1 flex flex-col">
 //         {/* HEADER */}
-//         <header className="h-20 bg-white border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-10">
-//           <h2 className="text-lg font-bold text-slate-800 capitalize">
-//             {location.pathname.split("/").pop()?.replace("-", " ")}
-//           </h2>
+//         <header className="h-16 md:h-20 bg-white border-b border-slate-200 sticky top-0 z-20 flex items-center justify-between px-4 md:px-10">
+//           <div className="flex items-center gap-3">
+//             <button className="lg:hidden text-slate-600" onClick={() => setMobileOpen(true)}>
+//               <Menu />
+//             </button>
 
-//           <div className="flex items-center gap-6">
-//             <div className="hidden md:flex items-center bg-slate-50 border rounded-full px-4 py-1.5">
+//             <h2 className="text-sm md:text-lg font-bold text-slate-800 capitalize">
+//               {location.pathname.split("/").pop()?.replace("-", " ")}
+//             </h2>
+//           </div>
+
+//           <div className="flex items-center gap-3 md:gap-6">
+//             <div className="hidden sm:flex items-center bg-slate-50 border rounded-full px-3 py-1">
 //               <Search size={16} />
 //               <input
 //                 placeholder="Search..."
-//                 className="bg-transparent border-none text-xs ml-2 w-32"
+//                 className="bg-transparent border-none text-xs ml-2 w-24 md:w-32 outline-none"
 //               />
 //             </div>
 
-//             <button className="relative text-slate-400 hover:text-blue-600">
-//               <Bell size={20} />
-//               <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />
-//             </button>
+//             {/* NOTIFICATIONS DROPDOWN + RED NUMBER ON BELL */}
+//             <div className="relative">
+//               <button
+//                 onClick={() => setNotifOpen((s) => !s)}
+//                 className="relative text-slate-400 hover:text-blue-600"
+//               >
+//                 <Bell size={20} />
+//                 {totalUnread > 0 && (
+//                   <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center">
+//                     {totalUnread > 99 ? "99+" : totalUnread}
+//                   </span>
+//                 )}
+//               </button>
 
-//             <div className="flex items-center gap-3 pl-6 border-l">
+//               {notifOpen && (
+//                 <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
+//                   <div className="px-4 py-3 font-bold border-b flex items-center justify-between">
+//                     <span>Latest Updates</span>
+//                     <button onClick={() => setNotifOpen(false)} className="text-slate-400 hover:text-slate-700">
+//                       <X size={16} />
+//                     </button>
+//                   </div>
+
+//                   <div className="max-h-72 overflow-y-auto">
+//                     {notifications.length === 0 ? (
+//                       <div className="px-4 py-6 text-sm text-slate-500">No updates yet.</div>
+//                     ) : (
+//                       notifications.map((n) => (
+//                         <button
+//                           key={n.id}
+//                           onClick={() => handleNotifClick(n.to, n.status)}
+//                           className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b"
+//                         >
+//                           <div className="flex items-center justify-between">
+//                             <span className="text-[11px] font-black text-slate-500">{n.status}</span>
+//                             <span className="text-[10px] text-slate-400">{n.time}</span>
+//                           </div>
+
+//                           <p className="text-sm font-bold text-slate-800 mt-1">{n.title}</p>
+//                           <p className="text-xs text-slate-500 mt-1">{n.desc}</p>
+//                         </button>
+//                       ))
+//                     )}
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+
+//             <div className="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l">
 //               <div className="text-right hidden sm:block">
 //                 <p className="text-sm font-bold">{user.fullName}</p>
-//                 <p className="text-[10px] font-bold text-emerald-600 uppercase">
-//                   {user.role}
-//                 </p>
+//                 <p className="text-[10px] font-bold text-emerald-600 uppercase">{user.role}</p>
 //               </div>
-//               <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
+
+//               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
 //                 {user.fullName?.charAt(0)}
 //               </div>
 //             </div>
@@ -155,7 +570,7 @@
 //         </header>
 
 //         {/* CONTENT */}
-//         <main className="flex-1 p-8 overflow-y-auto">
+//         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
 //           <div className="max-w-7xl mx-auto">
 //             <Outlet />
 //           </div>
@@ -166,15 +581,27 @@
 // }
 
 // /* =========================
-//     NAV ITEM
+//     HELPERS
 // ========================= */
-// function NavItem({ to, label, icon }) {
+// function Section({ title, children }) {
+//   return (
+//     <div>
+//       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">
+//         {title}
+//       </p>
+//       <div className="space-y-2">{children}</div>
+//     </div>
+//   );
+// }
+
+// function NavItem({ to, label, icon, onNav, badge }) {
 //   return (
 //     <NavLink
 //       to={to}
+//       onClick={onNav}
 //       end
 //       className={({ isActive }) =>
-//         `flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all
+//         `flex items-center justify-between gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all
 //         ${
 //           isActive
 //             ? "bg-blue-600 text-white shadow"
@@ -182,11 +609,20 @@
 //         }`
 //       }
 //     >
-//       <span>{icon}</span>
-//       {label}
+//       <div className="flex items-center gap-4">
+//         <span>{icon}</span>
+//         {label}
+//       </div>
+
+//       {typeof badge === "number" && badge > 0 && (
+//         <span className="min-w-[26px] h-6 px-2 rounded-full text-[11px] font-black flex items-center justify-center bg-red-600 text-white">
+//           {badge}
+//         </span>
+//       )}
 //     </NavLink>
 //   );
 // }
+
 
 import {
   Outlet,
@@ -205,137 +641,499 @@ import {
   PlusCircle,
   Clock,
   CheckCircle,
+  CheckCircle2, // ✅ Completed icon
   LogOut,
   Bell,
   Search,
   IdCardLanyard,
+  Menu,
+  X,
 } from "lucide-react";
+
+import axios from "axios";
+import { useEffect, useMemo, useState, useCallback } from "react";
+
+const SEEN_KEY = "appointment_app_seen_counts_v1";
+
+/* =========================
+  LocalStorage helpers
+========================= */
+function readSeen() {
+  try {
+    const raw = localStorage.getItem(SEEN_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    return obj && typeof obj === "object" ? obj : {};
+  } catch {
+    return {};
+  }
+}
+function writeSeen(obj) {
+  try {
+    localStorage.setItem(SEEN_KEY, JSON.stringify(obj));
+  } catch {}
+}
+
+/* =========================
+  Time ago helper (Just now / 2m ago)
+========================= */
+function timeAgo(input) {
+  if (!input) return "Just now";
+  if (typeof input === "string" && /ago|just now/i.test(input)) return input;
+
+  const d = new Date(input);
+  if (Number.isNaN(d.getTime())) return "Just now";
+
+  const diffMs = Date.now() - d.getTime();
+  const sec = Math.floor(diffMs / 1000);
+
+  if (sec < 10) return "Just now";
+  if (sec < 60) return `${sec}s ago`;
+
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+
+  const day = Math.floor(hr / 24);
+  return `${day}d ago`;
+}
+
+/* =========================
+  Notification text mapping
+========================= */
+function defaultTitle(status) {
+  switch ((status || "").toUpperCase()) {
+    case "PENDING":
+      return "New pending appointment";
+    case "APPROVED":
+      return "Appointment approved";
+    case "COMPLETED":
+      return "Appointment completed";
+    case "CUSTOMERS":
+      return "New customer added";
+    case "BOOKINGS":
+      return "New booking created";
+    case "SERVICES":
+      return "Service provided";
+    default:
+      return "New update";
+  }
+}
+
+function defaultDesc(status) {
+  switch ((status || "").toUpperCase()) {
+    case "PENDING":
+      return "Appointment cusub ayaa yimid oo pending ah.";
+    case "APPROVED":
+      return "Mid ka mid ah appointments waa la approved gareeyay.";
+    case "COMPLETED":
+      return "Appointment ayaa la completed gareeyay.";
+    case "CUSTOMERS":
+      return "Customer cusub ayaa la diiwaan geliyay.";
+    case "BOOKINGS":
+      return "Booking cusub ayaa la sameeyay.";
+    case "SERVICES":
+      return "Customer ayaa service la siiyay.";
+    default:
+      return "Update cusub ayaa yimid.";
+  }
+}
+
+function defaultTo(status) {
+  switch ((status || "").toUpperCase()) {
+    case "PENDING":
+      return "/dashboard/pending-appointments";
+    case "APPROVED":
+      return "/dashboard/approved-appointments";
+    case "COMPLETED":
+      return "/dashboard/completed-appointments";
+    case "CUSTOMERS":
+      return "/dashboard/customers";
+    case "BOOKINGS":
+      return "/dashboard/create-appointment";
+    case "SERVICES":
+      return "/dashboard/services";
+    default:
+      return "/dashboard";
+  }
+}
 
 export default function DashboardLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { token, user } = useSelector((state) => state.auth);
+  const { token, user, loading } = useSelector((state) => state.auth);
 
-  /* =======================
-     AUTH GUARD
-  ======================= */
-  if (!token || !user) {
-    return <Navigate to="/" replace />;
-  }
+  const API_BASE =
+    import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:4000";
+
+  /* ✅ Hooks before any return */
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  /* =========================
+    Counts from backend (TOTALS)
+  ========================= */
+  const [serverCounts, setServerCounts] = useState({
+    PENDING: 0,
+    APPROVED: 0,
+    COMPLETED: 0,
+    CUSTOMERS: 0,
+    BOOKINGS: 0,
+    SERVICES: 0,
+  });
+
+  /* =========================
+    Seen counts (local) to keep unread stable after refresh
+  ========================= */
+  const [seenCounts, setSeenCounts] = useState(() => readSeen());
+
+  /* =========================
+    Dropdown updates from backend (optional endpoint)
+  ========================= */
+  const [notifications, setNotifications] = useState([]);
+
+  /* ✅ Safe returns after hooks */
+  if (loading) return null;
+  if (!token || !user) return <Navigate to="/" replace />;
 
   const isAdmin = user.role === "ADMIN" || user.role === "SUPERADMIN";
   const isStaff = user.role === "STAFF";
   const isUser = user.role === "USER";
+
+  /* =========================
+    Unread = max(server - seen, 0)
+  ========================= */
+  const unreadCounts = useMemo(() => {
+    const keys = [
+      "PENDING",
+      "APPROVED",
+      "COMPLETED",
+      "CUSTOMERS",
+      "BOOKINGS",
+      "SERVICES",
+    ];
+
+    const out = {};
+    for (const k of keys) {
+      const s = Number(serverCounts[k] || 0);
+      const seen = Number(seenCounts[k] || 0);
+      out[k] = Math.max(s - seen, 0);
+    }
+    return out;
+  }, [serverCounts, seenCounts]);
+
+  const totalUnread = useMemo(() => {
+    return (
+      (unreadCounts.PENDING || 0) +
+      (unreadCounts.APPROVED || 0) +
+      (unreadCounts.COMPLETED || 0) +
+      (unreadCounts.CUSTOMERS || 0) +
+      (unreadCounts.BOOKINGS || 0) +
+      (unreadCounts.SERVICES || 0)
+    );
+  }, [unreadCounts]);
+
+  /* =========================
+    Mark as seen helper
+  ========================= */
+  const markSeen = useCallback(
+    (key) => {
+      setSeenCounts((prev) => {
+        const next = {
+          ...prev,
+          [key]: Number(serverCounts[key] || 0),
+        };
+        writeSeen(next);
+        return next;
+      });
+    },
+    [serverCounts]
+  );
+
+  /* =========================
+    ✅ Fetch counts + updates (CALLBACKS)  <-- muhiim
+  ========================= */
+  const fetchCounts = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/api/dashboard/counts`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (data?.success && data?.data) {
+        setServerCounts((prev) => ({
+          ...prev,
+          PENDING: Number(data.data.PENDING || 0),
+          APPROVED: Number(data.data.APPROVED || 0),
+          COMPLETED: Number(data.data.COMPLETED || 0),
+          // haddii backend kuu soo diro kuwa kale, waad ka qaadan kartaa:
+          CUSTOMERS: Number(data.data.CUSTOMERS || prev.CUSTOMERS || 0),
+          BOOKINGS: Number(data.data.BOOKINGS || prev.BOOKINGS || 0),
+          SERVICES: Number(data.data.SERVICES || prev.SERVICES || 0),
+        }));
+      }
+    } catch (err) {
+      console.log("Counts error:", err?.response?.data || err?.message);
+    }
+  }, [API_BASE, token]);
+
+  const fetchUpdates = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/api/dashboard/updates`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      const arr = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      const normalized = arr.map((n, idx) => {
+        const status = (n.status || n.type || "").toUpperCase() || "PENDING";
+        const createdAt = n.createdAt || n.updatedAt || n.time || n.date;
+        return {
+          id: n.id || n._id || `${status}-${idx}`,
+          status,
+          title: n.title || defaultTitle(status),
+          desc: n.desc || n.message || defaultDesc(status),
+          time: timeAgo(createdAt),
+          to: n.to || n.link || defaultTo(status),
+        };
+      });
+
+      setNotifications(normalized);
+    } catch {
+      setNotifications([]);
+    }
+  }, [API_BASE, token]);
+
+  /* =========================
+    ✅ POLLING (automatic refresh)
+  ========================= */
+  useEffect(() => {
+    if (!token) return;
+
+    // initial load
+    fetchCounts();
+    fetchUpdates();
+
+    // ✅ refresh every 10s (you can change to 5000 if you want faster)
+    const id = setInterval(() => {
+      fetchCounts();
+      fetchUpdates();
+    }, 10000);
+
+    return () => clearInterval(id);
+  }, [token, fetchCounts, fetchUpdates]);
+
+  /* =========================
+    ✅ If user opens bell => refresh immediately
+  ========================= */
+  useEffect(() => {
+    if (!token) return;
+    if (notifOpen) {
+      fetchCounts();
+      fetchUpdates();
+    }
+  }, [notifOpen, token, fetchCounts, fetchUpdates]);
+
+  /* =========================
+    Auto mark as seen when user visits page
+  ========================= */
+  useEffect(() => {
+    const path = location.pathname;
+
+    const matchAndMark = (key, match) => {
+      if (path.includes(match)) markSeen(key);
+    };
+
+    matchAndMark("PENDING", "/dashboard/pending-appointments");
+    matchAndMark("APPROVED", "/dashboard/approved-appointments");
+    matchAndMark("COMPLETED", "/dashboard/completed-appointments");
+
+    matchAndMark("CUSTOMERS", "/dashboard/customers");
+    matchAndMark("BOOKINGS", "/dashboard/create-appointment");
+    matchAndMark("SERVICES", "/dashboard/services");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, serverCounts, markSeen]);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/", { replace: true });
   };
 
+  const handleNotifClick = (to, status) => {
+    setNotifOpen(false);
+    if (status) markSeen(status);
+    navigate(to);
+  };
+
+  const handleNavClick = (key) => {
+    if (key) markSeen(key);
+    setMobileOpen(false);
+  };
+
   return (
     <div className="min-h-screen flex bg-[#F8FAFC]">
+      {/* MOBILE OVERLAY */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+        />
+      )}
+
       {/* ================= SIDEBAR ================= */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col sticky top-0 h-screen shadow-sm">
-        {/* LOGO */}
-        <div className="h-20 flex items-center px-8 gap-3 border-b border-slate-100">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-            <CheckCircle className="text-white" size={24} />
+      <aside
+        className={`
+          fixed lg:sticky top-0 left-0 z-40
+          w-72 bg-white border-r border-slate-200
+          flex flex-col h-screen shadow-sm
+          transform transition-transform duration-300
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+        `}
+      >
+        {/* LOGO + CLOSE */}
+        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <CheckCircle className="text-white" size={24} />
+            </div>
+            <h1 className="text-xl font-black text-slate-800">
+              Appoint<span className="text-emerald-500">ment</span>
+            </h1>
           </div>
-          <h1 className="text-xl font-black text-slate-800">
-            Appoint<span className="text-emerald-500">ment</span>
-          </h1>
+
+          <button
+            className="lg:hidden text-slate-500"
+            onClick={() => setMobileOpen(false)}
+          >
+            <X />
+          </button>
         </div>
 
         {/* NAVIGATION */}
-        <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
-
-          {/* ================= ADMIN ================= */}
+        <nav className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
           {isAdmin && (
             <>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                Management
-              </p>
+              <Section title="Management">
+                <NavItem
+                  to="/dashboard"
+                  icon={<LayoutDashboard />}
+                  label="Dashboard"
+                  onNav={() => handleNavClick(null)}
+                />
+                <NavItem
+                  to="/dashboard/users"
+                  icon={<Users />}
+                  label="Users"
+                  onNav={() => handleNavClick(null)}
+                />
+                <NavItem
+                  to="/dashboard/customers"
+                  icon={<UserSquare2 />}
+                  label="Customers"
+                  badge={unreadCounts.CUSTOMERS}
+                  onNav={() => handleNavClick("CUSTOMERS")}
+                />
+                <NavItem
+                  to="/dashboard/services"
+                  icon={<Wrench />}
+                  label="Services"
+                  badge={unreadCounts.SERVICES}
+                  onNav={() => handleNavClick("SERVICES")}
+                />
+              </Section>
 
-<<<<<<< HEAD
-              <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" />
-              <NavItem to="/dashboard/users" icon={<Users />} label="Users" />
-              <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
-              <NavItem to="/dashboard/services" icon={<Wrench />} label="Services" />
+              <Section title="Appointments">
+                <NavItem
+                  to="/dashboard/create-appointment"
+                  icon={<PlusCircle />}
+                  label="New Booking"
+                  badge={unreadCounts.BOOKINGS}
+                  onNav={() => handleNavClick("BOOKINGS")}
+                />
 
-              <div className="pt-6">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                  Appointments
-                </p>
-                <NavItem to="/dashboard/create-appointment" icon={<PlusCircle />} label="New Booking" />
-                <NavItem to="/dashboard/pending-appointments" icon={<Clock />} label="Pending" />
-                <NavItem to="/dashboard/approved-appointments" icon={<CheckCircle />} label="Approved" />
-              </div>
+                <NavItem
+                  to="/dashboard/pending-appointments"
+                  icon={<Clock />}
+                  label="Pending"
+                  badge={unreadCounts.PENDING}
+                  onNav={() => handleNavClick("PENDING")}
+                />
 
-              <div className="pt-6">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                  My Area
-                </p>
-                <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
-              </div>
+                <NavItem
+                  to="/dashboard/approved-appointments"
+                  icon={<CheckCircle />}
+                  label="Approved"
+                  badge={unreadCounts.APPROVED}
+                  onNav={() => handleNavClick("APPROVED")}
+                />
+
+                <NavItem
+                  to="/dashboard/completed-appointments"
+                  icon={<CheckCircle2 />}
+                  label="Completed"
+                  badge={unreadCounts.COMPLETED}
+                  onNav={() => handleNavClick("COMPLETED")}
+                />
+              </Section>
+
+              <Section title="Staff">
+                <NavItem
+                  to="/dashboard/employee"
+                  icon={<IdCardLanyard />}
+                  label="Employee Dashboard"
+                  onNav={() => handleNavClick(null)}
+                />
+              </Section>
             </>
           )}
 
-          {/* ================= STAFF ================= */}
           {isStaff && (
-            <>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                Staff Area
-              </p>
-
-              <NavItem to="/dashboard/customers" icon={<UserSquare2 />} label="Customers" />
-              <NavItem to="/dashboard/create-appointment" icon={<PlusCircle />} label="New Booking" />
-        
-            </>
+            <Section title="Staff Area">
+              <NavItem
+                to="/dashboard/customers"
+                icon={<UserSquare2 />}
+                label="Customers"
+                badge={unreadCounts.CUSTOMERS}
+                onNav={() => handleNavClick("CUSTOMERS")}
+              />
+              <NavItem
+                to="/dashboard/create-appointment"
+                icon={<PlusCircle />}
+                label="New Booking"
+                badge={unreadCounts.BOOKINGS}
+                onNav={() => handleNavClick("BOOKINGS")}
+              />
+              <NavItem
+                to="/dashboard/employee"
+                icon={<IdCardLanyard />}
+                label="My Dashboard"
+                onNav={() => handleNavClick(null)}
+              />
+            </Section>
           )}
 
-          {/* ================= USER ================= */}
           {isUser && (
-            <>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-                My Area
-              </p>
-
-              <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" />
-            </>
+            <Section title="My Area">
+              <NavItem
+                to="/dashboard/employee"
+                icon={<Clock />}
+                label="My Dashboard"
+                onNav={() => handleNavClick(null)}
+              />
+            </Section>
           )}
-=======
-          <div className="pt-6">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">
-              Appointments
-            </p>
-            <NavItem
-              to="/dashboard/create-appointment"
-              icon={<PlusCircle size={20} />}
-              label="New Booking"
-            />
-            <NavItem
-              to="/dashboard/pending-appointments"
-              icon={<Clock size={20} />}
-              label="Pending"
-            />
-            <NavItem
-              to="/dashboard/approved-appointments"
-              icon={<CheckCircle size={20} />}
-              label="Approved"
-            />
-            <NavItem
-              to="/dashboard/EmployeeDashboard"
-              icon={<IdCardLanyard size={20} />}
-              label="Employee Dashboard"
-            />
-          </div>
->>>>>>> 5fe4e196f48ff940d2dc37e60cb7ec069af0a212
         </nav>
 
         {/* FOOTER */}
-        <div className="p-6 border-t border-slate-100">
+        <div className="p-4 md:p-6 border-t border-slate-100">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl font-bold"
@@ -347,35 +1145,99 @@ export default function DashboardLayout() {
       </aside>
 
       {/* ================= MAIN ================= */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* HEADER */}
-        <header className="h-20 bg-white border-b border-slate-200 sticky top-0 z-10 flex items-center justify-between px-10">
-          <h2 className="text-lg font-bold text-slate-800 capitalize">
-            {location.pathname.split("/").pop()?.replace("-", " ")}
-          </h2>
+        <header className="h-16 md:h-20 bg-white border-b border-slate-200 sticky top-0 z-20 flex items-center justify-between px-4 md:px-10">
+          <div className="flex items-center gap-3">
+            <button
+              className="lg:hidden text-slate-600"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu />
+            </button>
 
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center bg-slate-50 border rounded-full px-4 py-1.5">
+            <h2 className="text-sm md:text-lg font-bold text-slate-800 capitalize">
+              {location.pathname.split("/").pop()?.replace("-", " ")}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3 md:gap-6">
+            <div className="hidden sm:flex items-center bg-slate-50 border rounded-full px-3 py-1">
               <Search size={16} />
               <input
                 placeholder="Search..."
-                className="bg-transparent border-none text-xs ml-2 w-32"
+                className="bg-transparent border-none text-xs ml-2 w-24 md:w-32 outline-none"
               />
             </div>
 
-            <button className="relative text-slate-400 hover:text-blue-600">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />
-            </button>
+            {/* ✅ NOTIFICATIONS DROPDOWN + RED NUMBER ON BELL */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen((s) => !s)}
+                className="relative text-slate-400 hover:text-blue-600"
+              >
+                <Bell size={20} />
+                {totalUnread > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center">
+                    {totalUnread > 99 ? "99+" : totalUnread}
+                  </span>
+                )}
+              </button>
 
-            <div className="flex items-center gap-3 pl-6 border-l">
+              {notifOpen && (
+                <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
+                  <div className="px-4 py-3 font-bold border-b flex items-center justify-between">
+                    <span>Latest Updates</span>
+                    <button
+                      onClick={() => setNotifOpen(false)}
+                      className="text-slate-400 hover:text-slate-700"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <div className="max-h-72 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-6 text-sm text-slate-500">
+                        No updates yet.
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => handleNotifClick(n.to, n.status)}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-black text-slate-500">
+                              {n.status}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {n.time}
+                            </span>
+                          </div>
+
+                          <p className="text-sm font-bold text-slate-800 mt-1">
+                            {n.title}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1">{n.desc}</p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold">{user.fullName}</p>
                 <p className="text-[10px] font-bold text-emerald-600 uppercase">
                   {user.role}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
+
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
                 {user.fullName?.charAt(0)}
               </div>
             </div>
@@ -383,7 +1245,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* CONTENT */}
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
@@ -394,15 +1256,28 @@ export default function DashboardLayout() {
 }
 
 /* =========================
-    NAV ITEM
+    HELPERS
 ========================= */
-function NavItem({ to, label, icon }) {
+
+function Section({ title, children }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">
+        {title}
+      </p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function NavItem({ to, label, icon, onNav, badge }) {
   return (
     <NavLink
       to={to}
+      onClick={onNav}
       end
       className={({ isActive }) =>
-        `flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all
+        `flex items-center justify-between gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all
         ${
           isActive
             ? "bg-blue-600 text-white shadow"
@@ -410,11 +1285,16 @@ function NavItem({ to, label, icon }) {
         }`
       }
     >
-      <span>{icon}</span>
-      {label}
+      <div className="flex items-center gap-4">
+        <span>{icon}</span>
+        {label}
+      </div>
+
+      {typeof badge === "number" && badge > 0 && (
+        <span className="min-w-[26px] h-6 px-2 rounded-full text-[11px] font-black flex items-center justify-center bg-red-600 text-white">
+          {badge}
+        </span>
+      )}
     </NavLink>
   );
 }
-
-
-

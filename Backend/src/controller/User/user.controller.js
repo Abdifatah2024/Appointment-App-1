@@ -1,15 +1,96 @@
 const User = require("../../model/User");
 const bcrypt = require("bcryptjs");
-
-
-
 const jwt = require("jsonwebtoken");
+
+/* =========================
+   LOGIN USER
+========================= */
+// exports.loginUser = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Email and password are required",
+//       });
+//     }
+
+//     const user = await User.findOne({ email }).select("+password");
+
+//     if (!user) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Invalid email or password",
+//       });
+//     }
+
+//     if (!user.isActive) {
+//       return res.status(403).json({
+//         success: false,
+//         message: "Account is disabled",
+//       });
+//     }
+
+//     // 🔐 Block Google-only accounts
+//     if (user.provider === "google") {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Use Google login for this account",
+//       });
+//     }
+
+//     if (!user.password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "No local password found",
+//       });
+//     }
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Invalid email or password",
+//       });
+//     }
+
+//     const token = jwt.sign(
+//       {
+//         id: user._id,
+//         role: user.role,
+//         email: user.email,
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1d" }
+//     );
+
+//     res.json({
+//       success: true,
+//       message: "Login successful",
+//       token,
+//       user: {
+//         id: user._id,
+//         fullName: user.fullName,
+//         email: user.email,
+//         role: user.role,
+//         provider: user.provider,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // ================= VALIDATION =================
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -17,6 +98,7 @@ exports.loginUser = async (req, res) => {
       });
     }
 
+    // ================= FIND USER =================
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
@@ -26,29 +108,22 @@ exports.loginUser = async (req, res) => {
       });
     }
 
-    if (!user.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: "Account is disabled1",
-      });
-    }
-
-    // 🔥 BLOCK GOOGLE USERS
+    // 🔐 Block Google-only accounts
     if (user.provider === "google") {
       return res.status(400).json({
         success: false,
-        message: "This account uses Google login. Please sign in with Google.",
+        message: "Use Google login for this account",
       });
     }
 
-    // 🔥 SAFETY CHECK
     if (!user.password) {
       return res.status(400).json({
         success: false,
-        message: "No local password found. Use Google login.",
+        message: "No local password found",
       });
     }
 
+    // ================= PASSWORD CHECK =================
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -57,6 +132,7 @@ exports.loginUser = async (req, res) => {
       });
     }
 
+    // ================= JWT =================
     const token = jwt.sign(
       {
         id: user._id,
@@ -67,7 +143,8 @@ exports.loginUser = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({
+    // ================= RESPONSE =================
+    res.status(200).json({
       success: true,
       message: "Login successful",
       token,
@@ -87,10 +164,35 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+/* ===
+=====================
+   GET CURRENT USER (/users/me)
+========================= */
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select(
+      "_id fullName email role provider"
+    );
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
-// CREATE USER
+/* =========================
+   CREATE USER
+========================= */
 exports.createUser = async (req, res) => {
   try {
     const { fullName, email, password, role } = req.body;
@@ -131,133 +233,37 @@ exports.createUser = async (req, res) => {
   }
 };
 
-
-
+/* =========================
+   GET ALL USERS
+========================= */
 exports.getUsers = async (req, res) => {
   const users = await User.find();
   res.json({ success: true, data: users });
 };
 
-
-
-
-
-
-
-
-exports.loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    /* =========================
-       VALIDATION
-    ========================= */
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and password are required",
-      });
-    }
-
-    /* =========================
-       FIND USER
-    ========================= */
-    const user = await User.findOne({ email }).select("+password");
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    /* =========================
-       SAFETY: PASSWORD EXISTS
-    ========================= */
-    if (!user.password) {
-      return res.status(400).json({
-        success: false,
-        message: "No local password found. Use Google login.",
-      });
-    }
-
-    /* =========================
-       PASSWORD CHECK
-    ========================= */
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
-    }
-
-    /* =========================
-       TOKEN
-    ========================= */
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-        email: user.email,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    /* =========================
-       SUCCESS
-    ========================= */
-    res.json({
-      success: true,
-      message: "Login successful",
-      token,
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        provider: user.provider,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-
-
-
+/* =========================
+   GET USER BY ID
+========================= */
 exports.getUserById = async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user)
     return res.status(404).json({ success: false, message: "Not found" });
+
   res.json({ success: true, data: user });
 };
 
-// UPDATE USER
-// exports.updateUser = async (req, res) => {
-//   const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-//     new: true,
-//   });
-//   res.json({ success: true, data: user });
-// };
-
-// controllers/user.controller.js
-// controllers/user.controller.js
+/* =========================
+   UPDATE USER
+========================= */
 exports.updateUser = async (req, res) => {
   try {
-    const allowedStatuses = ["PENDING", "APPROVED", "REJECTED", "DISABLED"]; // match your schema enum!
+    const allowedStatuses = ["PENDING", "APPROVED", "REJECTED", "DISABLED"];
     const { fullName, email, role, status } = req.body;
 
     if (status && !allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`,
+        message: `Invalid status`,
       });
     }
 
@@ -269,10 +275,7 @@ exports.updateUser = async (req, res) => {
         ...(role !== undefined && { role }),
         ...(status !== undefined && { status }),
       },
-      {
-        new: true,
-        runValidators: true, // ✅ important
-      }
+      { new: true, runValidators: true }
     );
 
     if (!user) {
@@ -283,35 +286,32 @@ exports.updateUser = async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: err?.message || "Failed to update user",
+      message: err.message,
     });
   }
 };
 
-
-
-// DELETE USER (SOFT)
+/* =========================
+   SOFT DELETE USER
+========================= */
 exports.deleteUser = async (req, res) => {
   await User.findByIdAndUpdate(req.params.id, { isActive: false });
   res.json({ success: true, message: "User deactivated" });
 };
 
-// controllers/user.controller.js
-
+/* =========================
+   PERMANENT DELETE
+========================= */
 exports.deleteUserPermanent = async (req, res) => {
   try {
-    const userIdToDelete = req.params.id;
-    const currentUserId = req.user.id; // from authMiddleware
-
-    // ❌ prevent self-delete
-    if (userIdToDelete === currentUserId) {
+    if (req.params.id === req.user.id) {
       return res.status(400).json({
         success: false,
         message: "You cannot delete your own account",
       });
     }
 
-    const user = await User.findByIdAndDelete(userIdToDelete);
+    const user = await User.findByIdAndDelete(req.params.id);
 
     if (!user) {
       return res.status(404).json({
@@ -328,8 +328,11 @@ exports.deleteUserPermanent = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message || "Failed to delete user permanently",
+      message: error.message,
     });
   }
 };
+
+
+
 

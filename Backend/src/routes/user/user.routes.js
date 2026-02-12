@@ -9,12 +9,15 @@ const {
   deleteUser,
   loginUser,
   deleteUserPermanent,
+  getMe,
 } = require("../../controller/User/user.controller");
 const { authMiddleware, isAdmin } = require("../../middlewares/auth.middleware");
 
 router.post("/", createUser);
 
 // Auth
+router.get("/me", authMiddleware, getMe);
+
 router.post("/login", loginUser);
 router.get("/", getUsers);
 router.get("/:id", getUserById);
