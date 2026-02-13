@@ -435,7 +435,7 @@ export default function DashboardLayout() {
               <CheckCircle className="text-white" size={24} />
             </div>
             <h1 className="text-xl font-black text-slate-800">
-              Appoint<span className="text-emerald-500">ment</span>
+              Appoint<span className="text-emerald-500">ify</span>
             </h1>
           </div>
 
