@@ -429,7 +429,7 @@ const TABS = [
   { key: "TODAY", label: "Today" },
   { key: "UPCOMING", label: "Upcoming" },
   { key: "REJECTED", label: "Rejected" },
-  { key: "NO_SHOW", label: "No Show" }, // ✅ NEW
+  { key: "NO_SHOW", label: "No Show" },
 ];
 
 export default function EmployeeDashboard() {
@@ -482,18 +482,17 @@ export default function EmployeeDashboard() {
       .sort(
         (a, b) =>
           new Date(b.updatedAt || b.createdAt) -
-          new Date(a.updatedAt || a.createdAt)
+          new Date(a.updatedAt || a.createdAt),
       );
   }, [appointments]);
 
-  // ✅ NEW: No Show list
   const noShowAppointments = useMemo(() => {
     return appointments
       .filter((a) => a.status === "NO_SHOW")
       .sort(
         (a, b) =>
           new Date(b.updatedAt || b.createdAt) -
-          new Date(a.updatedAt || a.createdAt)
+          new Date(a.updatedAt || a.createdAt),
       );
   }, [appointments]);
 
@@ -501,7 +500,7 @@ export default function EmployeeDashboard() {
     if (activeTab === "TODAY") return todayAppointments;
     if (activeTab === "UPCOMING") return upcomingAppointments;
     if (activeTab === "REJECTED") return rejectedAppointments;
-    if (activeTab === "NO_SHOW") return noShowAppointments; // ✅ NEW
+    if (activeTab === "NO_SHOW") return noShowAppointments;
     return todayAppointments;
   }, [
     activeTab,
@@ -620,8 +619,8 @@ export default function EmployeeDashboard() {
           </div>
         </div>
 
-        {/* KPI */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* KPI (✅ Rejected moved next to No Show, same row, no empty box) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           <KPI
             icon={Layers}
             label="Total Assigned"
@@ -646,22 +645,9 @@ export default function EmployeeDashboard() {
             value={summary.noShow}
             color="bg-rose-50 text-rose-600"
           />
-        </div>
 
-        {/* Rejected insight */}
-        <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 shadow-sm">
-            <XCircle className="text-rose-600" size={16} />
-            <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">
-              Rejected (period)
-            </span>
-            <span className="text-[11px] font-black text-rose-600">
-              {summary.rejected || 0}
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 font-bold">
-            (Shown as an insight — not a performance KPI.)
-          </p>
+          {/* ✅ NEW: Rejected next to No Show */}
+          <MiniKPI icon={XCircle} label="Rejected" value={summary.rejected} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -790,6 +776,21 @@ const KPI = ({ icon: Icon, label, value, color }) => (
     </div>
   </div>
 );
+
+/* ✅ NEW: Mini KPI (same size & style) */
+const MiniKPI = ({ icon: Icon, label, value }) => {
+  return (
+    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5">
+      <div className="p-4 rounded-xl bg-rose-50 text-rose-600">
+        <Icon size={24} />
+      </div>
+      <div>
+        <p className="text-xs font-black text-slate-400 uppercase">{label}</p>
+        <h4 className="text-3xl font-black text-slate-800">{value || 0}</h4>
+      </div>
+    </div>
+  );
+};
 
 function StatusPill({ status }) {
   const map = {
