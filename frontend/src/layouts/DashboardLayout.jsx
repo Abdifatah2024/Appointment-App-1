@@ -448,7 +448,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* NAVIGATION */}
-        <nav className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
+        <nav className="flex-1 p-4 md:p-1 space-y-4 overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {isAdmin && (
             <>
               <Section title="Management">
