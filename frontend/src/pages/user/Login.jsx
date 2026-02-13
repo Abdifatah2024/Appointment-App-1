@@ -2,13 +2,17 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../Redux/slices/userSlices/authSlice";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+// 1. Added Eye and EyeOff to imports
+import { Mail, Lock, CheckCircle, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { loading, error, token } = useSelector((s) => s.auth);
+
+  // 2. State to handle password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
     email: "",
@@ -34,8 +38,13 @@ export default function Login() {
       loginUser({
         email: form.email.trim(),
         password: form.password,
-      }),
+      })
     );
+  };
+
+  // Helper to toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -103,18 +112,31 @@ export default function Login() {
                 </button>
               </div>
               <div className="relative group">
+                {/* Lock Icon (Left) */}
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors">
                   <Lock size={20} />
                 </div>
+                
                 <input
                   name="password"
-                  type="password"
+                  // 3. Conditional Type: Toggle between text and password
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={form.password}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium text-slate-700"
+                  // Changed pr-4 to pr-12 so text doesn't go under the eye icon
+                  className="w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium text-slate-700"
                 />
+
+                {/* 4. Toggle Button (Right) */}
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 cursor-pointer transition-colors"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
