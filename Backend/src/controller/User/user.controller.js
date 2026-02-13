@@ -1,8 +1,9 @@
 
-
 const User = require("../../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
 
 /* =========================
    LOGIN USER
@@ -75,6 +76,7 @@ exports.loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         provider: user.provider,
+        avatarUrl: user.avatarUrl || null, // ✅ NEW
       },
     });
   } catch (error) {
@@ -91,7 +93,7 @@ exports.loginUser = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "_id fullName email role provider"
+      "_id fullName email role provider avatarUrl"
     );
 
     if (!user) {
@@ -130,7 +132,7 @@ exports.updateMyProfile = async (req, res) => {
       req.user.id,
       { fullName: fullName.trim() },
       { new: true, runValidators: true }
-    ).select("_id fullName email role provider");
+    ).select("_id fullName email role provider avatarUrl");
 
     if (!updated) {
       return res.status(404).json({
@@ -148,6 +150,63 @@ exports.updateMyProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+/* =========================
+   ✅ UPDATE MY AVATAR (PUT /api/users/profile/avatar)
+   form-data: avatar (file)
+========================= */
+exports.updateMyAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Avatar image is required",
+      });
+    }
+
+    const user = await User.findById(req.user.id).select(
+      "_id fullName email role provider avatarUrl"
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // ✅ remove old avatar file if it was local
+    if (user.avatarUrl && user.avatarUrl.startsWith("/uploads/avatars/")) {
+      const oldFile = path.join(
+        process.cwd(),
+        user.avatarUrl.replace(/^\//, "")
+      );
+      if (fs.existsSync(oldFile)) {
+        try {
+          fs.unlinkSync(oldFile);
+        } catch {}
+      }
+    }
+
+    user.avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully",
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        provider: user.provider,
+        avatarUrl: user.avatarUrl,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update avatar",
     });
   }
 };
@@ -294,4 +353,3 @@ exports.deleteUserPermanent = async (req, res) => {
     });
   }
 };
-

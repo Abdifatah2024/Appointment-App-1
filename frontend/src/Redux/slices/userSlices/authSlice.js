@@ -1,123 +1,3 @@
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import api from "../../../utils/axios";
-
-// const TOKEN_KEY = "appointment_app_token";
-
-// /* ================================
-//    LOGIN
-// ================================ */
-// export const loginUser = createAsyncThunk(
-//   "auth/login",
-//   async (data, { rejectWithValue }) => {
-//     try {
-//       const res = await api.post("/users/login", data);
-//       return res.data;
-//     } catch (err) {
-//       return rejectWithValue(err.response?.data?.message || "Login failed");
-//     }
-//   }
-// );
-
-// /* ================================
-//    FETCH CURRENT USER
-// ================================ */
-// export const fetchMe = createAsyncThunk(
-//   "auth/fetchMe",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       const res = await api.get("/users/me");
-//       return res.data; // <- backend response
-//     } catch (err) {
-//       return rejectWithValue(err.response?.data?.message || "Session expired");
-//     }
-//   }
-// );
-
-// const authSlice = createSlice({
-//   name: "auth",
-//   initialState: {
-//     user: null,
-//     token: localStorage.getItem(TOKEN_KEY),
-//     loading: true,
-//     error: null,
-//   },
-
-//   reducers: {
-//     logout: (state) => {
-//       state.user = null;
-//       state.token = null;
-//       state.loading = false;
-//       state.error = null;
-//       localStorage.removeItem(TOKEN_KEY);
-//     },
-//     stopLoading: (state) => {
-//       state.loading = false;
-//     },
-//   },
-
-//   extraReducers: (builder) => {
-//     builder
-//       // ========== LOGIN ==========
-//       .addCase(loginUser.pending, (state) => {
-//         state.loading = true;
-//         state.error = null;
-//       })
-//       .addCase(loginUser.fulfilled, (state, action) => {
-//         state.loading = false;
-
-//         // ✅ token
-//         const token =
-//           action.payload?.token ||
-//           action.payload?.data?.token ||
-//           action.payload?.accessToken ||
-//           action.payload?.data?.accessToken;
-
-//         // ✅ user
-//         const user =
-//           action.payload?.user ||
-//           action.payload?.data?.user ||
-//           action.payload?.data ||
-//           null;
-
-//         state.token = token || null;
-//         state.user = user;
-
-//         if (token) localStorage.setItem(TOKEN_KEY, token);
-//       })
-//       .addCase(loginUser.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.payload;
-//       })
-
-//       // ========== FETCH ME ==========
-//       .addCase(fetchMe.pending, (state) => {
-//         state.loading = true;
-//       })
-//       .addCase(fetchMe.fulfilled, (state, action) => {
-//         // ✅ backend could return:
-//         // 1) user object
-//         // 2) { success:true, data:user }
-//         // 3) { success:true, user:user }
-//         const user =
-//           action.payload?.data ||
-//           action.payload?.user ||
-//           action.payload;
-
-//         state.user = user;
-//         state.loading = false;
-//       })
-//       .addCase(fetchMe.rejected, (state) => {
-//         state.user = null;
-//         state.token = null;
-//         state.loading = false;
-//         localStorage.removeItem(TOKEN_KEY);
-//       });
-//   },
-// });
-
-// export const { logout, stopLoading } = authSlice.actions;
-// export default authSlice.reducer;
-
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../../utils/axios";
@@ -163,9 +43,29 @@ export const updateMyProfile = createAsyncThunk(
   async ({ fullName }, { rejectWithValue }) => {
     try {
       const res = await api.put("/users/profile", { fullName });
-      return res.data; // { success:true, user } OR { success:true, data:user } OR user
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Update failed");
+    }
+  }
+);
+
+/* ================================
+   ✅ UPLOAD MY AVATAR (/users/profile/avatar)
+   Body: FormData { avatar: file }
+================================ */
+export const uploadMyAvatar = createAsyncThunk(
+  "auth/uploadMyAvatar",
+  async (formData, { rejectWithValue }) => {
+    try {
+      const res = await api.put("/users/profile/avatar", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return res.data; // expect { success:true, user }
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Upload failed");
     }
   }
 );
@@ -178,10 +78,14 @@ const authSlice = createSlice({
     loading: true,
     error: null,
 
-    // ✅ profile states
+    // profile states
     profileSaving: false,
     profileError: null,
     profileSuccess: null,
+
+    // avatar upload states
+    avatarUploading: false,
+    avatarError: null,
   },
 
   reducers: {
@@ -190,9 +94,14 @@ const authSlice = createSlice({
       state.token = null;
       state.loading = false;
       state.error = null;
+
       state.profileSaving = false;
       state.profileError = null;
       state.profileSuccess = null;
+
+      state.avatarUploading = false;
+      state.avatarError = null;
+
       localStorage.removeItem(TOKEN_KEY);
     },
     stopLoading: (state) => {
@@ -201,6 +110,7 @@ const authSlice = createSlice({
     clearProfileMessage: (state) => {
       state.profileError = null;
       state.profileSuccess = null;
+      state.avatarError = null;
     },
   },
 
@@ -262,21 +172,48 @@ const authSlice = createSlice({
       .addCase(updateMyProfile.fulfilled, (state, action) => {
         state.profileSaving = false;
 
-        const updatedUser =
-          action.payload?.user ||
-          action.payload?.data ||
-          action.payload;
+        const updatedUser = action.payload?.user || action.payload?.data || action.payload;
 
-        state.user = updatedUser;
+        // keep old avatarUrl if backend didn't return it
+        state.user = {
+          ...(state.user || {}),
+          ...(updatedUser || {}),
+          avatarUrl: updatedUser?.avatarUrl ?? state.user?.avatarUrl ?? "",
+        };
+
         state.profileSuccess = "Profile updated successfully ✅";
       })
       .addCase(updateMyProfile.rejected, (state, action) => {
         state.profileSaving = false;
         state.profileError = action.payload || "Update failed";
+      })
+
+      // ========== UPLOAD AVATAR ==========
+      .addCase(uploadMyAvatar.pending, (state) => {
+        state.avatarUploading = true;
+        state.avatarError = null;
+        state.profileSuccess = null;
+      })
+      .addCase(uploadMyAvatar.fulfilled, (state, action) => {
+        state.avatarUploading = false;
+
+        const updatedUser = action.payload?.user || action.payload?.data || null;
+
+        if (updatedUser) {
+          state.user = {
+            ...(state.user || {}),
+            ...(updatedUser || {}),
+          };
+        }
+
+        state.profileSuccess = "Photo updated ✅";
+      })
+      .addCase(uploadMyAvatar.rejected, (state, action) => {
+        state.avatarUploading = false;
+        state.avatarError = action.payload || "Upload failed";
       });
   },
 });
 
 export const { logout, stopLoading, clearProfileMessage } = authSlice.actions;
 export default authSlice.reducer;
-

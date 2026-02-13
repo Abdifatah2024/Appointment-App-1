@@ -1,5 +1,4 @@
 
-
 import {
   Outlet,
   NavLink,
@@ -50,8 +49,6 @@ function writeSeen(obj) {
   try {
     localStorage.setItem(SEEN_KEY, JSON.stringify(obj));
   } catch {}
-
-/* noop */
 }
 
 /* =========================
@@ -200,6 +197,15 @@ export default function DashboardLayout() {
   const displayName = user.fullName || user.name || user.username || "User";
   const initials = getInitials(displayName);
 
+  // ✅ avatar url
+  const avatarUrl = useMemo(() => {
+    const v = user?.avatarUrl || "";
+    if (!v) return "";
+    if (/^https?:\/\//i.test(v)) return v;
+    // if backend returns "/uploads/avatars/xxx.png"
+    return `${API_BASE}${v}`;
+  }, [user?.avatarUrl, API_BASE]);
+
   /* =========================
     Unread = max(server - seen, 0)
   ========================= */
@@ -311,8 +317,6 @@ export default function DashboardLayout() {
   ========================= */
   useEffect(() => {
     if (!token) return;
-
-    // ✅ ADMIN only: staff/user don't need admin counts
     if (!isAdmin) return;
 
     fetchCounts();
@@ -342,7 +346,7 @@ export default function DashboardLayout() {
     Auto mark as seen when user visits page
   ========================= */
   useEffect(() => {
-    if (!isAdmin) return; // admin only for these notifications
+    if (!isAdmin) return;
 
     const path = location.pathname;
     const matchAndMark = (key, match) => {
@@ -406,7 +410,6 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex bg-[#F8FAFC]">
-      {/* MOBILE OVERLAY */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
@@ -522,7 +525,6 @@ export default function DashboardLayout() {
             </>
           )}
 
-          {/* ✅ STAFF: ONLY 3 ITEMS */}
           {isStaff && (
             <Section title="Staff Area">
               <NavItem
@@ -675,8 +677,19 @@ export default function DashboardLayout() {
                   </p>
                 </div>
 
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
-                  {initials}
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center font-black">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt="avatar"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
                 </div>
 
                 <ChevronDown
@@ -764,3 +777,4 @@ function NavItem({ to, label, icon, onNav, badge }) {
     </NavLink>
   );
 }
+
