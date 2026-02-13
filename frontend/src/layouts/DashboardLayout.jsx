@@ -1,6 +1,11 @@
-// kii hore e nivegationka so saaraya
 
-// import { Outlet, NavLink, useLocation, useNavigate, Navigate } from "react-router-dom";
+// import {
+//   Outlet,
+//   NavLink,
+//   useLocation,
+//   useNavigate,
+//   Navigate,
+// } from "react-router-dom";
 // import { useDispatch, useSelector } from "react-redux";
 // import { logout } from "../Redux/slices/userSlices/authSlice";
 // import {
@@ -11,6 +16,7 @@
 //   PlusCircle,
 //   Clock,
 //   CheckCircle,
+//   CheckCircle2, // ✅ Completed icon
 //   LogOut,
 //   Bell,
 //   Search,
@@ -80,10 +86,6 @@
 //       return "Appointment approved";
 //     case "COMPLETED":
 //       return "Appointment completed";
-//     case "NO_SHOW":
-//       return "Customer did not attend";
-//     case "REJECTED":
-//       return "Appointment rejected";
 //     case "CUSTOMERS":
 //       return "New customer added";
 //     case "BOOKINGS":
@@ -103,10 +105,6 @@
 //       return "Mid ka mid ah appointments waa la approved gareeyay.";
 //     case "COMPLETED":
 //       return "Appointment ayaa la completed gareeyay.";
-//     case "NO_SHOW":
-//       return "Customer-ku ma iman ballantii (No show).";
-//     case "REJECTED":
-//       return "Appointment-ka waa la diiday (Rejected).";
 //     case "CUSTOMERS":
 //       return "Customer cusub ayaa la diiwaan geliyay.";
 //     case "BOOKINGS":
@@ -126,11 +124,6 @@
 //       return "/dashboard/approved-appointments";
 //     case "COMPLETED":
 //       return "/dashboard/completed-appointments";
-//     case "NO_SHOW":
-//       // haddii aad page gaar ah u leedahay, beddel halkan
-//       return "/dashboard/approved-appointments";
-//     case "REJECTED":
-//       return "/dashboard/approved-appointments";
 //     case "CUSTOMERS":
 //       return "/dashboard/customers";
 //     case "BOOKINGS":
@@ -152,12 +145,12 @@
 //   const API_BASE =
 //     import.meta?.env?.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:4000";
 
-//   /* ✅ Hooks MUST be before any return */
+//   /* ✅ Hooks before any return */
 //   const [mobileOpen, setMobileOpen] = useState(false);
 //   const [notifOpen, setNotifOpen] = useState(false);
 
 //   /* =========================
-//     Counts from backend
+//     Counts from backend (TOTALS)
 //   ========================= */
 //   const [serverCounts, setServerCounts] = useState({
 //     PENDING: 0,
@@ -169,21 +162,75 @@
 //   });
 
 //   /* =========================
-//     Seen counts (local)
+//     Seen counts (local) to keep unread stable after refresh
 //   ========================= */
 //   const [seenCounts, setSeenCounts] = useState(() => readSeen());
 
 //   /* =========================
-//     Dropdown updates
+//     Dropdown updates from backend (optional endpoint)
 //   ========================= */
 //   const [notifications, setNotifications] = useState([]);
 
-//   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
-//   const isStaff = user?.role === "STAFF";
-//   const isUser = user?.role === "USER";
+//   /* ✅ Safe returns after hooks */
+//   if (loading) return null;
+//   if (!token || !user) return <Navigate to="/" replace />;
+
+//   const isAdmin = user.role === "ADMIN" || user.role === "SUPERADMIN";
+//   const isStaff = user.role === "STAFF";
+//   const isUser = user.role === "USER";
 
 //   /* =========================
-//     Fetch helpers (callback)
+//     Unread = max(server - seen, 0)
+//   ========================= */
+//   const unreadCounts = useMemo(() => {
+//     const keys = [
+//       "PENDING",
+//       "APPROVED",
+//       "COMPLETED",
+//       "CUSTOMERS",
+//       "BOOKINGS",
+//       "SERVICES",
+//     ];
+
+//     const out = {};
+//     for (const k of keys) {
+//       const s = Number(serverCounts[k] || 0);
+//       const seen = Number(seenCounts[k] || 0);
+//       out[k] = Math.max(s - seen, 0);
+//     }
+//     return out;
+//   }, [serverCounts, seenCounts]);
+
+//   const totalUnread = useMemo(() => {
+//     return (
+//       (unreadCounts.PENDING || 0) +
+//       (unreadCounts.APPROVED || 0) +
+//       (unreadCounts.COMPLETED || 0) +
+//       (unreadCounts.CUSTOMERS || 0) +
+//       (unreadCounts.BOOKINGS || 0) +
+//       (unreadCounts.SERVICES || 0)
+//     );
+//   }, [unreadCounts]);
+
+//   /* =========================
+//     Mark as seen helper
+//   ========================= */
+//   const markSeen = useCallback(
+//     (key) => {
+//       setSeenCounts((prev) => {
+//         const next = {
+//           ...prev,
+//           [key]: Number(serverCounts[key] || 0),
+//         };
+//         writeSeen(next);
+//         return next;
+//       });
+//     },
+//     [serverCounts]
+//   );
+
+//   /* =========================
+//     ✅ Fetch counts + updates (CALLBACKS)  <-- muhiim
 //   ========================= */
 //   const fetchCounts = useCallback(async () => {
 //     try {
@@ -197,6 +244,10 @@
 //           PENDING: Number(data.data.PENDING || 0),
 //           APPROVED: Number(data.data.APPROVED || 0),
 //           COMPLETED: Number(data.data.COMPLETED || 0),
+//           // haddii backend kuu soo diro kuwa kale, waad ka qaadan kartaa:
+//           CUSTOMERS: Number(data.data.CUSTOMERS || prev.CUSTOMERS || 0),
+//           BOOKINGS: Number(data.data.BOOKINGS || prev.BOOKINGS || 0),
+//           SERVICES: Number(data.data.SERVICES || prev.SERVICES || 0),
 //         }));
 //       }
 //     } catch (err) {
@@ -236,40 +287,34 @@
 //   }, [API_BASE, token]);
 
 //   /* =========================
-//     Unread = max(server - seen, 0)
+//     ✅ POLLING (automatic refresh)
 //   ========================= */
-//   const unreadCounts = useMemo(() => {
-//     const keys = ["PENDING", "APPROVED", "COMPLETED", "CUSTOMERS", "BOOKINGS", "SERVICES"];
-//     const out = {};
-//     for (const k of keys) {
-//       const s = Number(serverCounts[k] || 0);
-//       const seen = Number(seenCounts[k] || 0);
-//       out[k] = Math.max(s - seen, 0);
-//     }
-//     return out;
-//   }, [serverCounts, seenCounts]);
+//   useEffect(() => {
+//     if (!token) return;
 
-//   const totalUnread = useMemo(() => {
-//     return (
-//       (unreadCounts.PENDING || 0) +
-//       (unreadCounts.APPROVED || 0) +
-//       (unreadCounts.COMPLETED || 0) +
-//       (unreadCounts.CUSTOMERS || 0) +
-//       (unreadCounts.BOOKINGS || 0) +
-//       (unreadCounts.SERVICES || 0)
-//     );
-//   }, [unreadCounts]);
+//     // initial load
+//     fetchCounts();
+//     fetchUpdates();
+
+//     // ✅ refresh every 10s (you can change to 5000 if you want faster)
+//     const id = setInterval(() => {
+//       fetchCounts();
+//       fetchUpdates();
+//     }, 10000);
+
+//     return () => clearInterval(id);
+//   }, [token, fetchCounts, fetchUpdates]);
 
 //   /* =========================
-//     Mark as seen helper
+//     ✅ If user opens bell => refresh immediately
 //   ========================= */
-//   const markSeen = (key) => {
-//     setSeenCounts((prev) => {
-//       const next = { ...prev, [key]: Number(serverCounts[key] || 0) };
-//       writeSeen(next);
-//       return next;
-//     });
-//   };
+//   useEffect(() => {
+//     if (!token) return;
+//     if (notifOpen) {
+//       fetchCounts();
+//       fetchUpdates();
+//     }
+//   }, [notifOpen, token, fetchCounts, fetchUpdates]);
 
 //   /* =========================
 //     Auto mark as seen when user visits page
@@ -289,37 +334,7 @@
 //     matchAndMark("BOOKINGS", "/dashboard/create-appointment");
 //     matchAndMark("SERVICES", "/dashboard/services");
 //     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [location.pathname, serverCounts]);
-
-//   /* =========================
-//     ✅ Fetch on mount + POLLING (fix: badges appear without refresh)
-//   ========================= */
-//   useEffect(() => {
-//     if (!token) return;
-
-//     // initial load
-//     fetchCounts();
-//     fetchUpdates();
-
-//     // ✅ polling every 10s (you can make 5s if you want)
-//     const id = setInterval(() => {
-//       fetchCounts();
-//       fetchUpdates();
-//     }, 10000);
-
-//     return () => clearInterval(id);
-//   }, [token, fetchCounts, fetchUpdates]);
-
-//   /* =========================
-//     If user opens bell => refresh immediately
-//   ========================= */
-//   useEffect(() => {
-//     if (!token) return;
-//     if (notifOpen) {
-//       fetchCounts();
-//       fetchUpdates();
-//     }
-//   }, [notifOpen, token, fetchCounts, fetchUpdates]);
+//   }, [location.pathname, serverCounts, markSeen]);
 
 //   const handleLogout = () => {
 //     dispatch(logout());
@@ -336,10 +351,6 @@
 //     if (key) markSeen(key);
 //     setMobileOpen(false);
 //   };
-
-//   /* ✅ Now safe to return conditionally */
-//   if (loading) return null;
-//   if (!token || !user) return <Navigate to="/" replace />;
 
 //   return (
 //     <div className="min-h-screen flex bg-[#F8FAFC]">
@@ -373,7 +384,10 @@
 //             </h1>
 //           </div>
 
-//           <button className="lg:hidden text-slate-500" onClick={() => setMobileOpen(false)}>
+//           <button
+//             className="lg:hidden text-slate-500"
+//             onClick={() => setMobileOpen(false)}
+//           >
 //             <X />
 //           </button>
 //         </div>
@@ -383,8 +397,18 @@
 //           {isAdmin && (
 //             <>
 //               <Section title="Management">
-//                 <NavItem to="/dashboard" icon={<LayoutDashboard />} label="Dashboard" onNav={() => handleNavClick(null)} />
-//                 <NavItem to="/dashboard/users" icon={<Users />} label="Users" onNav={() => handleNavClick(null)} />
+//                 <NavItem
+//                   to="/dashboard"
+//                   icon={<LayoutDashboard />}
+//                   label="Dashboard"
+//                   onNav={() => handleNavClick(null)}
+//                 />
+//                 <NavItem
+//                   to="/dashboard/users"
+//                   icon={<Users />}
+//                   label="Users"
+//                   onNav={() => handleNavClick(null)}
+//                 />
 //                 <NavItem
 //                   to="/dashboard/customers"
 //                   icon={<UserSquare2 />}
@@ -428,7 +452,7 @@
 
 //                 <NavItem
 //                   to="/dashboard/completed-appointments"
-//                   icon={<CheckCircle />}
+//                   icon={<CheckCircle2 />}
 //                   label="Completed"
 //                   badge={unreadCounts.COMPLETED}
 //                   onNav={() => handleNavClick("COMPLETED")}
@@ -462,13 +486,23 @@
 //                 badge={unreadCounts.BOOKINGS}
 //                 onNav={() => handleNavClick("BOOKINGS")}
 //               />
-//               <NavItem to="/dashboard/employee" icon={<IdCardLanyard />} label="My Dashboard" onNav={() => handleNavClick(null)} />
+//               <NavItem
+//                 to="/dashboard/employee"
+//                 icon={<IdCardLanyard />}
+//                 label="My Dashboard"
+//                 onNav={() => handleNavClick(null)}
+//               />
 //             </Section>
 //           )}
 
 //           {isUser && (
 //             <Section title="My Area">
-//               <NavItem to="/dashboard/employee" icon={<Clock />} label="My Dashboard" onNav={() => handleNavClick(null)} />
+//               <NavItem
+//                 to="/dashboard/employee"
+//                 icon={<Clock />}
+//                 label="My Dashboard"
+//                 onNav={() => handleNavClick(null)}
+//               />
 //             </Section>
 //           )}
 //         </nav>
@@ -490,7 +524,10 @@
 //         {/* HEADER */}
 //         <header className="h-16 md:h-20 bg-white border-b border-slate-200 sticky top-0 z-20 flex items-center justify-between px-4 md:px-10">
 //           <div className="flex items-center gap-3">
-//             <button className="lg:hidden text-slate-600" onClick={() => setMobileOpen(true)}>
+//             <button
+//               className="lg:hidden text-slate-600"
+//               onClick={() => setMobileOpen(true)}
+//             >
 //               <Menu />
 //             </button>
 
@@ -508,7 +545,7 @@
 //               />
 //             </div>
 
-//             {/* NOTIFICATIONS DROPDOWN + RED NUMBER ON BELL */}
+//             {/* ✅ NOTIFICATIONS DROPDOWN + RED NUMBER ON BELL */}
 //             <div className="relative">
 //               <button
 //                 onClick={() => setNotifOpen((s) => !s)}
@@ -526,14 +563,19 @@
 //                 <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
 //                   <div className="px-4 py-3 font-bold border-b flex items-center justify-between">
 //                     <span>Latest Updates</span>
-//                     <button onClick={() => setNotifOpen(false)} className="text-slate-400 hover:text-slate-700">
+//                     <button
+//                       onClick={() => setNotifOpen(false)}
+//                       className="text-slate-400 hover:text-slate-700"
+//                     >
 //                       <X size={16} />
 //                     </button>
 //                   </div>
 
 //                   <div className="max-h-72 overflow-y-auto">
 //                     {notifications.length === 0 ? (
-//                       <div className="px-4 py-6 text-sm text-slate-500">No updates yet.</div>
+//                       <div className="px-4 py-6 text-sm text-slate-500">
+//                         No updates yet.
+//                       </div>
 //                     ) : (
 //                       notifications.map((n) => (
 //                         <button
@@ -542,11 +584,17 @@
 //                           className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b"
 //                         >
 //                           <div className="flex items-center justify-between">
-//                             <span className="text-[11px] font-black text-slate-500">{n.status}</span>
-//                             <span className="text-[10px] text-slate-400">{n.time}</span>
+//                             <span className="text-[11px] font-black text-slate-500">
+//                               {n.status}
+//                             </span>
+//                             <span className="text-[10px] text-slate-400">
+//                               {n.time}
+//                             </span>
 //                           </div>
 
-//                           <p className="text-sm font-bold text-slate-800 mt-1">{n.title}</p>
+//                           <p className="text-sm font-bold text-slate-800 mt-1">
+//                             {n.title}
+//                           </p>
 //                           <p className="text-xs text-slate-500 mt-1">{n.desc}</p>
 //                         </button>
 //                       ))
@@ -559,7 +607,9 @@
 //             <div className="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l">
 //               <div className="text-right hidden sm:block">
 //                 <p className="text-sm font-bold">{user.fullName}</p>
-//                 <p className="text-[10px] font-bold text-emerald-600 uppercase">{user.role}</p>
+//                 <p className="text-[10px] font-bold text-emerald-600 uppercase">
+//                   {user.role}
+//                 </p>
 //               </div>
 
 //               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
@@ -583,6 +633,7 @@
 // /* =========================
 //     HELPERS
 // ========================= */
+
 // function Section({ title, children }) {
 //   return (
 //     <div>
@@ -648,10 +699,12 @@ import {
   IdCardLanyard,
   Menu,
   X,
+  ChevronDown, // ✅ NEW
+  User2, // ✅ NEW
 } from "lucide-react";
 
 import axios from "axios";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 
 const SEEN_KEY = "appointment_app_seen_counts_v1";
 
@@ -760,6 +813,14 @@ function defaultTo(status) {
   }
 }
 
+function getInitials(name) {
+  const n = (name || "").trim();
+  if (!n) return "U";
+  const parts = n.split(" ").filter(Boolean);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+}
+
 export default function DashboardLayout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -773,6 +834,10 @@ export default function DashboardLayout() {
   /* ✅ Hooks before any return */
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+
+  // ✅ NEW: profile dropdown
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   /* =========================
     Counts from backend (TOTALS)
@@ -803,6 +868,9 @@ export default function DashboardLayout() {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPERADMIN";
   const isStaff = user.role === "STAFF";
   const isUser = user.role === "USER";
+
+  const displayName = user.fullName || user.name || user.username || "User";
+  const initials = getInitials(displayName);
 
   /* =========================
     Unread = max(server - seen, 0)
@@ -869,7 +937,6 @@ export default function DashboardLayout() {
           PENDING: Number(data.data.PENDING || 0),
           APPROVED: Number(data.data.APPROVED || 0),
           COMPLETED: Number(data.data.COMPLETED || 0),
-          // haddii backend kuu soo diro kuwa kale, waad ka qaadan kartaa:
           CUSTOMERS: Number(data.data.CUSTOMERS || prev.CUSTOMERS || 0),
           BOOKINGS: Number(data.data.BOOKINGS || prev.BOOKINGS || 0),
           SERVICES: Number(data.data.SERVICES || prev.SERVICES || 0),
@@ -921,7 +988,7 @@ export default function DashboardLayout() {
     fetchCounts();
     fetchUpdates();
 
-    // ✅ refresh every 10s (you can change to 5000 if you want faster)
+    // ✅ refresh every 10s
     const id = setInterval(() => {
       fetchCounts();
       fetchUpdates();
@@ -961,6 +1028,29 @@ export default function DashboardLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, serverCounts, markSeen]);
 
+  // ✅ NEW: close profile dropdown on outside click / Esc
+  useEffect(() => {
+    const onDown = (e) => {
+      if (!profileOpen) return;
+      if (e.key === "Escape") setProfileOpen(false);
+    };
+
+    const onClick = (e) => {
+      if (!profileOpen) return;
+      if (!profileRef.current) return;
+      if (!profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("mousedown", onClick);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("mousedown", onClick);
+    };
+  }, [profileOpen]);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate("/", { replace: true });
@@ -975,6 +1065,11 @@ export default function DashboardLayout() {
   const handleNavClick = (key) => {
     if (key) markSeen(key);
     setMobileOpen(false);
+  };
+
+  const goProfile = () => {
+    setProfileOpen(false);
+    navigate("/dashboard/profile");
   };
 
   return (
@@ -1229,17 +1324,48 @@ export default function DashboardLayout() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold">{user.fullName}</p>
-                <p className="text-[10px] font-bold text-emerald-600 uppercase">
-                  {user.role}
-                </p>
-              </div>
+            {/* ✅ PROFILE DROPDOWN (CLICKABLE) */}
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => setProfileOpen((s) => !s)}
+                className="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l hover:bg-slate-50 rounded-xl px-2 py-1 transition"
+              >
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-bold text-slate-900">{displayName}</p>
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase">
+                    {user.role}
+                  </p>
+                </div>
 
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
-                {user.fullName?.charAt(0)}
-              </div>
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-black">
+                  {initials}
+                </div>
+
+                <ChevronDown className="hidden sm:block text-slate-400" size={16} />
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-3 w-56 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
+                  <button
+                    onClick={goProfile}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    <User2 size={18} className="text-slate-400" />
+                    My Profile
+                  </button>
+
+                  <div className="h-px bg-slate-100" />
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50"
+                  >
+                    <LogOut size={18} />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

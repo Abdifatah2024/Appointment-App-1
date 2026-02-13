@@ -1,3 +1,5 @@
+
+
 const User = require("../../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -5,87 +7,6 @@ const jwt = require("jsonwebtoken");
 /* =========================
    LOGIN USER
 ========================= */
-// exports.loginUser = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Email and password are required",
-//       });
-//     }
-
-//     const user = await User.findOne({ email }).select("+password");
-
-//     if (!user) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "Invalid email or password",
-//       });
-//     }
-
-//     if (!user.isActive) {
-//       return res.status(403).json({
-//         success: false,
-//         message: "Account is disabled",
-//       });
-//     }
-
-//     // 🔐 Block Google-only accounts
-//     if (user.provider === "google") {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Use Google login for this account",
-//       });
-//     }
-
-//     if (!user.password) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "No local password found",
-//       });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "Invalid email or password",
-//       });
-//     }
-
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         role: user.role,
-//         email: user.email,
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1d" }
-//     );
-
-//     res.json({
-//       success: true,
-//       message: "Login successful",
-//       token,
-//       user: {
-//         id: user._id,
-//         fullName: user.fullName,
-//         email: user.email,
-//         role: user.role,
-//         provider: user.provider,
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
-
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -164,8 +85,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-/* ===
-=====================
+/* =========================
    GET CURRENT USER (/users/me)
 ========================= */
 exports.getMe = async (req, res) => {
@@ -181,9 +101,51 @@ exports.getMe = async (req, res) => {
       });
     }
 
+    // waxaad hore u samaysay res.json(user) -> waan ilaalinay
     res.json(user);
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* =========================
+   ✅ UPDATE MY PROFILE (PUT /api/users/profile)
+   body: { fullName }
+========================= */
+exports.updateMyProfile = async (req, res) => {
+  try {
+    const { fullName } = req.body;
+
+    if (!fullName || fullName.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Full name is required (min 2 chars)",
+      });
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.user.id,
+      { fullName: fullName.trim() },
+      { new: true, runValidators: true }
+    ).select("_id fullName email role provider");
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated",
+      user: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -332,7 +294,4 @@ exports.deleteUserPermanent = async (req, res) => {
     });
   }
 };
-
-
-
 
