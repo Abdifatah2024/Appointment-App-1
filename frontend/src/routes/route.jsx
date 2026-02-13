@@ -1,12 +1,25 @@
+
+
+
+
 import React from "react";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 /* ================= PAGES ================= */
 import Login from "../pages/user/Login";
 import Users from "../pages/user/Users";
+import Profile from "../pages/user/Profile";
+
 import Customers from "../pages/customer/Customers";
 import Services from "../pages/Service/Services";
 import CreateAppointment from "../pages/customer/CreateAppointment";
 import PendingAppointments from "../pages/customer/PendingAppointments";
+
+// ⚠️ Hubi magaca file-ka: AprovedAppointments vs ApprovedAppointments
 import ApprovedAppointments from "../pages/customer/AprovedAppointments";
+import CompletedAppointments from "../pages/customer/CompletedAppointments";
+
 import AppointmentDashboard from "../Components/Dashboard";
 import EmployeeDashboard from "../pages/Employee/EmployeeDashboard";
 
@@ -28,6 +41,19 @@ const Unauthorized = () => (
   </div>
 );
 
+/* ================= STAFF DEFAULT ================= */
+function DashboardIndex() {
+  const { user } = useSelector((s) => s.auth);
+
+  // ✅ STAFF -> Employee dashboard
+  if (user?.role === "STAFF") {
+    return <EmployeeDashboard />;
+  }
+
+  // ✅ ADMIN -> main dashboard
+  return <AppointmentDashboard />;
+}
+
 /* ================= ROUTES ================= */
 const systemRoutes = [
   /* ---------- PUBLIC ---------- */
@@ -44,11 +70,15 @@ const systemRoutes = [
         path: "/dashboard",
         element: <DashboardLayout />,
         children: [
-          { index: true, element: <AppointmentDashboard /> },
+          // ✅ CHANGE: STAFF sees EmployeeDashboard here
+          { index: true, element: <DashboardIndex /> },
 
-          /* SHARED */
+          /* STAFF SHARED (3 items only in sidebar) */
           { path: "customers", element: <Customers /> },
           { path: "create-appointment", element: <CreateAppointment /> },
+
+          // ✅ PROFILE (ADMIN + STAFF)
+          { path: "profile", element: <Profile /> },
 
           /* ADMIN ONLY */
           {
@@ -58,6 +88,7 @@ const systemRoutes = [
               { path: "services", element: <Services /> },
               { path: "pending-appointments", element: <PendingAppointments /> },
               { path: "approved-appointments", element: <ApprovedAppointments /> },
+              { path: "completed-appointments", element: <CompletedAppointments /> },
             ],
           },
         ],
@@ -65,9 +96,9 @@ const systemRoutes = [
     ],
   },
 
-  /* ---------- EMPLOYEE ---------- */
+  /* ---------- EMPLOYEE (direct link, also allow STAFF) ---------- */
   {
-    element: <ProtectedRoute allowedRoles={["USER","ADMIN"]} />,
+    element: <ProtectedRoute allowedRoles={["USER", "ADMIN", "STAFF"]} />,
     children: [
       {
         path: "/dashboard/employee",
@@ -85,5 +116,3 @@ const systemRoutes = [
 ];
 
 export default systemRoutes;
-
-

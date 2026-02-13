@@ -1,10 +1,7 @@
+
 const Customer = require("../../model/Customer");
 const Appointment = require("../../model/Appointment");
 
-
-/* =========================
-   CREATE CUSTOMER
-========================= */
 /* =========================
    CREATE CUSTOMER
 ========================= */
@@ -12,9 +9,6 @@ exports.createCustomer = async (req, res) => {
   try {
     const { fullName, phone, email, gender } = req.body;
 
-    /* =========================
-       BASIC VALIDATION
-    ========================= */
     if (!fullName || !phone || !gender) {
       return res.status(400).json({
         success: false,
@@ -22,9 +16,6 @@ exports.createCustomer = async (req, res) => {
       });
     }
 
-    /* =========================
-       ENUM VALIDATION
-    ========================= */
     const allowedGenders = ["MALE", "FEMALE"];
     if (!allowedGenders.includes(gender)) {
       return res.status(400).json({
@@ -33,9 +24,6 @@ exports.createCustomer = async (req, res) => {
       });
     }
 
-    /* =========================
-       DUPLICATE PHONE CHECK
-    ========================= */
     const exists = await Customer.findOne({ phone });
     if (exists) {
       return res.status(409).json({
@@ -44,43 +32,42 @@ exports.createCustomer = async (req, res) => {
       });
     }
 
-    /* =========================
-       CREATE CUSTOMER
-    ========================= */
     const customer = await Customer.create({
       fullName,
       phone,
       email,
       gender,
+      // isActive default true (model)
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Customer created successfully",
       data: customer,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to create customer",
     });
   }
 };
 
-
 /* =========================
-   GET ALL CUSTOMERS
+   GET ALL CUSTOMERS (ACTIVE ONLY) ✅ FIX
 ========================= */
 exports.getCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find().sort({ createdAt: -1 });
+    const customers = await Customer.find({
+      isActive: { $ne: false }, // ✅ true OR missing, but not false
+    }).sort({ createdAt: -1 });
 
-    res.json({
+    return res.json({
       success: true,
       data: customers,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch customers",
     });
@@ -101,12 +88,12 @@ exports.getCustomerById = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: customer,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch customer",
     });
@@ -120,11 +107,6 @@ exports.updateCustomer = async (req, res) => {
   try {
     const { fullName, phone, email, status, gender } = req.body;
 
-    /* =========================
-       ENUM VALIDATIONS
-    ========================= */
-
-    // Status enum (if used)
     const allowedStatuses = ["ACTIVE", "INACTIVE", "BLOCKED"];
     if (status && !allowedStatuses.includes(status)) {
       return res.status(400).json({
@@ -133,7 +115,6 @@ exports.updateCustomer = async (req, res) => {
       });
     }
 
-    // Gender enum
     const allowedGenders = ["MALE", "FEMALE"];
     if (gender && !allowedGenders.includes(gender)) {
       return res.status(400).json({
@@ -142,9 +123,6 @@ exports.updateCustomer = async (req, res) => {
       });
     }
 
-    /* =========================
-       UPDATE CUSTOMER
-    ========================= */
     const customer = await Customer.findByIdAndUpdate(
       req.params.id,
       {
@@ -154,10 +132,7 @@ exports.updateCustomer = async (req, res) => {
         ...(status !== undefined && { status }),
         ...(gender !== undefined && { gender }),
       },
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
 
     if (!customer) {
@@ -167,71 +142,29 @@ exports.updateCustomer = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Customer updated successfully",
       data: customer,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to update customer",
     });
   }
 };
 
-
 /* =========================
-   SOFT DELETE CUSTOMER
+   SOFT DELETE CUSTOMER ✅ FIX
 ========================= */
-// exports.deleteCustomer = async (req, res) => {
-//   try {
-//     const customer = await Customer.findByIdAndUpdate(
-//       req.params.id,
-//       { isActive: false },
-//       { new: true }
-//     );
-
-//     if (!customer) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Customer not found",
-//       });
-//     }
-
-//     res.json({
-//       success: true,
-//       message: "Customer deactivated successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message || "Failed to deactivate customer",
-//     });
-//   }
-// };
-
-
-
 exports.deleteCustomer = async (req, res) => {
   try {
-    const customerId = req.params.id;
-
-    // 🔍 Check if customer has any appointments
-    const hasAppointments = await Appointment.exists({
-      customerId: customerId,
-    });
-
-    if (hasAppointments) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Customer cannot be deleted because they have existing appointments",
-      });
-    }
-
-    // 🗑️ Permanent delete (HARD DELETE)
-    const customer = await Customer.findByIdAndDelete(customerId);
+    const customer = await Customer.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false }, // ✅ now this will be saved because model has isActive
+      { new: true }
+    );
 
     if (!customer) {
       return res.status(404).json({
@@ -240,14 +173,14 @@ exports.deleteCustomer = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.json({
       success: true,
-      message: "Customer deleted permanently",
+      message: "Customer deactivated successfully",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message || "Failed to delete customer",
+      message: error.message || "Failed to deactivate customer",
     });
   }
 };
@@ -266,13 +199,13 @@ exports.deleteCustomerPermanent = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Customer permanently deleted",
       data: customer,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to delete customer permanently",
     });
@@ -280,8 +213,7 @@ exports.deleteCustomerPermanent = async (req, res) => {
 };
 
 /* =========================
-   SEARCH CUSTOMER (NAME / PHONE)
-   ?q=ali  OR  ?q=061
+   SEARCH CUSTOMER (NAME / PHONE) ✅ active only
 ========================= */
 exports.searchCustomers = async (req, res) => {
   try {
@@ -302,36 +234,28 @@ exports.searchCustomers = async (req, res) => {
             { phone: { $regex: q, $options: "i" } },
           ],
         },
-        {
-          $or: [
-            { isActive: true },
-            { isActive: { $exists: false } }, // 🔥 KEY FIX
-          ],
-        },
+        { isActive: { $ne: false } }, // ✅
       ],
     })
       .select("fullName phone email")
       .limit(10)
       .sort({ fullName: 1 });
 
-    res.json({
+    return res.json({
       success: true,
       count: customers.length,
       data: customers,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
-
 /* =========================
-   SEARCH CUSTOMER
-   + APPOINTMENT STATUS
-   ?q=name_or_phone
+   SEARCH CUSTOMER + APPOINTMENT STATUS ✅ active only
 ========================= */
 exports.searchCustomersWithAppointmentStatus = async (req, res) => {
   try {
@@ -344,9 +268,6 @@ exports.searchCustomersWithAppointmentStatus = async (req, res) => {
       });
     }
 
-    /* -------------------------
-       FIND CUSTOMERS
-    ------------------------- */
     const customers = await Customer.find({
       $and: [
         {
@@ -355,28 +276,20 @@ exports.searchCustomersWithAppointmentStatus = async (req, res) => {
             { phone: { $regex: q, $options: "i" } },
           ],
         },
-        {
-          $or: [
-            { isActive: true },
-            { isActive: { $exists: false } },
-          ],
-        },
+        { isActive: { $ne: false } }, // ✅
       ],
     })
       .select("fullName phone email")
       .limit(10)
       .sort({ fullName: 1 });
 
-    /* -------------------------
-       ATTACH APPOINTMENT STATUS
-    ------------------------- */
     const results = await Promise.all(
       customers.map(async (customer) => {
         const appointment = await Appointment.findOne({
           customerId: customer._id,
         })
           .populate("serviceId", "name")
-          .sort({ appointmentDate: -1 }); // latest appointment
+          .sort({ appointmentDate: -1 });
 
         return {
           _id: customer._id,
@@ -390,16 +303,15 @@ exports.searchCustomersWithAppointmentStatus = async (req, res) => {
       })
     );
 
-    res.json({
+    return res.json({
       success: true,
       count: results.length,
       data: results,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to search customers",
     });
   }
 };
-

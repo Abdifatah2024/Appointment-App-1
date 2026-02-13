@@ -1,3 +1,453 @@
+
+// const Appointment = require("../../model/Appointment");
+// const Customer = require("../../model/Customer");
+// const Service = require("../../model/Service");
+
+// /* =========================
+//    CREATE APPOINTMENT
+//    WITH DAILY LIMIT HANDLING
+// ========================= */
+// exports.createAppointment = async (req, res) => {
+//   try {
+//     const {
+//       customerId,
+//       serviceId,
+//       appointmentDate,
+//       documentsSubmitted,
+//       identityProvided,
+//       passportProvided,
+//       notes,
+//     } = req.body;
+
+//     if (!customerId || !serviceId || !appointmentDate) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Customer, service, and appointment date are required",
+//       });
+//     }
+
+//     const customer = await Customer.findById(customerId);
+//     if (!customer) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Customer not found",
+//       });
+//     }
+
+//     const service = await Service.findById(serviceId);
+//     if (!service) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Service not found",
+//       });
+//     }
+
+//     let finalDate = new Date(appointmentDate);
+//     finalDate.setHours(0, 0, 0, 0);
+
+//     const maxPerDay = Number(service.maxCustomersPerDay || 0);
+
+//     if (maxPerDay > 0) {
+//       let available = false;
+
+//       while (!available) {
+//         const start = new Date(finalDate);
+//         start.setHours(0, 0, 0, 0);
+
+//         const end = new Date(finalDate);
+//         end.setHours(23, 59, 59, 999);
+
+//         const count = await Appointment.countDocuments({
+//           serviceId,
+//           appointmentDate: { $gte: start, $lte: end },
+//         });
+
+//         if (count < maxPerDay) {
+//           available = true;
+//         } else {
+//           finalDate.setDate(finalDate.getDate() + 1);
+//         }
+//       }
+//     }
+
+//     const appointment = await Appointment.create({
+//       customerId,
+//       serviceId,
+//       appointmentDate: finalDate,
+//       documentsSubmitted: !!documentsSubmitted,
+//       identityProvided: !!identityProvided,
+//       passportProvided: !!passportProvided,
+//       notes,
+//     });
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Appointment created successfully",
+//       adjustedDate: finalDate,
+//       data: appointment,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to create appointment",
+//     });
+//   }
+// };
+
+// /* =========================
+//    GET PENDING APPOINTMENTS
+// ========================= */
+// exports.getAppointments = async (req, res) => {
+//   try {
+//     const appointments = await Appointment.find({ status: "PENDING" })
+//       .populate("customerId", "fullName phone")
+//       .populate("serviceId", "name code")
+//       .sort({ appointmentDate: -1 });
+
+//     return res.json({ success: true, data: appointments });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to fetch appointments",
+//     });
+//   }
+// };
+
+// exports.getAppointmentsByStatus = async (req, res) => {
+//   try {
+//     const { status } = req.query;
+
+//     const allowedStatuses = ["PENDING", "APPROVED", "COMPLETED", "REJECTED"];
+
+//     if (!allowedStatuses.includes(status)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`,
+//       });
+//     }
+
+//     const appointments = await Appointment.find({ status })
+//       .populate("customerId", "fullName phone")
+//       .populate("serviceId", "name code")
+//       .populate("assignedUserId", "fullName email role")
+//       .sort({ appointmentDate: -1 });
+
+//     return res.json({
+//       success: true,
+//       count: appointments.length,
+//       data: appointments,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to fetch appointments",
+//     });
+//   }
+// };
+
+// /* =========================
+//    GET APPOINTMENT BY ID
+// ========================= */
+// exports.getAppointmentById = async (req, res) => {
+//   try {
+//     const appointment = await Appointment.findById(req.params.id)
+//       .populate("customerId", "fullName phone")
+//       .populate("serviceId", "name code");
+
+//     if (!appointment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Appointment not found",
+//       });
+//     }
+
+//     return res.json({ success: true, data: appointment });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to fetch appointment",
+//     });
+//   }
+// };
+
+// /* =====================================================
+//    ✅ UPDATE ONLY ASSIGNED USER
+// ===================================================== */
+// exports.updateAssignedUser = async (req, res) => {
+//   try {
+//     const { assignedUserId, notes } = req.body;
+
+//     if (!assignedUserId) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "assignedUserId is required",
+//       });
+//     }
+
+//     const appointment = await Appointment.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         assignedUserId,
+//         ...(notes !== undefined && { notes }),
+//       },
+//       { new: true, runValidators: true }
+//     )
+//       .populate("customerId", "fullName phone")
+//       .populate("serviceId", "name code")
+//       .populate("assignedUserId", "fullName role email");
+
+//     if (!appointment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Appointment not found",
+//       });
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "User assigned successfully",
+//       data: appointment,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to assign user",
+//     });
+//   }
+// };
+
+// /* =========================
+//    UPDATE GENERAL FIELDS
+// ========================= */
+// exports.updateAppointment = async (req, res) => {
+//   try {
+//     const {
+//       appointmentDate,
+//       documentsSubmitted,
+//       identityProvided,
+//       passportProvided,
+//       status,
+//       notes,
+//     } = req.body;
+
+//     const allowedStatuses = ["PENDING", "APPROVED", "REJECTED", "COMPLETED", "NO_SHOW"];
+//     if (status && !allowedStatuses.includes(status)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`,
+//       });
+//     }
+
+//     const appointment = await Appointment.findByIdAndUpdate(
+//       req.params.id,
+//       {
+//         ...(appointmentDate !== undefined && { appointmentDate }),
+//         ...(documentsSubmitted !== undefined && { documentsSubmitted }),
+//         ...(identityProvided !== undefined && { identityProvided }),
+//         ...(passportProvided !== undefined && { passportProvided }),
+//         ...(status !== undefined && { status }),
+//         ...(notes !== undefined && { notes }),
+//       },
+//       { new: true, runValidators: true }
+//     );
+
+//     if (!appointment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Appointment not found",
+//       });
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "Appointment updated successfully",
+//       data: appointment,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to update appointment",
+//     });
+//   }
+// };
+
+// /* =========================
+//    SOFT DELETE (CANCEL)
+// ========================= */
+// exports.deleteAppointment = async (req, res) => {
+//   try {
+//     const appointment = await Appointment.findByIdAndUpdate(
+//       req.params.id,
+//       { status: "REJECTED" },
+//       { new: true }
+//     );
+
+//     if (!appointment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Appointment not found",
+//       });
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "Appointment cancelled successfully",
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to cancel appointment",
+//     });
+//   }
+// };
+
+// /* =========================
+//    PERMANENT DELETE
+// ========================= */
+// exports.deleteAppointmentPermanent = async (req, res) => {
+//   try {
+//     const appointment = await Appointment.findByIdAndDelete(req.params.id);
+
+//     if (!appointment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Appointment not found",
+//       });
+//     }
+
+//     return res.json({
+//       success: true,
+//       message: "Appointment permanently deleted",
+//       data: appointment,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to delete appointment permanently",
+//     });
+//   }
+// };
+
+// /* =====================================================
+//    ✅ A) GET MY ASSIGNED APPOINTMENTS (APPROVED + COMPLETED + NO_SHOW + REJECTED)
+//    GET /api/appointments/my/appointments
+//    - Tani waxay ka dhigaysaa tabs-ka EmployeeDashboard (Today/Upcoming/Rejected) inay helaan data.
+// ===================================================== */
+// exports.getMyApprovedAppointments = async (req, res) => {
+//   try {
+//     const userId = req.user.id; // from auth middleware
+
+//     const appointments = await Appointment.find({
+//       assignedUserId: userId,
+//       status: { $in: ["APPROVED", "COMPLETED", "NO_SHOW", "REJECTED"] },
+//     })
+//       .populate("customerId", "fullName phone email gender")
+//       .populate("serviceId", "name code")
+//       .populate("assignedUserId", "fullName email role")
+//       .sort({ appointmentDate: 1 });
+
+//     return res.json({
+//       success: true,
+//       count: appointments.length,
+//       data: appointments,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to fetch assigned appointments",
+//     });
+//   }
+// };
+
+// /* =====================================================
+//    ✅ B) EMPLOYEE DASHBOARD ANALYTICS (BY appointmentDate month/year)
+//    GET /api/appointments/my/dashboard/analytics?month=2&year=2026
+//    - Waxaa lagu xisaabinayaa appointmentDate ee month/year-ka aad dooratay.
+//    - Pending = APPROVED (bishaas)
+//    - Completed = COMPLETED (bishaas)
+//    - NoShow = NO_SHOW (bishaas)
+//    - Rejected = REJECTED (bishaas)
+// ===================================================== */
+// exports.getEmployeeDashboardAnalytics = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+//     const { month, year } = req.query;
+
+//     if (!month || !year) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "month and year are required",
+//       });
+//     }
+
+//     const m = Number(month);
+//     const y = Number(year);
+
+//     if (!Number.isFinite(m) || !Number.isFinite(y) || m < 1 || m > 12) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid month/year",
+//       });
+//     }
+
+//     // Month range based on appointmentDate
+//     const startOfMonth = new Date(y, m - 1, 1, 0, 0, 0, 0);
+//     const endOfMonth = new Date(y, m, 0, 23, 59, 59, 999);
+
+//     const appointments = await Appointment.find({
+//       assignedUserId: userId,
+//       appointmentDate: { $gte: startOfMonth, $lte: endOfMonth },
+//       status: { $in: ["APPROVED", "COMPLETED", "NO_SHOW", "REJECTED"] },
+//     })
+//       .populate("customerId", "gender")
+//       .populate("serviceId", "name");
+
+//     let totalAssigned = appointments.length;
+//     let completed = 0;
+//     let approvedPending = 0;
+//     let noShow = 0;
+//     let rejected = 0;
+
+//     const byGender = { MALE: 0, FEMALE: 0 };
+//     const byService = {};
+
+//     appointments.forEach((a) => {
+//       if (a.status === "COMPLETED") completed++;
+//       if (a.status === "APPROVED") approvedPending++;
+//       if (a.status === "NO_SHOW") noShow++;
+//       if (a.status === "REJECTED") rejected++;
+
+//       const gender = a.customerId?.gender;
+//       if (gender) byGender[gender] = (byGender[gender] || 0) + 1;
+
+//       const serviceName = a.serviceId?.name;
+//       if (serviceName) byService[serviceName] = (byService[serviceName] || 0) + 1;
+//     });
+
+//     return res.json({
+//       success: true,
+//       filters: { month: m, year: y },
+//       data: {
+//         summary: {
+//           totalAssigned,
+//           completed,
+//           approvedPending,
+//           noShow,
+//           rejected,
+//         },
+//         byGender,
+//         byService,
+//       },
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to load dashboard analytics",
+//     });
+//   }
+// };
+
+
 const Appointment = require("../../model/Appointment");
 const Customer = require("../../model/Customer");
 const Service = require("../../model/Service");
@@ -79,14 +529,14 @@ exports.createAppointment = async (req, res) => {
       notes,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Appointment created successfully",
       adjustedDate: finalDate,
       data: appointment,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to create appointment",
     });
@@ -103,9 +553,9 @@ exports.getAppointments = async (req, res) => {
       .populate("serviceId", "name code")
       .sort({ appointmentDate: -1 });
 
-    res.json({ success: true, data: appointments });
+    return res.json({ success: true, data: appointments });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch appointments",
     });
@@ -116,7 +566,8 @@ exports.getAppointmentsByStatus = async (req, res) => {
   try {
     const { status } = req.query;
 
-    const allowedStatuses = ["PENDING", "APPROVED", "COMPLETED", "REJECTED"];
+    // ✅ include NO_SHOW
+    const allowedStatuses = ["PENDING", "APPROVED", "COMPLETED", "REJECTED", "NO_SHOW"];
 
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({
@@ -128,17 +579,16 @@ exports.getAppointmentsByStatus = async (req, res) => {
     const appointments = await Appointment.find({ status })
       .populate("customerId", "fullName phone")
       .populate("serviceId", "name code")
-      // ✅ POPULATE ASSIGNED USER
       .populate("assignedUserId", "fullName email role")
       .sort({ appointmentDate: -1 });
 
-    res.json({
+    return res.json({
       success: true,
       count: appointments.length,
       data: appointments,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch appointments",
     });
@@ -161,9 +611,9 @@ exports.getAppointmentById = async (req, res) => {
       });
     }
 
-    res.json({ success: true, data: appointment });
+    return res.json({ success: true, data: appointment });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch appointment",
     });
@@ -171,7 +621,7 @@ exports.getAppointmentById = async (req, res) => {
 };
 
 /* =====================================================
-   ✅ UPDATE ONLY ASSIGNED USER (NEW FUNCTION)
+   ✅ UPDATE ONLY ASSIGNED USER
 ===================================================== */
 exports.updateAssignedUser = async (req, res) => {
   try {
@@ -203,13 +653,13 @@ exports.updateAssignedUser = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "User assigned successfully",
       data: appointment,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to assign user",
     });
@@ -230,7 +680,8 @@ exports.updateAppointment = async (req, res) => {
       notes,
     } = req.body;
 
-    const allowedStatuses = ["PENDING", "APPROVED", "REJECTED", "COMPLETED"];
+    // ✅ include NO_SHOW
+    const allowedStatuses = ["PENDING", "APPROVED", "REJECTED", "COMPLETED", "NO_SHOW"];
     if (status && !allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -258,13 +709,13 @@ exports.updateAppointment = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Appointment updated successfully",
       data: appointment,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to update appointment",
     });
@@ -289,12 +740,12 @@ exports.deleteAppointment = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Appointment cancelled successfully",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to cancel appointment",
     });
@@ -315,53 +766,52 @@ exports.deleteAppointmentPermanent = async (req, res) => {
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Appointment permanently deleted",
       data: appointment,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to delete appointment permanently",
     });
   }
 };
 
-
-
 /* =====================================================
-   GET MY ASSIGNED APPROVED APPOINTMENTS
+   ✅ A) GET MY ASSIGNED APPOINTMENTS (APPROVED + COMPLETED + NO_SHOW + REJECTED)
+   GET /api/appointments/my/appointments
 ===================================================== */
 exports.getMyApprovedAppointments = async (req, res) => {
   try {
-    const userId = req.user.id; // from auth middleware
+    const userId = req.user.id;
 
     const appointments = await Appointment.find({
       assignedUserId: userId,
-      status: "APPROVED",
+      status: { $in: ["APPROVED", "COMPLETED", "NO_SHOW", "REJECTED"] },
     })
-      .populate("customerId") // FULL customer info
-      .populate("serviceId")  // FULL service info
+      .populate("customerId", "fullName phone email gender")
+      .populate("serviceId", "name code")
+      .populate("assignedUserId", "fullName email role")
       .sort({ appointmentDate: 1 });
 
-    res.json({
+    return res.json({
       success: true,
       count: appointments.length,
       data: appointments,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch assigned appointments",
     });
   }
 };
 
-
 /* =====================================================
-   EMPLOYEE DASHBOARD ANALYTICS
-   ?month=2&year=2026
+   ✅ B) EMPLOYEE DASHBOARD ANALYTICS (BY appointmentDate month/year)
+   GET /api/appointments/my/dashboard/analytics?month=2&year=2026
 ===================================================== */
 exports.getEmployeeDashboardAnalytics = async (req, res) => {
   try {
@@ -378,57 +828,47 @@ exports.getEmployeeDashboardAnalytics = async (req, res) => {
     const m = Number(month);
     const y = Number(year);
 
-    const startOfMonth = new Date(y, m - 1, 1, 0, 0, 0);
-    const endOfMonth = new Date(y, m, 0, 23, 59, 59);
+    if (!Number.isFinite(m) || !Number.isFinite(y) || m < 1 || m > 12) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid month/year",
+      });
+    }
 
-    const now = new Date();
+    const startOfMonth = new Date(y, m - 1, 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(y, m, 0, 23, 59, 59, 999);
 
-    /* =========================
-       FETCH ALL ASSIGNED (MONTH)
-    ========================= */
     const appointments = await Appointment.find({
       assignedUserId: userId,
-      appointmentDate: {
-        $gte: startOfMonth,
-        $lte: endOfMonth,
-      },
+      appointmentDate: { $gte: startOfMonth, $lte: endOfMonth },
+      status: { $in: ["APPROVED", "COMPLETED", "NO_SHOW", "REJECTED"] },
     })
       .populate("customerId", "gender")
       .populate("serviceId", "name");
 
-    /* =========================
-       COUNTERS
-    ========================= */
     let totalAssigned = appointments.length;
     let completed = 0;
     let approvedPending = 0;
     let noShow = 0;
+    let rejected = 0;
 
     const byGender = { MALE: 0, FEMALE: 0 };
     const byService = {};
 
     appointments.forEach((a) => {
-      // STATUS LOGIC
       if (a.status === "COMPLETED") completed++;
+      if (a.status === "APPROVED") approvedPending++;
+      if (a.status === "NO_SHOW") noShow++;
+      if (a.status === "REJECTED") rejected++;
 
-      if (a.status === "APPROVED") {
-        if (a.appointmentDate < now) noShow++;
-        else approvedPending++;
-      }
-
-      // GENDER
       const gender = a.customerId?.gender;
       if (gender) byGender[gender] = (byGender[gender] || 0) + 1;
 
-      // SERVICE
       const serviceName = a.serviceId?.name;
-      if (serviceName) {
-        byService[serviceName] =
-          (byService[serviceName] || 0) + 1;
-      }
+      if (serviceName) byService[serviceName] = (byService[serviceName] || 0) + 1;
     });
 
-    res.json({
+    return res.json({
       success: true,
       filters: { month: m, year: y },
       data: {
@@ -437,16 +877,16 @@ exports.getEmployeeDashboardAnalytics = async (req, res) => {
           completed,
           approvedPending,
           noShow,
+          rejected,
         },
         byGender,
         byService,
       },
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message:
-        error.message || "Failed to load dashboard analytics",
+      message: error.message || "Failed to load dashboard analytics",
     });
   }
 };
