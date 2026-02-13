@@ -60,7 +60,7 @@ export default function Login() {
             <CheckCircle className="text-white" size={32} />
           </div>
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-            Appoint<span className="text-emerald-500">Me</span>
+            Appoint<span className="text-emerald-500">ify</span>
           </h1>
           <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mt-2">
             Secure Administrator Access
@@ -172,7 +172,7 @@ export default function Login() {
         {/* FOOTER */}
         <div className="text-center mt-8 space-y-2">
           <p className="text-xs text-slate-400 font-medium">
-            &copy; {new Date().getFullYear()} AppointMe Enterprise System
+            &copy; {new Date().getFullYear()} Appointify Enterprise System
           </p>
           <div className="flex justify-center gap-4 text-[10px] font-black text-slate-300 uppercase tracking-widest">
             <button className="hover:text-blue-500 transition-colors">
