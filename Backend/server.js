@@ -121,14 +121,37 @@ const app = express();
 /* =========================
    CORS CONFIG
 ========================= */
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // Vite frontend
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://motivated-amazement-production.up.railway.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite frontend
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 
 /* =========================
    BODY PARSER
