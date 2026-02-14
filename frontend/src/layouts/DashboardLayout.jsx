@@ -1,34 +1,12 @@
-
-import {
-  Outlet,
-  NavLink,
-  useLocation,
-  useNavigate,
-  Navigate,
-} from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../Redux/slices/userSlices/authSlice";
-import {
-  LayoutDashboard,
-  Users,
-  UserSquare2,
-  Wrench,
-  PlusCircle,
-  Clock,
-  CheckCircle,
-  CheckCircle2,
-  LogOut,
-  Bell,
-  Search,
-  IdCardLanyard,
-  Menu,
-  X,
-  ChevronDown,
-  User2,
-} from "lucide-react";
-
 import axios from "axios";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+
+// Import extracted components
+import Sidebar from "./Sidebar";
+import Header from "./Header";
 
 const SEEN_KEY = "appointment_app_seen_counts_v1";
 
@@ -410,318 +388,38 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex bg-[#F8FAFC]">
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
-        />
-      )}
-
-      {/* ================= SIDEBAR ================= */}
-      <aside
-        className={`
-          fixed lg:sticky top-0 left-0 z-40
-          w-72 bg-white border-r border-slate-200
-          flex flex-col h-screen shadow-sm
-          transform transition-transform duration-300
-          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0
-        `}
-      >
-        {/* LOGO + CLOSE */}
-        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <CheckCircle className="text-white" size={24} />
-            </div>
-            <h1 className="text-xl font-black text-slate-800">
-              Appoint<span className="text-emerald-500">ify</span>
-            </h1>
-          </div>
-
-          <button
-            className="lg:hidden text-slate-500"
-            onClick={() => setMobileOpen(false)}
-          >
-            <X />
-          </button>
-        </div>
-
-        {/* NAVIGATION */}
-        <nav className="flex-1 p-4 md:p-1 space-y-4 overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {isAdmin && (
-            <>
-              <Section title="Management">
-                <NavItem
-                  to="/dashboard"
-                  icon={<LayoutDashboard />}
-                  label="Dashboard"
-                  onNav={() => handleNavClick(null)}
-                />
-                <NavItem
-                  to="/dashboard/users"
-                  icon={<Users />}
-                  label="Users"
-                  onNav={() => handleNavClick(null)}
-                />
-                <NavItem
-                  to="/dashboard/customers"
-                  icon={<UserSquare2 />}
-                  label="Customers"
-                  badge={unreadCounts.CUSTOMERS}
-                  onNav={() => handleNavClick("CUSTOMERS")}
-                />
-                <NavItem
-                  to="/dashboard/services"
-                  icon={<Wrench />}
-                  label="Services"
-                  badge={unreadCounts.SERVICES}
-                  onNav={() => handleNavClick("SERVICES")}
-                />
-              </Section>
-
-              <Section title="Appointments">
-                <NavItem
-                  to="/dashboard/create-appointment"
-                  icon={<PlusCircle />}
-                  label="New Booking"
-                  badge={unreadCounts.BOOKINGS}
-                  onNav={() => handleNavClick("BOOKINGS")}
-                />
-
-                <NavItem
-                  to="/dashboard/pending-appointments"
-                  icon={<Clock />}
-                  label="Pending"
-                  badge={unreadCounts.PENDING}
-                  onNav={() => handleNavClick("PENDING")}
-                />
-
-                <NavItem
-                  to="/dashboard/approved-appointments"
-                  icon={<CheckCircle />}
-                  label="Approved"
-                  badge={unreadCounts.APPROVED}
-                  onNav={() => handleNavClick("APPROVED")}
-                />
-
-                <NavItem
-                  to="/dashboard/completed-appointments"
-                  icon={<CheckCircle2 />}
-                  label="Completed"
-                  badge={unreadCounts.COMPLETED}
-                  onNav={() => handleNavClick("COMPLETED")}
-                />
-              </Section>
-
-              <Section title="Staff">
-                <NavItem
-                  to="/dashboard/employee"
-                  icon={<IdCardLanyard />}
-                  label="Employee Dashboard"
-                  onNav={() => handleNavClick(null)}
-                />
-              </Section>
-            </>
-          )}
-
-          {isStaff && (
-            <Section title="Staff Area">
-              <NavItem
-                to="/dashboard/customers"
-                icon={<UserSquare2 />}
-                label="Customers"
-                onNav={() => handleNavClick(null)}
-              />
-              <NavItem
-                to="/dashboard/create-appointment"
-                icon={<PlusCircle />}
-                label="New Booking"
-                onNav={() => handleNavClick(null)}
-              />
-              <NavItem
-                to="/dashboard/employee"
-                icon={<IdCardLanyard />}
-                label="Employee Dashboard"
-                onNav={() => handleNavClick(null)}
-              />
-            </Section>
-          )}
-
-          {isUser && (
-            <Section title="My Area">
-              <NavItem
-                to="/dashboard/employee"
-                icon={<Clock />}
-                label="My Dashboard"
-                onNav={() => handleNavClick(null)}
-              />
-            </Section>
-          )}
-        </nav>
-
-        {/* FOOTER */}
-        <div className="p-4 md:p-6 border-t border-slate-100">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl font-bold"
-          >
-            <LogOut size={20} />
-            Sign Out
-          </button>
-        </div>
-      </aside>
+      <Sidebar
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+        isAdmin={isAdmin}
+        isStaff={isStaff}
+        isUser={isUser}
+        unreadCounts={unreadCounts}
+        handleNavClick={handleNavClick}
+        handleLogout={handleLogout}
+      />
 
       {/* ================= MAIN ================= */}
       <div className="flex-1 flex flex-col">
-        {/* HEADER */}
-        <header className="h-16 md:h-20 bg-white border-b border-slate-200 sticky top-0 z-20 flex items-center justify-between px-4 md:px-10">
-          <div className="flex items-center gap-3">
-            <button
-              className="lg:hidden text-slate-600"
-              onClick={() => setMobileOpen(true)}
-            >
-              <Menu />
-            </button>
-
-            <h2 className="text-sm md:text-lg font-bold text-slate-800 capitalize">
-              {location.pathname.split("/").pop()?.replace("-", " ")}
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-3 md:gap-6">
-            <div className="hidden sm:flex items-center bg-slate-50 border rounded-full px-3 py-1">
-              <Search size={16} />
-              <input
-                placeholder="Search..."
-                className="bg-transparent border-none text-xs ml-2 w-24 md:w-32 outline-none"
-              />
-            </div>
-
-            {/* ✅ NOTIFICATIONS (ADMIN only UI) */}
-            {isAdmin && (
-              <div className="relative">
-                <button
-                  onClick={() => setNotifOpen((s) => !s)}
-                  className="relative text-slate-400 hover:text-blue-600"
-                >
-                  <Bell size={20} />
-                  {totalUnread > 0 && (
-                    <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center">
-                      {totalUnread > 99 ? "99+" : totalUnread}
-                    </span>
-                  )}
-                </button>
-
-                {notifOpen && (
-                  <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
-                    <div className="px-4 py-3 font-bold border-b flex items-center justify-between">
-                      <span>Latest Updates</span>
-                      <button
-                        onClick={() => setNotifOpen(false)}
-                        className="text-slate-400 hover:text-slate-700"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-
-                    <div className="max-h-72 overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <div className="px-4 py-6 text-sm text-slate-500">
-                          No updates yet.
-                        </div>
-                      ) : (
-                        notifications.map((n) => (
-                          <button
-                            key={n.id}
-                            onClick={() => handleNotifClick(n.to, n.status)}
-                            className="w-full text-left px-4 py-3 hover:bg-slate-50 border-b"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-black text-slate-500">
-                                {n.status}
-                              </span>
-                              <span className="text-[10px] text-slate-400">
-                                {n.time}
-                              </span>
-                            </div>
-
-                            <p className="text-sm font-bold text-slate-800 mt-1">
-                              {n.title}
-                            </p>
-                            <p className="text-xs text-slate-500 mt-1">
-                              {n.desc}
-                            </p>
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ✅ PROFILE DROPDOWN */}
-            <div className="relative" ref={profileRef}>
-              <button
-                type="button"
-                onClick={() => setProfileOpen((s) => !s)}
-                className="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l hover:bg-slate-50 rounded-xl px-2 py-1 transition"
-              >
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-bold text-slate-900">
-                    {displayName}
-                  </p>
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase">
-                    {user.role}
-                  </p>
-                </div>
-
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-blue-600 text-white flex items-center justify-center font-black">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <span>{initials}</span>
-                  )}
-                </div>
-
-                <ChevronDown
-                  className="hidden sm:block text-slate-400"
-                  size={16}
-                />
-              </button>
-
-              {profileOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-50">
-                  <button
-                    onClick={goProfile}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
-                  >
-                    <User2 size={18} className="text-slate-400" />
-                    My Profile
-                  </button>
-
-                  <div className="h-px bg-slate-100" />
-
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50"
-                  >
-                    <LogOut size={18} />
-                    Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+        <Header
+          location={location}
+          setMobileOpen={setMobileOpen}
+          isAdmin={isAdmin}
+          notifOpen={notifOpen}
+          setNotifOpen={setNotifOpen}
+          totalUnread={totalUnread}
+          notifications={notifications}
+          handleNotifClick={handleNotifClick}
+          profileRef={profileRef}
+          profileOpen={profileOpen}
+          setProfileOpen={setProfileOpen}
+          displayName={displayName}
+          user={user}
+          avatarUrl={avatarUrl}
+          initials={initials}
+          goProfile={goProfile}
+          handleLogout={handleLogout}
+        />
 
         {/* CONTENT */}
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -733,48 +431,3 @@ export default function DashboardLayout() {
     </div>
   );
 }
-
-/* =========================
-    HELPERS
-========================= */
-
-function Section({ title, children }) {
-  return (
-    <div>
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">
-        {title}
-      </p>
-      <div className="space-y-2">{children}</div>
-    </div>
-  );
-}
-
-function NavItem({ to, label, icon, onNav, badge }) {
-  return (
-    <NavLink
-      to={to}
-      onClick={onNav}
-      end
-      className={({ isActive }) =>
-        `flex items-center justify-between gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all
-        ${
-          isActive
-            ? "bg-blue-600 text-white shadow"
-            : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"
-        }`
-      }
-    >
-      <div className="flex items-center gap-4">
-        <span>{icon}</span>
-        {label}
-      </div>
-
-      {typeof badge === "number" && badge > 0 && (
-        <span className="min-w-[26px] h-6 px-2 rounded-full text-[11px] font-black flex items-center justify-center bg-red-600 text-white">
-          {badge}
-        </span>
-      )}
-    </NavLink>
-  );
-}
-
