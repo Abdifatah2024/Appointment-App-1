@@ -24,8 +24,9 @@ const { uploadAvatar } = require("../../middlewares/uploadAvatar");
 /* -------------------------
    AUTH + PROFILE
 -------------------------- */
-router.get("/me", authMiddleware, getMe);
 router.post("/login", loginUser);
+router.get("/me", authMiddleware, getMe);
+
 
 router.put("/profile", authMiddleware, updateMyProfile);
 router.put("/password", authMiddleware, updateMyPassword);
