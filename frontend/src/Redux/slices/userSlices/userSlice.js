@@ -66,7 +66,8 @@ export const deleteUserPermanent = createAsyncThunk(
   "users/deletePermanent",
   async (id, { rejectWithValue }) => {
     try {
-      await api.delete(`/users/users/permanent/${id}`);
+      // ✅ FIXED: now matches backend: /api/users/permanent/:id
+      await api.delete(`/users/permanent/${id}`);
       return id;
     } catch (err) {
       return rejectWithValue(
@@ -121,30 +122,22 @@ const userSlice = createSlice({
 
       // UPDATE
       .addCase(updateUser.fulfilled, (state, action) => {
-        const idx = state.list.findIndex(
-          (u) => u._id === action.payload._id
-        );
+        const idx = state.list.findIndex((u) => u._id === action.payload._id);
         if (idx !== -1) state.list[idx] = action.payload;
       })
 
       // UPDATE STATUS
       .addCase(updateUserStatus.fulfilled, (state, action) => {
-        const idx = state.list.findIndex(
-          (u) => u._id === action.payload._id
-        );
+        const idx = state.list.findIndex((u) => u._id === action.payload._id);
         if (idx !== -1) state.list[idx] = action.payload;
       })
 
       // DELETE
       .addCase(deleteUserPermanent.fulfilled, (state, action) => {
-        state.list = state.list.filter(
-          (u) => u._id !== action.payload
-        );
+        state.list = state.list.filter((u) => u._id !== action.payload);
       });
   },
 });
 
 export const { clearUsersError } = userSlice.actions;
 export default userSlice.reducer;
-
-
