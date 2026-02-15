@@ -1,62 +1,6 @@
-// const mongoose = require("mongoose");
-
-// const AppointmentSchema = new mongoose.Schema(
-//   {
-//     customerId: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "Customer",
-//       required: true,
-//     },
-
-//     serviceId: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "Service",
-//       required: true,
-//     },
-
-//     // 👇 USER (STAFF) ASSIGNED TO THIS APPOINTMENT
-//     assignedUserId: {
-//       type: mongoose.Schema.Types.ObjectId,
-//       ref: "User",
-//      default: null, // 👈 IMPORTANT
-//     },
-
-//     appointmentDate: {
-//       type: Date,
-//       required: true,
-//     },
-
-//     documentsSubmitted: { type: Boolean, default: false },
-//     identityProvided: { type: Boolean, default: false },
-//     passportProvided: { type: Boolean, default: false },
-
-//     status: {
-//       type: String,
-//       enum: [
-//         "PENDING",
-//         "APPROVED",
-//         "REJECTED",
-//         "COMPLETED",
-//         "CANCELLED",
-//         "NO_SHOW",
-//       ],
-//       default: "PENDING",
-//     },
-
-//     notes: {
-//       type: String,
-//       trim: true,
-//     },
-//   },
-//   { timestamps: true }
-// );
-
-// module.exports = mongoose.model("Appointment", AppointmentSchema);
-
-
 const mongoose = require("mongoose");
 
-const AppointmentSchema = new mongoose.Schema(
+const appointmentSchema = new mongoose.Schema(
   {
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -70,33 +14,32 @@ const AppointmentSchema = new mongoose.Schema(
       required: true,
     },
 
-    assignedUserId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-
     appointmentDate: {
       type: Date,
       required: true,
     },
 
-    documentsSubmitted: { type: Boolean, default: false },
-    identityProvided: { type: Boolean, default: false },
-    passportProvided: { type: Boolean, default: false },
-
     status: {
       type: String,
-      enum: ["PENDING", "APPROVED", "REJECTED", "COMPLETED", "NO_SHOW"],
+      enum: ["PENDING", "APPROVED", "REJECTED", "COMPLETED"],
       default: "PENDING",
     },
 
-    notes: {
-      type: String,
-      trim: true,
-    },
+    // ✅ FIXED DOCUMENTS FIELD
+    documents: [
+      {
+        filename: { type: String, required: true },
+        originalName: { type: String, required: true },
+        size: Number,
+        mimeType: String,
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Appointment", AppointmentSchema);
+module.exports = mongoose.model("Appointment", appointmentSchema);

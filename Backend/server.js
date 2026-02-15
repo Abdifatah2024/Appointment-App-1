@@ -112,6 +112,7 @@ const authRoutes = require("./src/routes/user/auth.routes");
 const customerRoutes = require("./src/routes/customerRoutes/customerRoutes");
 const serviceRoutes = require("./src/routes/customerRoutes/serviceRoutes");
 const appointmentRoutes = require("./src/routes/appointment.routes");
+const publicAppionts= require("./src/routes/Public/public.routes");
 
 // ✅ dashboard routes (counts + updates)
 const dashboardRoutes = require("./src/routes/dashboard/dashboardRoutes");
@@ -202,6 +203,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/public", publicAppionts);
 
 // ✅ dashboard endpoints
 app.use("/api/dashboard", dashboardRoutes);

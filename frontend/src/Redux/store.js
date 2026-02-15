@@ -6,6 +6,7 @@ import serviceReducer from "./slices/cusomerSlice/serviceSlice";
 import appointmentReducer from "./slices/cusomerSlice/appointmentSlice";
 import appointmentDashboardReducer from "./slices/cusomerSlice/appointmentDashboardSlice";
 import appointmentEmployeeReducer from "./slices/cusomerSlice/appointmentEmployeeSlice";  
+import publicAppointmentReducer from "./slices/PublicSlice/publicAppointmentSlice";  
 
 
 export const store = configureStore({
@@ -17,5 +18,6 @@ export const store = configureStore({
         appointments: appointmentReducer,
         appointmentDashboard: appointmentDashboardReducer,
         appointmentEmployee: appointmentEmployeeReducer,
+          publicAppointment: publicAppointmentReducer,
   },
 });
