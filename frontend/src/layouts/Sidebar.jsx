@@ -28,66 +28,66 @@ export default function Sidebar({
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 lg:hidden transition-opacity"
         />
       )}
 
       <aside
         className={`
           fixed lg:sticky top-0 left-0 z-40
-          w-72 bg-white border-r border-slate-200
-          flex flex-col h-screen shadow-sm
-          transform transition-transform duration-300
+          w-72 bg-slate-900 text-slate-300
+          flex flex-col h-screen shadow-2xl shadow-slate-900/50
+          transform transition-transform duration-300 ease-in-out
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          lg:translate-x-0
+          lg:translate-x-0 border-r border-slate-800
         `}
       >
-        {/* LOGO + CLOSE */}
-        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+        {/* LOGO HEADER */}
+        <div className="h-20 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-900">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/20">
               <CheckCircle className="text-white" size={24} />
             </div>
-            <h1 className="text-xl font-black text-slate-800">
-              Appoint<span className="text-emerald-500">ify</span>
+            <h1 className="text-xl font-black text-white tracking-tight">
+              Appoint<span className="text-blue-500">ify</span>
             </h1>
           </div>
 
           <button
-            className="lg:hidden text-slate-500"
+            className="lg:hidden text-slate-400 hover:text-white transition-colors"
             onClick={() => setMobileOpen(false)}
           >
             <X />
           </button>
         </div>
 
-        {/* NAVIGATION */}
-        <nav className="flex-1 p-4 md:p-1 space-y-4 overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* NAVIGATION SCROLL AREA */}
+        <nav className="flex-1 p-4 space-y-6 overflow-y-auto [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {isAdmin && (
             <>
               <Section title="Management">
                 <NavItem
                   to="/dashboard"
-                  icon={<LayoutDashboard />}
+                  icon={<LayoutDashboard size={20} />}
                   label="Dashboard"
                   onNav={() => handleNavClick(null)}
                 />
                 <NavItem
                   to="/dashboard/users"
-                  icon={<Users />}
+                  icon={<Users size={20} />}
                   label="Users"
                   onNav={() => handleNavClick(null)}
                 />
                 <NavItem
                   to="/dashboard/customers"
-                  icon={<UserSquare2 />}
+                  icon={<UserSquare2 size={20} />}
                   label="Customers"
                   badge={unreadCounts.CUSTOMERS}
                   onNav={() => handleNavClick("CUSTOMERS")}
                 />
                 <NavItem
                   to="/dashboard/services"
-                  icon={<Wrench />}
+                  icon={<Wrench size={20} />}
                   label="Services"
                   badge={unreadCounts.SERVICES}
                   onNav={() => handleNavClick("SERVICES")}
@@ -97,7 +97,7 @@ export default function Sidebar({
               <Section title="Appointments">
                 <NavItem
                   to="/dashboard/create-appointment"
-                  icon={<PlusCircle />}
+                  icon={<PlusCircle size={20} />}
                   label="New Booking"
                   badge={unreadCounts.BOOKINGS}
                   onNav={() => handleNavClick("BOOKINGS")}
@@ -105,7 +105,7 @@ export default function Sidebar({
 
                 <NavItem
                   to="/dashboard/pending-appointments"
-                  icon={<Clock />}
+                  icon={<Clock size={20} />}
                   label="Pending"
                   badge={unreadCounts.PENDING}
                   onNav={() => handleNavClick("PENDING")}
@@ -113,7 +113,7 @@ export default function Sidebar({
 
                 <NavItem
                   to="/dashboard/approved-appointments"
-                  icon={<CheckCircle />}
+                  icon={<CheckCircle size={20} />}
                   label="Approved"
                   badge={unreadCounts.APPROVED}
                   onNav={() => handleNavClick("APPROVED")}
@@ -121,7 +121,7 @@ export default function Sidebar({
 
                 <NavItem
                   to="/dashboard/completed-appointments"
-                  icon={<CheckCircle2 />}
+                  icon={<CheckCircle2 size={20} />}
                   label="Completed"
                   badge={unreadCounts.COMPLETED}
                   onNav={() => handleNavClick("COMPLETED")}
@@ -131,7 +131,7 @@ export default function Sidebar({
               <Section title="Staff">
                 <NavItem
                   to="/dashboard/employee"
-                  icon={<IdCardLanyard />}
+                  icon={<IdCardLanyard size={20} />}
                   label="Employee Dashboard"
                   onNav={() => handleNavClick(null)}
                 />
@@ -143,19 +143,19 @@ export default function Sidebar({
             <Section title="Staff Area">
               <NavItem
                 to="/dashboard/customers"
-                icon={<UserSquare2 />}
+                icon={<UserSquare2 size={20} />}
                 label="Customers"
                 onNav={() => handleNavClick(null)}
               />
               <NavItem
                 to="/dashboard/create-appointment"
-                icon={<PlusCircle />}
+                icon={<PlusCircle size={20} />}
                 label="New Booking"
                 onNav={() => handleNavClick(null)}
               />
               <NavItem
                 to="/dashboard/employee"
-                icon={<IdCardLanyard />}
+                icon={<IdCardLanyard size={20} />}
                 label="Employee Dashboard"
                 onNav={() => handleNavClick(null)}
               />
@@ -166,7 +166,7 @@ export default function Sidebar({
             <Section title="My Area">
               <NavItem
                 to="/dashboard/employee"
-                icon={<Clock />}
+                icon={<Clock size={20} />}
                 label="My Dashboard"
                 onNav={() => handleNavClick(null)}
               />
@@ -175,12 +175,12 @@ export default function Sidebar({
         </nav>
 
         {/* FOOTER */}
-        <div className="p-4 md:p-6 border-t border-slate-100">
+        <div className="p-4 border-t border-slate-800 bg-slate-900">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl font-bold"
+            className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl font-bold transition-all duration-200 group"
           >
-            <LogOut size={20} />
+            <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
             Sign Out
           </button>
         </div>
@@ -189,14 +189,14 @@ export default function Sidebar({
   );
 }
 
-/* --- Helpers for Sidebar --- */
+/* --- Styled Helpers --- */
 function Section({ title, children }) {
   return (
     <div>
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-4">
+      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-4">
         {title}
       </p>
-      <div className="space-y-2">{children}</div>
+      <div className="space-y-1">{children}</div>
     </div>
   );
 }
@@ -208,11 +208,11 @@ function NavItem({ to, label, icon, onNav, badge }) {
       onClick={onNav}
       end
       className={({ isActive }) =>
-        `flex items-center justify-between gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all
+        `relative flex items-center justify-between gap-4 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-300
         ${
           isActive
-            ? "bg-blue-600 text-white shadow"
-            : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+            ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50"
+            : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"
         }`
       }
     >
@@ -222,7 +222,7 @@ function NavItem({ to, label, icon, onNav, badge }) {
       </div>
 
       {typeof badge === "number" && badge > 0 && (
-        <span className="min-w-[26px] h-6 px-2 rounded-full text-[11px] font-black flex items-center justify-center bg-red-600 text-white">
+        <span className="min-w-[24px] h-6 px-1.5 rounded-full text-[10px] font-black flex items-center justify-center bg-rose-500 text-white shadow-sm border border-slate-900">
           {badge}
         </span>
       )}
