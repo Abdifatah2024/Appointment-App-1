@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 // 📁 Ensure upload folder exists
-const uploadDir = "uploads/appointments";
+const uploadDir = "/api/uploads/appointments";
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

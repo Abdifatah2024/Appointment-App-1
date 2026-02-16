@@ -575,7 +575,7 @@ exports.getAppointments = async (req, res) => {
       ...a,
       documents: (a.documents || []).map((doc) => ({
         ...doc,
-        url: `${baseUrl}/uploads/appointments/${doc.filename}`,
+        url: `${baseUrl}/api/uploads/appointments/${doc.filename}`,
       })),
     }));
 
