@@ -1,308 +1,3 @@
-// import { useEffect, useState, useMemo } from "react";
-// import { useDispatch, useSelector } from "react-redux";
-// import {
-//   Plus,
-//   Search,
-//   Wrench,
-//   Layers,
-//   Infinity as InfinityIcon,
-//   ShieldCheck,
-//   Edit3,
-//   Trash2,
-//   Loader2,
-//   FileText,
-// } from "lucide-react";
-
-// import {
-//   fetchServices,
-//   createService,
-//   updateService,
-//   deleteService,
-// } from "../../Redux/slices/cusomerSlice/serviceSlice";
-
-// import ServiceModal from "./ServiceModal";
-
-// export default function Services() {
-//   const dispatch = useDispatch();
-//   const { list, loading, creating, updatingId, deletingId } = useSelector(
-//     (state) => state.services,
-//   );
-
-//   const [openModal, setOpenModal] = useState(false);
-//   const [selectedService, setSelectedService] = useState(null);
-//   const [search, setSearch] = useState("");
-
-//   useEffect(() => {
-//     dispatch(fetchServices());
-//   }, [dispatch]);
-
-//   const handleSave = (data) => {
-//     if (selectedService) {
-//       dispatch(updateService({ id: selectedService._id, data }));
-//     } else {
-//       dispatch(createService(data));
-//     }
-//     setOpenModal(false);
-//     setSelectedService(null);
-//   };
-
-//   const handleDelete = (id) => {
-//     if (window.confirm("Are you sure you want to delete this service?")) {
-//       dispatch(deleteService(id));
-//     }
-//   };
-
-//   const filteredServices = useMemo(() => {
-//     return list.filter(
-//       (s) =>
-//         s.name.toLowerCase().includes(search.toLowerCase()) ||
-//         s.code.toLowerCase().includes(search.toLowerCase()),
-//     );
-//   }, [search, list]);
-
-//   if (loading)
-//     return (
-//       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-//         <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
-//         <p className="text-slate-400 font-bold">Loading Catalog...</p>
-//       </div>
-//     );
-
-//   return (
-//     <div className="space-y-8 animate-in fade-in duration-500">
-//       {/* HEADER */}
-//       <div className="bg-white border border-slate-200 rounded-[2rem] p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
-//         <div className="flex items-center gap-5">
-//           <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm border border-emerald-100">
-//             <Wrench size={28} />
-//           </div>
-//           <div>
-//             <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-//               Service Catalog
-//             </h1>
-//             <p className="text-slate-500 text-sm font-medium leading-relaxed">
-//               Define and manage appointment-based offerings
-//             </p>
-//           </div>
-//         </div>
-
-//         <button
-//           onClick={() => {
-//             setSelectedService(null);
-//             setOpenModal(true);
-//           }}
-//           className="flex items-center gap-2 px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 hover:-translate-y-0.5 transition-all"
-//         >
-//           <Plus size={20} /> Register New Service
-//         </button>
-//       </div>
-
-//       {/* INSIGHT CARDS */}
-//       <div className="grid md:grid-cols-3 gap-6">
-//         <StatCard
-//           label="Total Services"
-//           value={list.length}
-//           icon={<Layers size={20} />}
-//           color="blue"
-//         />
-//         <StatCard
-//           label="Limited Capacity"
-//           value={list.filter((s) => s.maxCustomersPerDay > 0).length}
-//           icon={<ShieldCheck size={20} />}
-//           color="emerald"
-//         />
-//         <StatCard
-//           label="High Demand / Unlimited"
-//           value={list.filter((s) => s.maxCustomersPerDay === 0).length}
-//           icon={<InfinityIcon size={20} />}
-//           color="blue"
-//         />
-//       </div>
-
-//       {/* TABLE SECTION */}
-//       <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm overflow-hidden">
-//         <div className="px-10 py-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
-//           <h3 className="text-lg font-black text-slate-800 tracking-tight">
-//             Active Offerings
-//           </h3>
-
-//           <div className="relative w-full md:w-80 group">
-//             <Search
-//               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"
-//               size={18}
-//             />
-//             <input
-//               placeholder="Filter by name or code..."
-//               value={search}
-//               onChange={(e) => setSearch(e.target.value)}
-//               className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-12 pr-4 py-2.5 text-sm outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium"
-//             />
-//           </div>
-//         </div>
-
-//         <div className="overflow-x-auto">
-//           <table className="w-full text-left">
-//             <thead>
-//               <tr className="bg-slate-50/50 border-b border-slate-100">
-//                 <th className="px-10 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-//                   Service Branding
-//                 </th>
-//                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-//                   Unique Code
-//                 </th>
-//                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-//                   Required Docs
-//                 </th>
-//                 <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">
-//                   Daily Cap
-//                 </th>
-//                 <th className="px-10 py-5 text-[11px] font-black uppercase tracking-widest text-right text-slate-400">
-//                   Actions
-//                 </th>
-//               </tr>
-//             </thead>
-
-//             <tbody className="divide-y divide-slate-50">
-//               {filteredServices.map((s) => (
-//                 <tr
-//                   key={s._id}
-//                   className="group hover:bg-blue-50/30 transition-colors"
-//                 >
-//                   <td className="px-10 py-5">
-//                     <div className="flex items-center gap-4">
-//                       <div className="w-10 h-10 bg-white border border-slate-100 text-emerald-500 rounded-xl flex items-center justify-center font-black shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-all">
-//                         {s.name?.charAt(0).toUpperCase()}
-//                       </div>
-//                       <p className="font-bold text-slate-700 tracking-tight">
-//                         {s.name}
-//                       </p>
-//                     </div>
-//                   </td>
-
-//                   <td className="px-8 py-5 font-mono text-xs text-blue-600 font-black">
-//                     {s.code}
-//                   </td>
-
-//                   <td className="px-8 py-5">
-//                     <div className="flex flex-wrap gap-1.5">
-//                       {[
-//                         s.requiresIdentity && "Identity",
-//                         s.requiresPassport && "Passport",
-//                         s.requiresDocuments && "Files",
-//                       ]
-//                         .filter(Boolean)
-//                         .map((req, i) => (
-//                           <span
-//                             key={i}
-//                             className="px-2.5 py-1 bg-white border border-slate-200 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-tight"
-//                           >
-//                             {req}
-//                           </span>
-//                         ))}
-//                       {!(
-//                         s.requiresIdentity ||
-//                         s.requiresPassport ||
-//                         s.requiresDocuments
-//                       ) && (
-//                         <span className="text-slate-300 text-[10px] font-bold italic">
-//                           Standard Access
-//                         </span>
-//                       )}
-//                     </div>
-//                   </td>
-
-//                   <td className="px-8 py-5 text-center">
-//                     <div
-//                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${
-//                         s.maxCustomersPerDay === 0
-//                           ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-//                           : "bg-blue-50 text-blue-600 border border-blue-100"
-//                       }`}
-//                     >
-//                       {s.maxCustomersPerDay === 0 ? (
-//                         <InfinityIcon size={12} />
-//                       ) : null}
-//                       {s.maxCustomersPerDay === 0
-//                         ? "Unlimited"
-//                         : `${s.maxCustomersPerDay} / Day`}
-//                     </div>
-//                   </td>
-
-//                   <td className="px-10 py-5 text-right">
-//                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-//                       <button
-//                         disabled={updatingId === s._id}
-//                         onClick={() => {
-//                           setSelectedService(s);
-//                           setOpenModal(true);
-//                         }}
-//                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-//                       >
-//                         {updatingId === s._id ? (
-//                           <Loader2 className="animate-spin" size={16} />
-//                         ) : (
-//                           <Edit3 size={16} />
-//                         )}
-//                       </button>
-
-//                       <button
-//                         disabled={deletingId === s._id}
-//                         onClick={() => handleDelete(s._id)}
-//                         className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-//                       >
-//                         {deletingId === s._id ? (
-//                           <Loader2 className="animate-spin" size={16} />
-//                         ) : (
-//                           <Trash2 size={16} />
-//                         )}
-//                       </button>
-//                     </div>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-
-//       {/* MODAL */}
-//       <ServiceModal
-//         open={openModal}
-//         initialData={selectedService}
-//         loading={creating || Boolean(updatingId)}
-//         onClose={() => {
-//           setOpenModal(false);
-//           setSelectedService(null);
-//         }}
-//         onSubmit={handleSave}
-//       />
-//     </div>
-//   );
-// }
-
-// /* HELPER COMPONENTS */
-// function StatCard({ label, value, icon, color }) {
-//   const isBlue = color === "blue";
-//   return (
-//     <div className="bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm flex items-center justify-between">
-//       <div>
-//         <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">
-//           {label}
-//         </p>
-//         <p className="text-3xl font-black text-slate-800 tracking-tighter">
-//           {value}
-//         </p>
-//       </div>
-//       <div
-//         className={`p-4 rounded-2xl ${isBlue ? "bg-blue-50 text-blue-600" : "bg-emerald-50 text-emerald-600"}`}
-//       >
-//         {icon}
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -315,6 +10,7 @@ import {
   Edit3,
   Trash2,
   Loader2,
+  MoreHorizontal, // Added for visual flair (optional)
 } from "lucide-react";
 
 import {
@@ -341,7 +37,6 @@ export default function Services() {
   }, [dispatch]);
 
   const handleSave = (data) => {
-    // ✅ final safety: ensure code is uppercase before sending to backend
     const payload = {
       ...data,
       code: String(data.code || "").toUpperCase().trim(),
@@ -352,6 +47,7 @@ export default function Services() {
     } else {
       dispatch(createService(payload));
     }
+
     setOpenModal(false);
     setSelectedService(null);
   };
@@ -364,37 +60,50 @@ export default function Services() {
 
   const filteredServices = useMemo(() => {
     const q = search.toLowerCase();
-    return (list || []).filter((s) => {
-      const name = String(s.name || "").toLowerCase();
-      const code = String(s.code || "").toLowerCase();
-      return name.includes(q) || code.includes(q);
-    });
+
+    return (list || [])
+      .filter((s) => {
+        const name = String(s.name || "").toLowerCase();
+        const code = String(s.code || "").toLowerCase();
+        return name.includes(q) || code.includes(q);
+      })
+      // ✅ SORT BY CODE (001,002,003...)
+      .sort((a, b) =>
+        String(a.code).localeCompare(String(b.code), undefined, {
+          numeric: true,
+        })
+      );
   }, [search, list]);
 
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-4" />
-        <p className="text-slate-400 font-bold">Loading Catalog...</p>
+        <div className="relative">
+          <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
+          <Loader2 className="relative w-12 h-12 text-indigo-600 animate-spin" />
+        </div>
+        <p className="mt-6 text-sm font-medium text-gray-500 uppercase tracking-widest animate-pulse">
+          Syncing Catalog...
+        </p>
       </div>
     );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* HEADER */}
-      <div className="bg-white border border-slate-200 rounded-[2rem] p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
-        <div className="flex items-center gap-5">
-          <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl shadow-sm border border-emerald-100">
-            <Wrench size={28} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-in fade-in duration-700">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-bold text-indigo-600 tracking-wide uppercase">
+              Management
+            </span>
           </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-              Service Catalog
-            </h1>
-            <p className="text-slate-500 text-sm font-medium leading-relaxed">
-              Define and manage appointment-based offerings
-            </p>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+            Service Catalog
+          </h1>
+          <p className="mt-2 text-gray-500 font-medium">
+            Manage your service offerings and appointment capacities.
+          </p>
         </div>
 
         <button
@@ -402,182 +111,146 @@ export default function Services() {
             setSelectedService(null);
             setOpenModal(true);
           }}
-          className="flex items-center gap-2 px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 hover:-translate-y-0.5 transition-all"
+          className="group relative inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-xl shadow-gray-900/10 hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-300 focus:ring-4 focus:ring-gray-900/20"
         >
-          <Plus size={20} /> Register New Service
+          <Plus size={18} className="group-hover:scale-110 transition-transform" />
+          <span>New Service</span>
         </button>
       </div>
 
-      {/* INSIGHT CARDS */}
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* STATS OVERVIEW */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <StatCard
           label="Total Services"
           value={(list || []).length}
-          icon={<Layers size={20} />}
-          color="blue"
+          icon={<Layers size={22} />}
+          trend="All active"
         />
         <StatCard
           label="Limited Capacity"
           value={(list || []).filter((s) => Number(s.maxCustomersPerDay) > 0).length}
-          icon={<ShieldCheck size={20} />}
-          color="emerald"
+          icon={<ShieldCheck size={22} />}
+          accentColor="indigo"
         />
         <StatCard
-          label="High Demand / Unlimited"
+          label="Unlimited Access"
           value={(list || []).filter((s) => Number(s.maxCustomersPerDay) === 0).length}
-          icon={<InfinityIcon size={20} />}
-          color="blue"
+          icon={<InfinityIcon size={22} />}
+          accentColor="emerald"
         />
       </div>
 
-      {/* TABLE SECTION */}
-      <div className="bg-white border border-slate-200 rounded-[2.5rem] shadow-sm overflow-hidden">
-        <div className="px-10 py-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
-          <h3 className="text-lg font-black text-slate-800 tracking-tight">
-            Active Offerings
-          </h3>
-
-          <div className="relative w-full md:w-80 group">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"
-              size={18}
-            />
+      {/* MAIN CONTENT AREA */}
+      <div className="space-y-6">
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-2 rounded-2xl border border-gray-200/60 shadow-sm">
+          <div className="relative w-full sm:w-96">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <Search size={18} />
+            </div>
             <input
-              placeholder="Filter by name or code..."
+              type="text"
+              placeholder="Search by name or code..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-12 pr-4 py-2.5 text-sm outline-none focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium"
+              className="block w-full pl-10 pr-4 py-2.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all font-medium sm:text-sm"
             />
+          </div>
+          
+          <div className="hidden sm:block text-xs font-semibold text-gray-400 px-4">
+            Showing {filteredServices.length} results
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-10 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Service Branding
-                </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Unique Code
-                </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Required Docs
-                </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">
-                  Daily Cap
-                </th>
-                <th className="px-10 py-5 text-[11px] font-black uppercase tracking-widest text-right text-slate-400">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+          {filteredServices.map((s) => (
+            <div
+              key={s._id}
+              className="group relative bg-white rounded-2xl border border-gray-200/60 p-6 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-500/30 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full"
+            >
+              {/* Card Header */}
+              <div className="flex justify-between items-start mb-5">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 flex items-center justify-center text-xl font-bold text-indigo-600 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                     {s.name ? s.name.charAt(0).toUpperCase() : <Wrench size={20} />}
+                  </div>
+                  {/* Status Dot */}
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                  </span>
+                </div>
 
-            <tbody className="divide-y divide-slate-50">
-              {filteredServices.map((s) => (
-                <tr
-                  key={s._id}
-                  className="group hover:bg-blue-50/30 transition-colors"
-                >
-                  <td className="px-10 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-white border border-slate-100 text-emerald-500 rounded-xl flex items-center justify-center font-black shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                        {String(s.name || "").charAt(0).toUpperCase()}
-                      </div>
-                      <p className="font-bold text-slate-700 tracking-tight">
-                        {s.name}
-                      </p>
-                    </div>
-                  </td>
+                <div className="px-3 py-1 rounded-full bg-gray-50 border border-gray-100">
+                  <span className="text-xs font-bold text-gray-500 font-mono tracking-wider">
+                    {String(s.code || "N/A")}
+                  </span>
+                </div>
+              </div>
 
-                  {/* ✅ ALWAYS UPPERCASE IN LIST */}
-                  <td className="px-8 py-5 font-mono text-xs text-blue-600 font-black uppercase">
-                    {String(s.code || "").toUpperCase()}
-                  </td>
+              {/* Card Content */}
+              <div className="flex-1 mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                  {s.name}
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+                  {s.description || "No description provided for this service."}
+                </p>
+                
+                {/* Meta info chips */}
+                <div className="mt-4 flex flex-wrap gap-2">
+                   {Number(s.maxCustomersPerDay) > 0 ? (
+                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">
+                       <ShieldCheck size={12} /> Cap: {s.maxCustomersPerDay}
+                     </span>
+                   ) : (
+                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-100">
+                       <InfinityIcon size={12} /> Unlimited
+                     </span>
+                   )}
+                </div>
+              </div>
 
-                  <td className="px-8 py-5">
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        s.requiresIdentity && "Identity",
-                        s.requiresPassport && "Passport",
-                        s.requiresDocuments && "Files",
-                      ]
-                        .filter(Boolean)
-                        .map((req, i) => (
-                          <span
-                            key={i}
-                            className="px-2.5 py-1 bg-white border border-slate-200 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-tight"
-                          >
-                            {req}
-                          </span>
-                        ))}
-                      {!(
-                        s.requiresIdentity ||
-                        s.requiresPassport ||
-                        s.requiresDocuments
-                      ) && (
-                        <span className="text-slate-300 text-[10px] font-bold italic">
-                          Standard Access
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="px-8 py-5 text-center">
-                    <div
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase ${
-                        Number(s.maxCustomersPerDay) === 0
-                          ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                          : "bg-blue-50 text-blue-600 border border-blue-100"
-                      }`}
-                    >
-                      {Number(s.maxCustomersPerDay) === 0 ? (
-                        <InfinityIcon size={12} />
-                      ) : null}
-                      {Number(s.maxCustomersPerDay) === 0
-                        ? "Unlimited"
-                        : `${s.maxCustomersPerDay} / Day`}
-                    </div>
-                  </td>
-
-                  <td className="px-10 py-5 text-right">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        disabled={updatingId === s._id}
-                        onClick={() => {
-                          setSelectedService(s);
-                          setOpenModal(true);
-                        }}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                      >
-                        {updatingId === s._id ? (
-                          <Loader2 className="animate-spin" size={16} />
-                        ) : (
-                          <Edit3 size={16} />
-                        )}
-                      </button>
-
-                      <button
-                        disabled={deletingId === s._id}
-                        onClick={() => handleDelete(s._id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                      >
-                        {deletingId === s._id ? (
-                          <Loader2 className="animate-spin" size={16} />
-                        ) : (
-                          <Trash2 size={16} />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              {/* Card Footer / Actions */}
+              <div className="pt-5 border-t border-gray-100 flex items-center justify-between">
+                <div className="flex gap-1">
+                  <button
+                    disabled={updatingId === s._id}
+                    onClick={() => {
+                      setSelectedService(s);
+                      setOpenModal(true);
+                    }}
+                    className="h-9 px-3 rounded-lg bg-white text-gray-600 border border-gray-200 text-xs font-semibold hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-2"
+                  >
+                    {updatingId === s._id ? <Loader2 className="animate-spin" size={14} /> : <Edit3 size={14} />}
+                    Edit
+                  </button>
+                  
+                  <button
+                    disabled={deletingId === s._id}
+                    onClick={() => handleDelete(s._id)}
+                    className="h-9 w-9 flex items-center justify-center rounded-lg bg-white text-gray-400 border border-gray-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all"
+                  >
+                    {deletingId === s._id ? <Loader2 className="animate-spin" size={14} /> : <Trash2 size={14} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {filteredServices.length === 0 && (
+             <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 text-gray-400">
+                   <Search size={24} />
+                </div>
+                <h3 className="text-gray-900 font-bold text-lg">No services found</h3>
+                <p className="text-gray-500 text-sm mt-1">Try adjusting your search query.</p>
+             </div>
+          )}
         </div>
       </div>
 
-      {/* MODAL */}
       <ServiceModal
         open={openModal}
         initialData={selectedService}
@@ -592,25 +265,34 @@ export default function Services() {
   );
 }
 
-/* HELPER COMPONENTS */
-function StatCard({ label, value, icon, color }) {
-  const isBlue = color === "blue";
+/* -------------------------------------------------------------------------- */
+/* SUBCOMPONENTS                               */
+/* -------------------------------------------------------------------------- */
+
+function StatCard({ label, value, icon, accentColor = "indigo" }) {
+  const colors = {
+    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-500/10",
+    emerald: "bg-emerald-50 text-emerald-600 ring-emerald-500/10",
+    blue: "bg-blue-50 text-blue-600 ring-blue-500/10",
+  };
+
+  const activeColor = colors[accentColor] || colors.indigo;
+
   return (
-    <div className="bg-white border border-slate-100 p-6 rounded-[2rem] shadow-sm flex items-center justify-between">
-      <div>
-        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">
-          {label}
-        </p>
-        <p className="text-3xl font-black text-slate-800 tracking-tighter">
-          {value}
-        </p>
-      </div>
-      <div
-        className={`p-4 rounded-2xl ${
-          isBlue ? "bg-blue-50 text-blue-600" : "bg-emerald-50 text-emerald-600"
-        }`}
-      >
-        {icon}
+    <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200/60 p-6 shadow-sm hover:shadow-md transition-shadow">
+      {/* Decorative gradient blob */}
+      <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-20 blur-2xl ${accentColor === 'emerald' ? 'bg-emerald-500' : 'bg-indigo-500'}`}></div>
+
+      <div className="flex items-center justify-between relative z-10">
+        <div>
+          <p className="text-sm font-medium text-gray-500">{label}</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            <h4 className="text-3xl font-bold text-gray-900 tracking-tight">{value}</h4>
+          </div>
+        </div>
+        <div className={`p-3 rounded-xl ring-1 ring-inset ${activeColor}`}>
+          {icon}
+        </div>
       </div>
     </div>
   );
