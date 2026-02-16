@@ -546,14 +546,43 @@ exports.createAppointment = async (req, res) => {
 /* =========================
    GET PENDING APPOINTMENTS
 ========================= */
+// exports.getAppointments = async (req, res) => {
+//   try {
+//     const appointments = await Appointment.find({ status: "PENDING" })
+//       .populate("customerId", "fullName phone")
+//       .populate("serviceId", "name code")
+//       .sort({ appointmentDate: -1 });
+
+//     return res.json({ success: true, data: appointments });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message || "Failed to fetch appointments",
+//     });
+//   }
+// };
 exports.getAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({ status: "PENDING" })
       .populate("customerId", "fullName phone")
       .populate("serviceId", "name code")
-      .sort({ appointmentDate: -1 });
+      .sort({ appointmentDate: -1 })
+      .lean(); // 👈 IMPORTANT (allows mutation)
 
-    return res.json({ success: true, data: appointments });
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    const data = appointments.map((a) => ({
+      ...a,
+      documents: (a.documents || []).map((doc) => ({
+        ...doc,
+        url: `${baseUrl}/uploads/appointments/${doc.filename}`,
+      })),
+    }));
+
+    return res.json({
+      success: true,
+      data,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,

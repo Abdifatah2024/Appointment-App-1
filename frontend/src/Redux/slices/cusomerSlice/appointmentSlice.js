@@ -29,7 +29,8 @@
 //       return res.data.data;
 //     } catch (err) {
 //       return rejectWithValue(
-//         err.response?.data?.message || "Failed to fetch approved appointments"
+//         err.response?.data?.message ||
+//           "Failed to fetch approved appointments"
 //       );
 //     }
 //   }
@@ -58,7 +59,11 @@
 //       const res = await api.get(
 //         `/appointments/appointments?status=${status}`
 //       );
-//       return { status, data: res.data.data };
+
+//       return {
+//         status,
+//         data: res.data.data || [],
+//       };
 //     } catch (err) {
 //       return rejectWithValue(
 //         err.response?.data?.message ||
@@ -86,7 +91,7 @@
 // );
 
 // /* ================================
-//    UPDATE APPOINTMENT (STATUS, DOCS…)
+//    UPDATE APPOINTMENT
 // ================================ */
 // export const updateAppointment = createAsyncThunk(
 //   "appointments/update",
@@ -102,10 +107,10 @@
 //   }
 // );
 
-// /* =====================================================
-//    ✅ ASSIGN USER TO APPOINTMENT (FIX)
-//    PUT /appointments/:id/assign-user
-// ===================================================== */
+// /* ================================
+//    ASSIGN USER TO APPOINTMENT
+//    (returns populated assignedUserId)
+// ================================ */
 // export const assignUserToAppointment = createAsyncThunk(
 //   "appointments/assignUser",
 //   async ({ id, assignedUserId, notes }, { rejectWithValue }) => {
@@ -114,7 +119,7 @@
 //         assignedUserId,
 //         notes,
 //       });
-//       return res.data.data;
+//       return res.data.data; // 👈 populated appointment
 //     } catch (err) {
 //       return rejectWithValue(
 //         err.response?.data?.message || "Failed to assign user"
@@ -149,7 +154,7 @@
 //     try {
 //       if (!query || query.trim().length < 2) return [];
 //       const res = await api.get(`/customers/search?q=${query}`);
-//       return res.data.data;
+//       return res.data.data || [];
 //     } catch (err) {
 //       return rejectWithValue(
 //         err.response?.data?.message || "Failed to search customers"
@@ -204,6 +209,30 @@
 //         state.error = action.payload;
 //       })
 
+//       /* ---------- FETCH APPROVED ---------- */
+//       .addCase(fetchApprovedAppointments.fulfilled, (state, action) => {
+//         state.approvedList = action.payload || [];
+//       })
+
+//       /* ---------- FETCH BY STATUS ---------- */
+//       .addCase(fetchAppointmentsByStatus.fulfilled, (state, action) => {
+//         state.byStatus[action.payload.status] =
+//           action.payload.data || [];
+//       })
+
+//       /* ---------- CREATE ---------- */
+//       .addCase(createAppointment.pending, (state) => {
+//         state.creating = true;
+//       })
+//       .addCase(createAppointment.fulfilled, (state, action) => {
+//         state.creating = false;
+//         state.list.unshift(action.payload);
+//       })
+//       .addCase(createAppointment.rejected, (state, action) => {
+//         state.creating = false;
+//         state.error = action.payload;
+//       })
+
 //       /* ---------- ASSIGN USER ---------- */
 //       .addCase(assignUserToAppointment.pending, (state, action) => {
 //         state.updatingId = action.meta.arg.id;
@@ -231,29 +260,28 @@
 //         );
 //         if (idx !== -1) state.list[idx] = action.payload;
 //       })
-//     .addCase(updateAppointment.rejected, (state, action) => {
-//       state.updatingId = null;
-//       state.error = action.payload;
-//     })
-//     /* ---------- SEARCH CUSTOMERS ---------- */
-//     .addCase(searchCustomers.pending, (state) => {
-//       state.customerSearching = true;
-//     })
-//     .addCase(searchCustomers.fulfilled, (state, action) => {
-//       state.customerSearching = false;
-//       state.customerSearchResults = action.payload || [];
-//     })
-//     .addCase(searchCustomers.rejected, (state, action) => {
-//       state.customerSearching = false;
-//       state.error = action.payload;
-//     });
-// },
-    
+//       .addCase(updateAppointment.rejected, (state, action) => {
+//         state.updatingId = null;
+//         state.error = action.payload;
+//       })
+
+//       /* ---------- SEARCH CUSTOMERS ---------- */
+//       .addCase(searchCustomers.pending, (state) => {
+//         state.customerSearching = true;
+//       })
+//       .addCase(searchCustomers.fulfilled, (state, action) => {
+//         state.customerSearching = false;
+//         state.customerSearchResults = action.payload || [];
+//       })
+//       .addCase(searchCustomers.rejected, (state, action) => {
+//         state.customerSearching = false;
+//         state.error = action.payload;
+//       });
+//   },
 // });
 
-
 // /* ================================
-//    EXPORTS (IMPORTANT)
+//    EXPORTS
 // ================================ */
 // export const {
 //   clearAppointmentError,
@@ -372,7 +400,6 @@ export const updateAppointment = createAsyncThunk(
 
 /* ================================
    ASSIGN USER TO APPOINTMENT
-   (returns populated assignedUserId)
 ================================ */
 export const assignUserToAppointment = createAsyncThunk(
   "appointments/assignUser",
@@ -382,7 +409,7 @@ export const assignUserToAppointment = createAsyncThunk(
         assignedUserId,
         notes,
       });
-      return res.data.data; // 👈 populated appointment
+      return res.data.data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Failed to assign user"
@@ -552,4 +579,5 @@ export const {
 } = appointmentSlice.actions;
 
 export default appointmentSlice.reducer;
+
 
