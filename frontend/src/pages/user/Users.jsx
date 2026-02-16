@@ -12,6 +12,7 @@ import {
   UserCheck,
   Mail,
   Shield,
+  Loader2 as LoaderIcon,
 } from "lucide-react";
 import {
   fetchUsers,
@@ -29,6 +30,7 @@ export default function Users() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
 
+  // Form State
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -43,15 +45,14 @@ export default function Users() {
 
   const statusBadge = useMemo(
     () => ({
-      APPROVED: "text-emerald-600 bg-emerald-50 border-emerald-100",
-      PENDING: "text-blue-600 bg-blue-50 border-blue-100",
-      REJECTED: "text-rose-600 bg-rose-50 border-rose-100",
-      DISABLED: "text-slate-400 bg-slate-50 border-slate-200",
+      APPROVED: "text-emerald-700 bg-emerald-50 border-emerald-200 ring-emerald-100",
+      PENDING: "text-amber-700 bg-amber-50 border-amber-200 ring-amber-100",
+      REJECTED: "text-rose-700 bg-rose-50 border-rose-200 ring-rose-100",
+      DISABLED: "text-slate-500 bg-slate-50 border-slate-200 ring-slate-100",
     }),
-    [],
+    []
   );
 
-  // ================= ACTIONS =================
   const closeModals = () => {
     setShowRegister(false);
     setEditing(null);
@@ -102,27 +103,31 @@ export default function Users() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <RefreshCw className="w-10 h-10 text-blue-600 animate-spin mb-4" />
-        <p className="text-slate-400 font-bold animate-pulse">
+        <div className="relative">
+            <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
+            <LoaderIcon className="relative w-12 h-12 text-indigo-600 animate-spin" />
+        </div>
+        <p className="mt-6 text-sm font-medium text-gray-400 uppercase tracking-[0.2em] animate-pulse">
           Syncing User Data...
         </p>
       </div>
     );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-in fade-in duration-500">
+      
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm shadow-gray-200/50">
+        <div className="flex items-center gap-5">
+          <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100 shadow-inner">
             <UserCheck size={28} />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
               Access Management
             </h2>
-            <p className="text-slate-500 text-sm font-medium">
-              Configure team roles and system permissions
+            <p className="text-gray-500 font-medium text-sm mt-1">
+              Configure team roles, system permissions, and account status.
             </p>
           </div>
         </div>
@@ -130,167 +135,153 @@ export default function Users() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowRegister(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 hover:-translate-y-0.5 transition-all flex items-center gap-2"
+            className="px-6 py-3.5 bg-blue-600 text-white rounded-xl font-bold shadow-xl shadow-gray-900/10 hover:bg-blue-700 hover:-translate-y-0.5 transition-all flex items-center gap-2"
           >
             <UserPlus size={18} /> Register User
           </button>
           <button
             onClick={() => dispatch(fetchUsers())}
-            className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all"
+            className="p-3.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 transition-all hover:rotate-180 duration-700"
+            title="Refresh Users"
           >
             <RefreshCw size={18} />
           </button>
         </div>
       </div>
 
-      {/* USERS TABLE */}
-      <div className="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Identity
-                </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Access Level
-                </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-slate-400 text-center">
-                  Security Status
-                </th>
-                <th className="px-8 py-5 text-[11px] font-black uppercase tracking-widest text-right text-slate-400">
-                  Controls
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {list.map((u) => (
-                <tr
-                  key={u._id}
-                  className="group hover:bg-blue-50/30 transition-colors"
-                >
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
-                        {u.fullName?.charAt(0)}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-slate-700 tracking-tight">
-                          {u.fullName}
-                        </span>
-                        <div className="flex items-center gap-1 text-xs text-slate-400">
-                          <Mail size={10} />
-                          {u.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-2 text-slate-600">
-                      <Shield size={14} className="text-slate-300" />
-                      <span className="text-xs font-black uppercase">
-                        {u.role}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-center">
-                    <span
-                      className={`px-4 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider ${statusBadge[u.status] || statusBadge.DISABLED}`}
-                    >
-                      {u.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex justify-end items-center gap-2">
-                      <button
-                        onClick={() => openEdit(u)}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Edit User"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => toggleApprove(u)}
-                        className={`p-2 rounded-lg transition-all ${
-                          u.status === "APPROVED"
-                            ? "text-amber-500 hover:bg-amber-50"
-                            : "text-emerald-500 hover:bg-emerald-50"
-                        }`}
-                        title={
-                          u.status === "APPROVED"
-                            ? "Suspend Account"
-                            : "Approve Account"
-                        }
-                      >
-                        {u.status === "APPROVED" ? (
-                          <Slash size={16} />
-                        ) : (
-                          <CheckCircle size={16} />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(u)}
-                        className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                        title="Delete Permanently"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* USER CARDS GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {list.map((u) => (
+          <div
+            key={u._id}
+            className="group relative bg-white border border-gray-200/60 rounded-[2.5rem] p-7 hover:shadow-2xl hover:shadow-indigo-100/40 hover:border-indigo-200 transition-all duration-300 flex flex-col"
+          >
+            {/* CARD HEADER: ROLE & STATUS */}
+            <div className="flex justify-between items-start mb-6">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200">
+                <Shield size={10} className="text-gray-400" />
+                {u.role}
+              </span>
+              
+              <span
+                className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset ${
+                  statusBadge[u.status] || statusBadge.DISABLED
+                }`}
+              >
+                {u.status}
+              </span>
+            </div>
+
+            {/* CARD BODY: AVATAR & INFO */}
+            <div className="flex flex-col items-center text-center flex-1 mb-8">
+              <div className="relative w-24 h-24 mb-4">
+                <div className="absolute inset-0 bg-indigo-500/5 rounded-3xl blur-md group-hover:bg-indigo-500/10 transition-all"></div>
+                <div className="relative w-full h-full rounded-3xl bg-gradient-to-br from-white to-gray-50 border border-gray-100 text-gray-400 flex items-center justify-center font-bold text-3xl group-hover:scale-105 group-hover:from-indigo-600 group-hover:to-indigo-700 group-hover:text-white group-hover:border-indigo-500 transition-all duration-500 shadow-sm">
+                  {u.fullName?.charAt(0)}
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+                {u.fullName}
+              </h3>
+              
+              <div className="mt-3 flex items-center gap-2 text-sm text-gray-500 font-medium bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100 group-hover:bg-indigo-50/50 group-hover:border-indigo-100 transition-colors">
+                <Mail size={14} className="text-gray-300 group-hover:text-indigo-400" />
+                {u.email}
+              </div>
+            </div>
+
+            {/* CARD FOOTER: ACTIONS */}
+            <div className="pt-6 border-t border-gray-50 grid grid-cols-3 gap-2">
+              <button
+                onClick={() => openEdit(u)}
+                className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+              >
+                <Edit size={16} /> 
+                <span className="text-[10px] font-bold uppercase tracking-tighter">Edit</span>
+              </button>
+
+              <button
+                onClick={() => toggleApprove(u)}
+                className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl transition-all ${
+                  u.status === "APPROVED"
+                    ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                    : "text-gray-400 hover:text-emerald-600 hover:bg-emerald-50"
+                }`}
+              >
+                {u.status === "APPROVED" ? (
+                  <>
+                    <Slash size={16} /> 
+                    <span className="text-[10px] font-bold uppercase tracking-tighter">Suspend</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={16} /> 
+                    <span className="text-[10px] font-bold uppercase tracking-tighter">Approve</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => setConfirmDelete(u)}
+                className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+              >
+                <Trash2 size={16} /> 
+                <span className="text-[10px] font-bold uppercase tracking-tighter">Delete</span>
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* FORM MODAL */}
       {(showRegister || editing) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"
+            className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
             onClick={closeModals}
           />
           <form
             onSubmit={editing ? submitUpdate : submitRegister}
-            className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+            className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
           >
-            <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight">
-                {editing ? "Update User Account" : "Add Team Member"}
-              </h3>
+            <div className="px-10 py-8 border-b border-gray-50 flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  {editing ? "Update User" : "Add Team Member"}
+                </h3>
+                <p className="text-gray-400 text-sm font-medium">Please fill in the account details below.</p>
+              </div>
               <button
                 type="button"
                 onClick={closeModals}
-                className="p-2 hover:bg-slate-100 rounded-full text-slate-400"
+                className="p-3 hover:bg-gray-100 rounded-2xl text-gray-400 transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="p-10 space-y-5">
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
-                  Display Name
+            <div className="p-10 space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                  Full Name
                 </label>
                 <input
                   placeholder="e.g. John Doe"
-                  className="w-full border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-medium text-gray-900"
                   value={form.fullName}
-                  onChange={(e) =>
-                    setForm({ ...form, fullName: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                   required
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
                   Email Address
                 </label>
                 <input
                   placeholder="john@example.com"
-                  className="w-full border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-medium text-gray-900"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   required
@@ -298,30 +289,28 @@ export default function Users() {
               </div>
 
               {!editing && (
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
-                    Access Password
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                    Initial Password
                   </label>
                   <input
                     type="password"
                     placeholder="••••••••"
-                    className="w-full border border-slate-200 rounded-xl px-5 py-3.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-medium text-gray-900"
                     value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
                     required
                   />
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
-                    System Role
+              <div className="grid grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                    Role
                   </label>
                   <select
-                    className="w-full border border-slate-200 rounded-xl px-5 py-3.5 outline-none bg-slate-50 font-bold cursor-pointer"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 outline-none font-bold text-gray-900 cursor-pointer focus:bg-white transition-all appearance-none"
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
                   >
@@ -330,16 +319,14 @@ export default function Users() {
                     <option value="STAFF">STAFF</option>
                   </select>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase ml-2">
-                    Initial Status
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
+                    Status
                   </label>
                   <select
-                    className="w-full border border-slate-200 rounded-xl px-5 py-3.5 outline-none bg-slate-50 font-bold cursor-pointer"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-5 py-4 outline-none font-bold text-gray-900 cursor-pointer focus:bg-white transition-all appearance-none"
                     value={form.status}
-                    onChange={(e) =>
-                      setForm({ ...form, status: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}
                   >
                     <option value="PENDING">PENDING</option>
                     <option value="APPROVED">APPROVED</option>
@@ -348,23 +335,19 @@ export default function Users() {
               </div>
             </div>
 
-            <div className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <div className="px-10 py-8 bg-gray-50/50 border-t border-gray-100 flex justify-end gap-4">
               <button
                 type="button"
                 onClick={closeModals}
-                className="px-6 py-3 font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                className="px-6 py-3 font-bold text-gray-400 hover:text-gray-600 transition-colors"
               >
-                Discard
+                Cancel
               </button>
               <button
                 disabled={registering}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all"
+                className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all disabled:opacity-50"
               >
-                {editing
-                  ? "Save Changes"
-                  : registering
-                    ? "Processing..."
-                    : "Confirm & Register"}
+                {editing ? "Save Changes" : registering ? "Processing..." : "Create Account"}
               </button>
             </div>
           </form>
@@ -375,33 +358,29 @@ export default function Users() {
       {confirmDelete && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+            className="absolute inset-0 bg-gray-900/60 backdrop-blur-md"
             onClick={() => setConfirmDelete(null)}
           />
-          <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl p-8 text-center animate-in fade-in zoom-in-95 duration-200">
-            <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100">
-              <AlertCircle size={32} />
+          <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl p-10 text-center animate-in fade-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-rose-100 shadow-inner">
+              <AlertCircle size={40} />
             </div>
-            <h3 className="text-xl font-black text-slate-800 mb-2">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
               Delete Account?
             </h3>
-            <p className="text-slate-500 text-sm font-medium mb-8">
-              This will permanently remove{" "}
-              <span className="text-slate-800 font-bold">
-                {confirmDelete.fullName}
-              </span>{" "}
-              from the system. This action cannot be undone.
+            <p className="text-gray-500 text-sm font-medium mb-10 leading-relaxed">
+              You are about to permanently remove <span className="text-gray-900 font-bold underline decoration-rose-200">{confirmDelete.fullName}</span>. This action is irreversible.
             </p>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={handleDelete}
-                className="w-full py-3.5 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 shadow-lg shadow-rose-100 transition-all"
+                className="w-full py-4 rounded-2xl bg-rose-600 text-white font-bold hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all"
               >
                 Delete Permanently
               </button>
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="w-full py-3.5 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all"
+                className="w-full py-4 rounded-2xl bg-gray-50 text-gray-500 font-bold hover:bg-gray-100 transition-all"
               >
                 Keep Account
               </button>
@@ -410,5 +389,30 @@ export default function Users() {
         </div>
       )}
     </div>
+  );
+}
+
+function Loader2({ className }) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
+    </svg>
   );
 }
