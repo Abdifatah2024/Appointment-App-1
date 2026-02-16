@@ -10,7 +10,7 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async (data, { rejectWithValue }) => {
     try {
-      const res = await api.post("/api/users/login", data);
+      const res = await api.post("/users/login", data);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Login failed");
@@ -25,7 +25,7 @@ export const fetchMe = createAsyncThunk(
   "auth/fetchMe",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await api.get("/api/users/me");
+      const res = await api.get("/users/me");
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Session expired");
