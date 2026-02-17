@@ -91,11 +91,7 @@ export default function PublicHeader() {
 
         {/* Right */}
         <div className="flex items-center gap-3">
-          <button className="hidden sm:flex w-10 h-10 rounded-xl border border-slate-200 bg-white/60 hover:bg-white">
-            <Bell size={18} className="text-slate-500" />
-          </button>
-
-          <Link
+                   <Link
             to="/login"
             className="px-5 py-2 rounded-xl bg-blue-600 text-white font-black text-sm shadow-md hover:brightness-95"
           >
