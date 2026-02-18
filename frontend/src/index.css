@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-
-
 @theme {
   --blue-950: #000814;
   --blue-900: #001d3d;
@@ -12,6 +10,19 @@
   --yellow-300: #ffe345;
 }
 
-*{
-  font-family: 'prompt'sans-serif;
+/* ✅ Page-ka oo dhan ha buuxsamo */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* ✅ Font saxan */
+* {
+  font-family: "Prompt", sans-serif;
 }
