@@ -1,5 +1,3 @@
-
-
 // export default systemRoutes;
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -25,12 +23,17 @@ import EmployeeDashboard from "../pages/Employee/EmployeeDashboard";
 // ================= PUBLIC (EXISTING) =================
 import PublicAppointmentPage from "../pages/Public/PublicAppointmentPage";
 
-// ✅ NEW PUBLIC PAGES + LAYOUT
+// ✅ PUBLIC LAYOUT + PAGES
 import PublicLayout from "../layouts/PublicLayout";
 import LandingPage from "../pages/Public/LandingPage";
 import PublicServicesPage from "../pages/Public/PublicServicesPage";
 import PublicTrackPage from "../pages/Public/PublicTrackPage";
 import AboutPage from "../pages/Public/AboutPage";
+
+// ✅ NEW PAGES (Privacy / Terms / Support)
+import PrivacyPage from "../pages/Public/PrivacyPage";
+import TermsPage from "../pages/Public/TermsPage";
+import SupportPage from "../pages/Public/SupportPage";
 
 // ================= LAYOUT =================
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -43,16 +46,22 @@ const systemRoutes = [
   {
     element: <PublicLayout />,
     children: [
-      { index: true, element: <LandingPage /> }, // ✅ NEW LANDING "/"
+      { index: true, element: <LandingPage /> }, // "/"
       { path: "/services", element: <PublicServicesPage /> },
       { path: "/track", element: <PublicTrackPage /> },
       { path: "/about", element: <AboutPage /> },
 
-      // ✅ OLD PublicAppointmentPage moved here
+      // ✅ Footer pages
+      { path: "/privacy", element: <PrivacyPage /> },
+      { path: "/terms", element: <TermsPage /> },
+      { path: "/support", element: <SupportPage /> },
+
+      // ✅ Booking page
       { path: "/book", element: <PublicAppointmentPage /> },
     ],
   },
 
+  // ✅ Login route
   {
     path: "/login",
     element: <Login />,
