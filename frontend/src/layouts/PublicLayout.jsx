@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import PublicHeader from "./PublicHeader";
 
 import bgHomeVideo from "../assets/landing/bg-home.mp4";
@@ -28,8 +29,17 @@ export default function PublicLayout() {
       ? "bg-slate-950/55 backdrop-blur-[1px]"
       : "bg-black/35 backdrop-blur-[1px]";
 
-  // ✅ ONLY HOME: no-scroll
-  const isHome = pathname === "/";
+  // ✅ HOME only = no scroll (SERVICES now scrolls so footer shows)
+  const noScrollPages = ["/"];
+  const isNoScroll = noScrollPages.includes(pathname);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = isNoScroll ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isNoScroll]);
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden">
@@ -48,11 +58,10 @@ export default function PublicLayout() {
         <PublicHeader />
       </div>
 
-      {/* ✅ MAIN */}
       <main
         className={[
           "relative z-10 flex-1 w-full",
-          isHome ? "overflow-hidden" : "overflow-auto",
+          isNoScroll ? "overflow-hidden" : "overflow-auto",
         ].join(" ")}
       >
         <div className="w-full mx-auto">
@@ -60,8 +69,8 @@ export default function PublicLayout() {
         </div>
       </main>
 
-      {/* ✅ Footer: HOME ka qari (sidaad hore u samaysay) */}
-      {!isHome && (
+      {/* ✅ Footer now shows on /services */}
+      {!isNoScroll && (
         <footer className="relative z-10 border-t border-white/10">
           <div className="bg-gradient-to-r from-slate-950 via-slate-900/95 to-emerald-950/80 backdrop-blur-xl">
             <div className="mx-auto max-w-7xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-3">
