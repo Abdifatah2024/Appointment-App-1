@@ -158,7 +158,7 @@ export default function Login() {
                 <Loader2 className="animate-spin" size={20} />
               ) : (
                 <>
-                  Sign In to Dashboard
+                  Sign in
                   <ArrowRight
                     size={18}
                     className="group-hover:translate-x-1 transition-transform"
