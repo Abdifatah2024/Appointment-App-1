@@ -147,13 +147,13 @@ export default function PublicHeader() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
+            {/* <button
               type="button"
               className="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
               aria-label="Notifications"
             >
               <Bell className="text-slate-200" size={20} />
-            </button>
+            </button> */}
 
             <Link
               to="/login"
@@ -161,7 +161,7 @@ export default function PublicHeader() {
                          bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg shadow-blue-600/20
                          hover:brightness-110 transition"
             >
-              Admin Login
+              Login
             </Link>
 
             <button
