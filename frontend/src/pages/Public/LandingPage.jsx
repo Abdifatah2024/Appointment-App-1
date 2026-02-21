@@ -1,187 +1,171 @@
+// import { Link } from "react-router-dom";
+// import { Search, FileText, ArrowRight } from "lucide-react";
+
+// export default function LandingPage() {
+//   return (
+//     <section className="relative min-h-[calc(100vh-80px-56px)] flex items-center justify-center px-6 bg-slate-950 overflow-hidden">
+//       {/* Soft Background */}
+//       <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pointer-events-none" />
+//       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(37,99,235,.28),transparent_55%)] pointer-events-none" />
+//       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(59,130,246,.18),transparent_60%)] pointer-events-none" />
+
+//       {/* Center Card */}
+//       <div className="relative z-10 w-full max-w-3xl">
+//         <div className="rounded-[28px] p-[1px] bg-gradient-to-br from-blue-600/35 to-white/10 shadow-[0_30px_70px_rgba(0,0,0,.45)]">
+//           <div className="rounded-[27px] bg-white/5 border border-white/10 backdrop-blur-2xl p-8 md:p-12 text-center">
+//             {/* Small badge */}
+//             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/15 border border-blue-400/25 text-blue-100 font-bold text-sm mb-6">
+//               <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+//               Appointment System
+//             </div>
+
+//             {/* TITLE */}
+//             <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
+//               KA QABSO BALANTAADA HALKAN 
+//             </h1>
+
+//             {/* SUBTITLE */}
+//             <p className="mt-5 text-slate-300 text-lg md:text-xl font-medium leading-relaxed">
+//               Si fudud u qabso ballantaada, lana soco dhaqdhaqaaqa codsigaaga.
+//             </p>
+
+//             {/* BUTTONS */}
+//             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+//               <Link
+//                 to="/services"
+//                 className="
+//                   group inline-flex items-center justify-center gap-2
+//                   px-7 py-4 rounded-2xl
+//                   bg-gradient-to-r from-blue-600 to-blue-700
+//                   text-white font-extrabold text-lg
+//                   shadow-lg shadow-blue-600/20
+//                   transition-all duration-300
+//                   hover:-translate-y-1 hover:brightness-110
+//                   focus:outline-none focus:ring-2 focus:ring-blue-400/60
+//                 "
+//               >
+//                 <FileText size={20} />
+//                 Services
+//                 <ArrowRight
+//                   size={18}
+//                   className="transition-transform duration-300 group-hover:translate-x-1"
+//                 />
+//               </Link>
+
+//               <Link
+//                 to="/track"
+//                 className="
+//                   group inline-flex items-center justify-center gap-2
+//                   px-7 py-4 rounded-2xl
+//                   border border-white/20 bg-white/5
+//                   text-white font-extrabold text-lg
+//                   transition-all duration-300
+//                   hover:-translate-y-1 hover:bg-white/10
+//                   focus:outline-none focus:ring-2 focus:ring-white/30
+//                 "
+//               >
+//                 <Search size={20} />
+//                 Track
+//                 <ArrowRight
+//                   size={18}
+//                   className="transition-transform duration-300 group-hover:translate-x-1"
+//                 />
+//               </Link>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Small footer hint (optional, simple) */}
+//         <p className="mt-6 text-center text-slate-400 font-semibold text-sm">
+//           Door “Services” si aad u bilowdo, ama “Track” si aad u hubiso status-ka.
+//         </p>
+//       </div>
+//     </section>
+//   );
+// }
 import { Link } from "react-router-dom";
-import {
-  Search,
-  FileText,
-  ArrowRight,
-  ShieldCheck,
-  Timer,
-} from "lucide-react";
+import { Search, FileText, ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <section
-      className="
-        relative flex items-center justify-center
-        min-h-[calc(100vh-80px-56px)]
-        lg:h-[calc(100vh-80px-56px)]
-        overflow-hidden
-        py-4 md:py-6
-      "
-    >
-      {/* BACKGROUND OVERLAY */}
-      <div
-        className="
-          absolute inset-0 z-0
-          bg-[radial-gradient(900px_520px_at_28%_32%,rgba(37,99,235,.16),rgba(2,6,23,.84)),
-              radial-gradient(700px_420px_at_78%_68%,rgba(59,130,246,.12),rgba(2,6,23,.90)),
-              linear-gradient(180deg,rgba(2,6,23,.65),rgba(2,6,23,.92))]
-        "
-      />
+    <section className="relative min-h-[calc(100vh-80px-56px)] flex items-center justify-center px-6 bg-slate-950 overflow-hidden">
 
-      <div className="relative z-10 w-full max-w-7xl px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-          
-          {/* ================= LEFT BOX ================= */}
-          <div className="rounded-[30px] p-[1px] bg-gradient-to-br from-blue-600/30 to-white/10 shadow-[0_28px_70px_rgba(0,0,0,.38)]">
-            <div className="rounded-[29px] bg-slate-950/30 backdrop-blur-xl p-5">
-              <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-6 flex flex-col justify-center h-full min-h-[430px]">
+      {/* Minimal Background Glow (lighter now) */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,.18),transparent_65%)] animate-pulse pointer-events-none" />
 
-                <h1 className="inline-block px-4 py-2 mb-3 text-white font-black text-4xl lg:text-5xl leading-tight rounded-xl border border-white/20 bg-white/5">
-                  Ballan Casri ah
-                </h1>
+      {/* Floating Soft Light */}
+      <div className="absolute top-1/3 left-1/3 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl animate-[float_6s_ease-in-out_infinite] pointer-events-none" />
 
-                <p className="mb-4 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white/90 font-bold">
-                  Si fudud u qabso ballantaada — mar kasta la soco codsigaaga.
-                </p>
+      {/* Center Content */}
+      <div className="relative z-10 w-full max-w-3xl text-center">
 
-                {/* Pills */}
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {["Degdeg", "Ammaan", "La socod"].map((item) => (
-                    <span
-                      key={item}
-                      className="px-3 py-1 text-sm font-extrabold text-white/90 rounded-full border border-white/10 bg-white/5"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
+        {/* TITLE with fade animation */}
+        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight animate-[fadeIn_1s_ease-out]">
+          KA QABSO BALANTAADA HALKAN
+        </h1>
 
-                {/* Buttons */}
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    to="/services"
-                    className="
-                      flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold text-white
-                      bg-gradient-to-r from-blue-600 to-blue-700
-                      border border-white/10
-                      shadow-lg hover:translate-y-[-2px] transition
-                    "
-                  >
-                    <FileText size={18} />
-                    Services
-                    <ArrowRight
-                      size={16}
-                      className="animate-[bounce_1.6s_infinite]"
-                    />
-                  </Link>
+        {/* SUBTITLE */}
+        <p className="mt-6 text-slate-300 text-lg md:text-xl font-medium leading-relaxed animate-[fadeIn_1.5s_ease-out]">
+          Si fudud u qabso ballantaada, lana soco dhaqdhaqaaqa codsigaaga.
+        </p>
 
-                  <Link
-                    to="/track"
-                    className="
-                      flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold text-white
-                      bg-blue-600/20 border border-white/10
-                      hover:translate-y-[-2px] transition
-                    "
-                  >
-                    <Search size={18} />
-                    Track
-                    <ArrowRight
-                      size={16}
-                      className="animate-[bounce_1.6s_infinite]"
-                    />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* BUTTONS */}
+        <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center animate-[fadeIn_2s_ease-out]">
 
-          {/* ================= RIGHT BOX ================= */}
-          <div className="rounded-[30px] p-[1px] bg-gradient-to-br from-blue-500/30 to-white/10 shadow-[0_28px_70px_rgba(0,0,0,.38)]">
-            <div className="rounded-[29px] bg-slate-950/30 backdrop-blur-xl p-5">
-              <div className="rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-6 flex flex-col justify-between h-full min-h-[430px]">
+          <Link
+            to="/services"
+            className="
+              group inline-flex items-center justify-center gap-2
+              px-8 py-4 rounded-2xl
+              bg-blue-600 text-white font-extrabold text-lg
+              shadow-lg shadow-blue-600/30
+              transition-all duration-300
+              hover:-translate-y-1 hover:bg-blue-700
+            "
+          >
+            <FileText size={20} />
+            Services
+            <ArrowRight
+              size={18}
+              className="transition-transform duration-300 group-hover:translate-x-2"
+            />
+          </Link>
 
-                <div>
-                  <h2 className="inline-block px-4 py-2 mb-3 text-white font-black text-3xl rounded-xl border border-white/20 bg-white/5">
-                    Nidaam Hufan
-                  </h2>
+          <Link
+            to="/track"
+            className="
+              group inline-flex items-center justify-center gap-2
+              px-8 py-4 rounded-2xl
+              border border-white/25 text-white font-extrabold text-lg
+              transition-all duration-300
+              hover:-translate-y-1 hover:bg-white/10
+            "
+          >
+            <Search size={20} />
+            Track
+            <ArrowRight
+              size={18}
+              className="transition-transform duration-300 group-hover:translate-x-2"
+            />
+          </Link>
 
-                  <p className="mb-4 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white/90 font-bold">
-                    Hal meel ku dhammee codsiga, jadwalka, iyo hubinta.
-                  </p>
-
-                  {/* Feature 1 */}
-                  <div className="space-y-4 mt-4">
-                    <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                      <div className="flex gap-3">
-                        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-600/20 border border-blue-400/30">
-                          <Timer className="text-white" size={20} />
-                        </div>
-                        <div>
-                          <p className="font-black text-white">
-                            Waqti la qorsheeyey
-                          </p>
-                          <p className="text-sm text-slate-200">
-                            Jadwal cad, sugitaan yar.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Feature 2 */}
-                    <div className="p-4 rounded-xl border border-white/10 bg-white/5">
-                      <div className="flex gap-3">
-                        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-500/20 border border-blue-300/30">
-                          <ShieldCheck className="text-white" size={20} />
-                        </div>
-
-                        <div>
-                          <p className="font-black text-white mb-2">
-                            Xaalad Cad
-                          </p>
-
-                          <div className="flex flex-wrap items-center gap-2 text-sm font-extrabold">
-                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white">
-                              Pending
-                            </span>
-                            <span className="text-white/70">→</span>
-                            <span className="px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-200">
-                              Approved
-                            </span>
-                            <span className="text-white/70">→</span>
-                            <span className="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-200">
-                              Completed
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CTA */}
-                <div className="mt-6">
-                  <Link
-                    to="/services"
-                    className="
-                      inline-flex items-center gap-2 px-5 py-3 rounded-xl font-extrabold
-                      border border-blue-400/50 text-white
-                      hover:translate-y-[-2px] transition
-                    "
-                  >
-                    Start Request
-                    <ArrowRight
-                      size={16}
-                      className="animate-[bounce_1.6s_infinite]"
-                    />
-                  </Link>
-                </div>
-
-              </div>
-            </div>
-          </div>
-          {/* END */}
         </div>
       </div>
+
+      {/* Custom Animations */}
+      <style>
+        {`
+          @keyframes float {
+            0%,100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
+
     </section>
   );
 }
