@@ -104,12 +104,12 @@ export default function Login() {
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                   Password
                 </label>
-                <button
+                {/* <button
                   type="button"
                   className="text-[11px] font-bold text-blue-600 hover:underline"
                 >
                   Forgot?
-                </button>
+                </button> */}
               </div>
               <div className="relative group">
                 {/* Lock Icon (Left) */}
