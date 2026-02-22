@@ -83,89 +83,176 @@
 //     </section>
 //   );
 // }
+
 import { Link } from "react-router-dom";
 import { Search, FileText, ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <section className="relative min-h-[calc(100vh-80px-56px)] flex items-center justify-center px-6 bg-slate-950 overflow-hidden">
+    <section className="relative min-h-[calc(100vh-80px)] flex items-center justify-center px-4 sm:px-6 bg-transparent overflow-hidden">
+      
+      {/* Container - Slightly lifted upward for perfect center balance */}
+      <div className="relative z-10 w-full max-w-5xl text-center -mt-10 sm:-mt-14 md:-mt-16">
 
-      {/* Minimal Background Glow (lighter now) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,.18),transparent_65%)] animate-pulse pointer-events-none" />
+        {/* Hero Panel (only background area) */}
+        <div
+          className="
+            relative mx-auto w-full max-w-3xl
+            rounded-2xl
+            bg-[#0F172A]/22 backdrop-blur-md
+            border border-white/10
+            shadow-xl
+            px-5 sm:px-10 py-10 sm:py-12
+          "
+        >
+          {/* Corner accents */}
+          <span className="pointer-events-none absolute -top-[1px] -left-[1px] h-9 w-9 border-t border-l border-white/20 rounded-tl-2xl" />
+          <span className="pointer-events-none absolute -top-[1px] -right-[1px] h-9 w-9 border-t border-r border-white/20 rounded-tr-2xl" />
+          <span className="pointer-events-none absolute -bottom-[1px] -left-[1px] h-9 w-9 border-b border-l border-white/20 rounded-bl-2xl" />
+          <span className="pointer-events-none absolute -bottom-[1px] -right-[1px] h-9 w-9 border-b border-r border-white/20 rounded-br-2xl" />
 
-      {/* Floating Soft Light */}
-      <div className="absolute top-1/3 left-1/3 w-72 h-72 bg-blue-600/20 rounded-full blur-3xl animate-[float_6s_ease-in-out_infinite] pointer-events-none" />
+          {/* Title */}
+          <h1 className="title-message text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#F8FAFC] tracking-tight">
+            KA QABSO BALANTAADA HALKAN
+          </h1>
 
-      {/* Center Content */}
-      <div className="relative z-10 w-full max-w-3xl text-center">
+          {/* Subtitle */}
+          <div className="mt-5 sm:mt-6 flex justify-center">
+            <p
+              className="
+                inline-flex items-center justify-center
+                px-4 sm:px-6 py-3 rounded-2xl
+                border border-white/15
+                bg-white/5
+                text-[#E2E8F0] text-sm sm:text-base md:text-lg
+                font-medium leading-relaxed
+                max-w-2xl
+              "
+            >
+              Si fudud u qabso ballantaada, lana soco dhaqdhaqaaqa codsigaaga.
+            </p>
+          </div>
 
-        {/* TITLE with fade animation */}
-        <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight animate-[fadeIn_1s_ease-out]">
-          KA QABSO BALANTAADA HALKAN
-        </h1>
+          {/* Buttons */}
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center">
 
-        {/* SUBTITLE */}
-        <p className="mt-6 text-slate-300 text-lg md:text-xl font-medium leading-relaxed animate-[fadeIn_1.5s_ease-out]">
-          Si fudud u qabso ballantaada, lana soco dhaqdhaqaaqa codsigaaga.
-        </p>
+            {/* Services */}
+            <Link
+              to="/services"
+              className="
+                group relative inline-flex items-center justify-center gap-2
+                h-12 px-7 sm:px-8 rounded-2xl
+                bg-[#2563EB] hover:bg-[#1D4ED8]
+                text-white font-extrabold text-sm sm:text-base
+                shadow-xl shadow-[#2563EB]/25
+                transition-all duration-300 ease-out
+                hover:scale-[1.03]
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]
+              "
+            >
+              <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-white/25" />
+              <FileText size={18} />
+              Services
+              <ArrowRight
+                size={18}
+                className="arrow-float transition-transform duration-300 group-hover:translate-x-1"
+              />
+            </Link>
 
-        {/* BUTTONS */}
-        <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center animate-[fadeIn_2s_ease-out]">
+            {/* Track */}
+            <Link
+              to="/track"
+              className="
+                group relative inline-flex items-center justify-center gap-2
+                h-12 px-7 sm:px-8 rounded-2xl
+                bg-white/5 hover:bg-white/10
+                border border-white/20
+                text-white font-extrabold text-sm sm:text-base
+                backdrop-blur-md
+                transition-all duration-300 ease-out
+                hover:scale-[1.03]
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]
+              "
+            >
+              <span className="pointer-events-none absolute -inset-[1px] rounded-2xl border border-white/25" />
+              <Search size={18} />
+              Track
+              <ArrowRight
+                size={18}
+                className="arrow-float transition-transform duration-300 group-hover:translate-x-1"
+              />
+            </Link>
+          </div>
 
-          <Link
-            to="/services"
-            className="
-              group inline-flex items-center justify-center gap-2
-              px-8 py-4 rounded-2xl
-              bg-blue-600 text-white font-extrabold text-lg
-              shadow-lg shadow-blue-600/30
-              transition-all duration-300
-              hover:-translate-y-1 hover:bg-blue-700
-            "
-          >
-            <FileText size={20} />
-            Services
-            <ArrowRight
-              size={18}
-              className="transition-transform duration-300 group-hover:translate-x-2"
-            />
-          </Link>
+          {/* Tracking & Status */}
+          <div className="mt-7 sm:mt-8 flex flex-wrap justify-center gap-3">
 
-          <Link
-            to="/track"
-            className="
-              group inline-flex items-center justify-center gap-2
-              px-8 py-4 rounded-2xl
-              border border-white/25 text-white font-extrabold text-lg
-              transition-all duration-300
-              hover:-translate-y-1 hover:bg-white/10
-            "
-          >
-            <Search size={20} />
-            Track
-            <ArrowRight
-              size={18}
-              className="transition-transform duration-300 group-hover:translate-x-2"
-            />
-          </Link>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/12 backdrop-blur-md">
+              <span className="h-2 w-2 rounded-full bg-[#3B82F6]" />
+              <span className="text-xs text-[#94A3B8] font-semibold">Tracking ID</span>
+              <span className="text-xs text-[#F8FAFC] font-bold">APP-2026-001</span>
+            </div>
 
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/12 backdrop-blur-md flex-wrap justify-center">
+              <span className="text-xs text-[#94A3B8] font-semibold">Status</span>
+
+              <span className="status-pulse px-3 py-1 text-[11px] rounded-full bg-white/10 text-[#F8FAFC] border border-white/15 font-bold">
+                Pending
+              </span>
+
+              <span className="status-pulse-approved px-3 py-1 text-[11px] rounded-full bg-[#10B981]/18 text-[#10B981] border border-[#10B981]/35 font-bold">
+                Approved
+              </span>
+
+              <span className="status-pulse-completed px-3 py-1 text-[11px] rounded-full bg-[#2563EB]/16 text-[#3B82F6] border border-[#2563EB]/30 font-bold">
+                Completed
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Custom Animations */}
+      {/* Animations */}
       <style>
         {`
-          @keyframes float {
-            0%,100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+          .title-message {
+            animation: apMessageIn 650ms ease-out both;
           }
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+          @keyframes apMessageIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+
+          .arrow-float {
+            animation: apArrow 1.8s ease-in-out infinite;
+          }
+          @keyframes apArrow {
+            0%,100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+          }
+
+          .status-pulse,
+          .status-pulse-approved,
+          .status-pulse-completed {
+            animation: apPulseGlow 1.6s ease-in-out infinite;
+          }
+
+          @keyframes apPulseGlow {
+            0%,100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .title-message,
+            .arrow-float,
+            .status-pulse,
+            .status-pulse-approved,
+            .status-pulse-completed {
+              animation: none !important;
+            }
           }
         `}
       </style>
-
     </section>
   );
 }
