@@ -765,6 +765,7 @@ import {
   TrendingUp,
   User,
   X,
+  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -866,9 +867,8 @@ export default function AppointmentDashboard() {
   const [timeFilter, setTimeFilter] = useState("TODAY");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Custom range state
+  // ✅ Custom range: ONE date only (start)
   const [customStart, setCustomStart] = useState(""); // YYYY-MM-DD
-  const [customEnd, setCustomEnd] = useState(""); // YYYY-MM-DD
 
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -893,12 +893,18 @@ export default function AppointmentDashboard() {
     [lastActivities]
   );
 
+  // ✅ When Custom Range selected but no date -> show professional alert
+  const customMissingDate = useMemo(() => {
+    return timeFilter === "CUSTOM" && !customStart;
+  }, [timeFilter, customStart]);
+
   /* =========================
      1) Build current range
   ========================= */
   const currentRange = useMemo(() => {
     const now = new Date();
 
+    // Default today range (for non-custom)
     let start = toStartOfDay(now);
     let end = toEndOfDay(now);
 
@@ -920,33 +926,27 @@ export default function AppointmentDashboard() {
     } else if (timeFilter === "ALL_TIME") {
       return { start: null, end: null };
     } else if (timeFilter === "CUSTOM") {
+      // ✅ IMPORTANT: no fallback to Today if missing
       const s = clampDateInput(customStart);
-      const e = clampDateInput(customEnd);
+      if (!s) return { start: null, end: null, invalidCustom: true };
 
-      if (s && e) {
-        start = toStartOfDay(s);
-        end = toEndOfDay(e);
-      } else if (s && !e) {
-        start = toStartOfDay(s);
-        end = toEndOfDay(s);
-      } else if (!s && e) {
-        start = toStartOfDay(e);
-        end = toEndOfDay(e);
-      } else {
-        // If not selected yet -> keep today
-        start = toStartOfDay(now);
-        end = toEndOfDay(now);
-      }
+      start = toStartOfDay(s);
+      end = toEndOfDay(s); // single-day custom
     }
 
-    return { start, end };
-  }, [timeFilter, customStart, customEnd]);
+    return { start, end, invalidCustom: false };
+  }, [timeFilter, customStart]);
 
   /* =========================
      2) Apply time range
   ========================= */
   const rangeActivities = useMemo(() => {
-    if (!currentRange.start || !currentRange.end) return activities; // ALL_TIME
+    // Custom but missing date => show empty results
+    if (currentRange.invalidCustom) return [];
+
+    // All time => no range filter
+    if (!currentRange.start || !currentRange.end) return activities;
+
     return activities.filter((a) =>
       inRange(a.appointmentDate, currentRange.start, currentRange.end)
     );
@@ -1033,16 +1033,11 @@ export default function AppointmentDashboard() {
   };
 
   /* =========================
-     5) ACTIVITY VOLUME CHART
-     - Today: 1 bar (Thu-11)
-     - Last 7/30/90: daily bars
-     - YTD/All time: monthly bars (last 12 months view for All Time)
-     - Custom: auto bucket
+     5) ACTIVITY VOLUME
   ========================= */
   const activityVolume = useMemo(() => {
     const now = new Date();
 
-    // day key map
     const dayKey = (d) => {
       const x = new Date(d);
       return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(
@@ -1057,13 +1052,11 @@ export default function AppointmentDashboard() {
       countByDay.set(k, (countByDay.get(k) || 0) + 1);
     });
 
-    // TODAY
     if (timeFilter === "TODAY") {
       const k = dayKey(now);
       return [{ name: fmtDayMon(now), value: countByDay.get(k) || 0 }];
     }
 
-    // Daily bars helper
     const buildLastNDays = (n) => {
       const out = [];
       const start = toStartOfDay(new Date(now));
@@ -1073,7 +1066,9 @@ export default function AppointmentDashboard() {
         const d = new Date(start);
         d.setDate(start.getDate() + i);
         const label =
-          n <= 10 ? fmtDayMon(d) : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+          n <= 10
+            ? fmtDayMon(d)
+            : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
         const k = dayKey(d);
         out.push({ name: label, value: countByDay.get(k) || 0 });
       }
@@ -1082,7 +1077,7 @@ export default function AppointmentDashboard() {
 
     if (timeFilter === "LAST_7_DAYS") return buildLastNDays(7);
     if (timeFilter === "LAST_30_DAYS") return buildLastNDays(30);
-    if (timeFilter === "LAST_90_DAYS") return buildLastNDays(90).slice(-30); // keep chart readable (last 30 labels)
+    if (timeFilter === "LAST_90_DAYS") return buildLastNDays(90).slice(-30);
 
     // Month grouping
     const monthKey = (d) => {
@@ -1114,51 +1109,25 @@ export default function AppointmentDashboard() {
     };
 
     if (timeFilter === "YTD") {
-      // show months from Jan..current month
-      const monthsSoFar = new Date(now.getFullYear(), now.getMonth() + 1, 0).getMonth() + 1;
+      const monthsSoFar =
+        new Date(now.getFullYear(), now.getMonth() + 1, 0).getMonth() + 1;
       return buildLastNMonths(monthsSoFar);
     }
 
     if (timeFilter === "ALL_TIME") {
-      // professional view: show last 12 months trend
       return buildLastNMonths(12);
     }
 
     if (timeFilter === "CUSTOM") {
-      const s = currentRange.start;
-      const e = currentRange.end;
-      if (!s || !e) return buildLastNMonths(12);
-
-      const diffDays = Math.ceil((e.getTime() - s.getTime()) / 86400000) + 1;
-
-      // <= 45 days: daily
-      if (diffDays <= 45) {
-        const out = [];
-        for (let i = 0; i < diffDays; i++) {
-          const d = new Date(s);
-          d.setDate(s.getDate() + i);
-          const label = fmtDayMon(d);
-          const k = dayKey(d);
-          out.push({ name: label, value: countByDay.get(k) || 0 });
-        }
-        return out;
-      }
-
-      // else: monthly (last 12 points)
-      const out = [];
-      const cursor = new Date(s.getFullYear(), s.getMonth(), 1, 0, 0, 0, 0);
-      const endMonth = new Date(e.getFullYear(), e.getMonth(), 1, 0, 0, 0, 0);
-
-      while (cursor <= endMonth) {
-        const k = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`;
-        out.push({ name: fmtMonthYear(cursor), value: countByMonth.get(k) || 0 });
-        cursor.setMonth(cursor.getMonth() + 1);
-      }
-      return out.slice(-12);
+      // single day custom
+      const s = clampDateInput(customStart);
+      if (!s) return [];
+      const k = dayKey(s);
+      return [{ name: fmtDayMon(s), value: countByDay.get(k) || 0 }];
     }
 
     return [];
-  }, [filteredActivities, timeFilter, currentRange]);
+  }, [filteredActivities, timeFilter, customStart]);
 
   const maxVolume = useMemo(() => {
     return activityVolume.reduce((m, x) => Math.max(m, x.value || 0), 0);
@@ -1189,12 +1158,15 @@ export default function AppointmentDashboard() {
       dailyMap[key] = (dailyMap[key] || 0) + 1;
     });
 
-    const temp = Object.entries(dailyMap).map(([label, value]) => ({ date: label, value }));
+    const temp = Object.entries(dailyMap).map(([label, value]) => ({
+      date: label,
+      value,
+    }));
     return temp.slice(-10);
   }, [filteredActivities]);
 
   /* =========================
-     EXPORTS (filtered list)
+     EXPORTS
   ========================= */
   const handleExportExcel = () => {
     const data = filteredActivities.map((a) => ({
@@ -1377,9 +1349,7 @@ export default function AppointmentDashboard() {
               <Layers size={24} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Total Booking
-              </p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Booking</p>
               <h4 className="text-2xl font-black text-slate-800">{localCounts.total}</h4>
             </div>
           </div>
@@ -1389,12 +1359,8 @@ export default function AppointmentDashboard() {
               <Calendar size={24} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Today Requests
-              </p>
-              <h4 className="text-2xl font-black text-slate-800">
-                {totals?.todayRequests || 0}
-              </h4>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Today Requests</p>
+              <h4 className="text-2xl font-black text-slate-800">{totals?.todayRequests || 0}</h4>
             </div>
           </div>
 
@@ -1403,9 +1369,7 @@ export default function AppointmentDashboard() {
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Completion
-              </p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Completion</p>
               <h4 className="text-2xl font-black text-slate-800">{metrics.completionRate}%</h4>
             </div>
           </div>
@@ -1431,6 +1395,21 @@ export default function AppointmentDashboard() {
           </div>
         </div>
 
+        {/* ✅ Custom missing alert */}
+        {customMissingDate && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-5 py-4 flex items-start gap-3 shadow-sm">
+            <div className="mt-0.5">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <p className="font-extrabold">Please select start date</p>
+              <p className="text-sm font-medium text-amber-700/90">
+                Custom Range requires a date. Once you pick a date, the dashboard will update automatically.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* FILTERS */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-2 items-stretch md:items-center shadow-sm">
           <div className="flex items-center gap-2 px-4 py-2 text-slate-400 border-r border-slate-100 hidden md:flex">
@@ -1451,25 +1430,16 @@ export default function AppointmentDashboard() {
                 </option>
               ))}
             </select>
-            <ChevronDown
-              className="absolute right-3 top-3 text-slate-400 pointer-events-none"
-              size={18}
-            />
+            <ChevronDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={18} />
           </div>
 
-          {/* Custom range inputs */}
+          {/* ✅ Custom range input (ONE date only) */}
           {timeFilter === "CUSTOM" && (
-            <div className="flex flex-col md:flex-row gap-2 flex-[1.2]">
+            <div className="flex-[0.8]">
               <input
                 type="date"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="w-full bg-slate-50 rounded-xl text-sm font-bold py-3 px-4 focus:ring-2 focus:ring-indigo-500 border border-slate-200"
-              />
-              <input
-                type="date"
-                value={customEnd}
-                onChange={(e) => setCustomEnd(e.target.value)}
                 className="w-full bg-slate-50 rounded-xl text-sm font-bold py-3 px-4 focus:ring-2 focus:ring-indigo-500 border border-slate-200"
               />
             </div>
@@ -1489,10 +1459,7 @@ export default function AppointmentDashboard() {
               <option value="NO_SHOW">No Show</option>
               <option value="REJECTED">Rejected</option>
             </select>
-            <ChevronDown
-              className="absolute right-3 top-3 text-slate-400 pointer-events-none"
-              size={18}
-            />
+            <ChevronDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={18} />
           </div>
         </div>
 
@@ -1500,9 +1467,7 @@ export default function AppointmentDashboard() {
         <div className="grid lg:grid-cols-5 gap-6">
           {/* Status pie */}
           <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden">
-            <h3 className="text-lg font-black tracking-tight mb-1 text-slate-800">
-              Status Distribution
-            </h3>
+            <h3 className="text-lg font-black tracking-tight mb-1 text-slate-800">Status Distribution</h3>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-8">
               Share of volume (current filters)
             </p>
@@ -1535,9 +1500,7 @@ export default function AppointmentDashboard() {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-3xl font-black text-slate-800">{localCounts.total}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                  Total
-                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Total</span>
               </div>
             </div>
           </div>
@@ -1630,18 +1593,8 @@ export default function AppointmentDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#94a3b8", fontSize: 12 }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: "#94a3b8", fontSize: 12 }}
-                    allowDecimals={false}
-                  />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "16px",
@@ -1649,13 +1602,7 @@ export default function AppointmentDashboard() {
                       boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                     }}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="#6366f1"
-                    strokeWidth={3}
-                    fill="url(#colorTrend)"
-                  />
+                  <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fill="url(#colorTrend)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -1681,11 +1628,7 @@ export default function AppointmentDashboard() {
                   />
                   <Tooltip cursor={{ fill: "#f8fafc" }} />
                   <Bar dataKey="count" fill="#10b981" radius={[0, 8, 8, 0]} barSize={20}>
-                    <LabelList
-                      dataKey="count"
-                      position="right"
-                      style={{ fill: "#10b981", fontWeight: "bold", fontSize: 12 }}
-                    />
+                    <LabelList dataKey="count" position="right" style={{ fill: "#10b981", fontWeight: "bold", fontSize: 12 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -1726,10 +1669,7 @@ export default function AppointmentDashboard() {
 
               <tbody className="divide-y divide-slate-50">
                 {filteredActivities.map((a) => (
-                  <tr
-                    key={a._id}
-                    className="group hover:bg-slate-50/80 transition-all cursor-default"
-                  >
+                  <tr key={a._id} className="group hover:bg-slate-50/80 transition-all cursor-default">
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-bold group-hover:bg-indigo-600 group-hover:text-white transition-colors">
