@@ -765,7 +765,6 @@ import {
   TrendingUp,
   User,
   X,
-  AlertTriangle,
 } from "lucide-react";
 
 import {
@@ -790,8 +789,16 @@ import autoTable from "jspdf-autotable";
 
 import { fetchAppointmentDashboard } from "../Redux/slices/cusomerSlice/appointmentDashboardSlice";
 
-// Pie colors (Pending, Approved, Completed, No Show)
-const PIE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444"];
+/* =========================
+   COLORS
+========================= */
+const PIE_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444"]; // Pending, Approved, Completed, NoShow
+
+const LEVELS = {
+  low: { label: "Low", color: "#ef4444" },
+  medium: { label: "Medium", color: "#f59e0b" },
+  high: { label: "High", color: "#10b981" },
+};
 
 /* =========================
    DATE HELPERS
@@ -806,69 +813,146 @@ function toEndOfDay(d) {
   x.setHours(23, 59, 59, 999);
   return x;
 }
+function parseISODateInput(value) {
+  // value = "YYYY-MM-DD"
+  if (!value) return null;
+  const [y, m, day] = value.split("-").map(Number);
+  if (!y || !m || !day) return null;
+  return new Date(y, m - 1, day);
+}
+function formatRangeLabel({ start, end }) {
+  const fmt = (d) =>
+    new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return `${fmt(start)} — ${fmt(end)}`;
+}
 function inRange(date, start, end) {
   if (!date) return false;
   const d = new Date(date);
   return d >= start && d <= end;
 }
-function clampDateInput(v) {
-  // v = "YYYY-MM-DD"
-  if (!v) return null;
-  const d = new Date(v + "T00:00:00");
-  return isNaN(d.getTime()) ? null : d;
+function startOfWeekMon(date = new Date()) {
+  const d = toStartOfDay(date);
+  const day = d.getDay(); // 0 Sun .. 6 Sat
+  const diff = day === 0 ? -6 : 1 - day; // Monday
+  d.setDate(d.getDate() + diff);
+  return d;
 }
-function fmtDayMon(d) {
-  // Thu-11
-  const dt = new Date(d);
-  const wd = dt.toLocaleDateString(undefined, { weekday: "short" });
-  const day = dt.getDate();
-  return `${wd}-${day}`;
+function endOfWeekMon(date = new Date()) {
+  const start = startOfWeekMon(date);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return toEndOfDay(end);
 }
-function fmtMonthYear(d) {
-  const dt = new Date(d);
-  return dt.toLocaleDateString(undefined, { month: "short", year: "numeric" });
+function daysBetweenInclusive(start, end) {
+  const s = toStartOfDay(start).getTime();
+  const e = toStartOfDay(end).getTime();
+  const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+  return diff + 1;
+}
+function getYTDRange(now = new Date()) {
+  const start = new Date(now.getFullYear(), 0, 1);
+  return { start: toStartOfDay(start), end: toEndOfDay(now) };
 }
 
 /* =========================
    RANGE OPTIONS (Option B + Custom)
 ========================= */
-const RANGE_OPTIONS = [
+const TIME_OPTIONS = [
   { value: "TODAY", label: "Today" },
-  { value: "LAST_7_DAYS", label: "Last 7 Days" },
-  { value: "LAST_30_DAYS", label: "Last 30 Days" },
-  { value: "LAST_90_DAYS", label: "Last 90 Days" },
+  { value: "LAST_7", label: "Last 7 Days" },
+  { value: "LAST_30", label: "Last 30 Days" },
+  { value: "LAST_90", label: "Last 90 Days" },
   { value: "YTD", label: "Year to Date (YTD)" },
   { value: "ALL_TIME", label: "All Time" },
   { value: "CUSTOM", label: "Custom Range" },
 ];
 
-function getRangeLabel(value) {
-  return RANGE_OPTIONS.find((x) => x.value === value)?.label || "Activity";
+function getRangeFromFilter(timeFilter, customStart, customEnd) {
+  const now = new Date();
+
+  if (timeFilter === "TODAY") {
+    return { start: toStartOfDay(now), end: toEndOfDay(now) };
+  }
+  if (timeFilter === "LAST_7") {
+    const end = toEndOfDay(now);
+    const start = toStartOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6));
+    return { start, end };
+  }
+  if (timeFilter === "LAST_30") {
+    const end = toEndOfDay(now);
+    const start = toStartOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29));
+    return { start, end };
+  }
+  if (timeFilter === "LAST_90") {
+    const end = toEndOfDay(now);
+    const start = toStartOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 89));
+    return { start, end };
+  }
+  if (timeFilter === "YTD") {
+    return getYTDRange(now);
+  }
+  if (timeFilter === "CUSTOM") {
+    if (!customStart || !customEnd) return null;
+    const s = toStartOfDay(customStart);
+    const e = toEndOfDay(customEnd);
+    if (s > e) return null;
+    return { start: s, end: e };
+  }
+
+  // ALL_TIME
+  return { start: null, end: null };
+}
+
+function getVolumeTitle(timeFilter) {
+  switch (timeFilter) {
+    case "TODAY":
+      return "Today Activity Volume";
+    case "LAST_7":
+      return "Last 7 Days Activity Volume";
+    case "LAST_30":
+      return "Last 30 Days Activity Volume";
+    case "LAST_90":
+      return "Last 90 Days Activity Volume";
+    case "YTD":
+      return "YTD Activity Volume";
+    case "CUSTOM":
+      return "Custom Range Activity Volume";
+    default:
+      return "All Time Activity Volume";
+  }
+}
+
+function dayLabelWithDate(dateObj) {
+  // "Thu-19" (weekday short + day)
+  const d = new Date(dateObj);
+  const wd = d.toLocaleDateString(undefined, { weekday: "short" }); // Thu
+  const day = d.toLocaleDateString(undefined, { day: "2-digit" }); // 19
+  return `${wd}-${day}`;
+}
+
+function monthLabel(dateObj) {
+  const d = new Date(dateObj);
+  return d.toLocaleDateString(undefined, { month: "short", year: "numeric" }); // Feb 2026
 }
 
 /* =========================
-   CHART COLOR (Low/Med/High)
+   COMPONENT
 ========================= */
-function volumeColor(count, max) {
-  if (!max || max <= 0) return "#94a3b8";
-  const p = count / max;
-  if (p <= 0.33) return "#ef4444"; // low
-  if (p <= 0.66) return "#f59e0b"; // mid
-  return "#10b981"; // high
-}
-
 export default function AppointmentDashboard() {
   const dispatch = useDispatch();
-  const { loading, totals, lastActivities } = useSelector(
-    (state) => state.appointmentDashboard
-  );
+  const { loading, totals, lastActivities } = useSelector((state) => state.appointmentDashboard);
 
-  // ✅ Today default
-  const [timeFilter, setTimeFilter] = useState("TODAY");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [timeFilter, setTimeFilter] = useState("TODAY");
 
-  // ✅ Custom range: ONE date only (start)
-  const [customStart, setCustomStart] = useState(""); // YYYY-MM-DD
+  // Custom Range UI (single field + popover)
+  const [customStartStr, setCustomStartStr] = useState("");
+  const [customEndStr, setCustomEndStr] = useState("");
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [rangeTouched, setRangeTouched] = useState(false);
+
+  const customStart = useMemo(() => parseISODateInput(customStartStr), [customStartStr]);
+  const customEnd = useMemo(() => parseISODateInput(customEndStr), [customEndStr]);
 
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -893,78 +977,33 @@ export default function AppointmentDashboard() {
     [lastActivities]
   );
 
-  // ✅ When Custom Range selected but no date -> show professional alert
-  const customMissingDate = useMemo(() => {
-    return timeFilter === "CUSTOM" && !customStart;
-  }, [timeFilter, customStart]);
+  const range = useMemo(
+    () => getRangeFromFilter(timeFilter, customStart, customEnd),
+    [timeFilter, customStart, customEnd]
+  );
 
-  /* =========================
-     1) Build current range
-  ========================= */
-  const currentRange = useMemo(() => {
-    const now = new Date();
+  const rangeError = useMemo(() => {
+    if (timeFilter !== "CUSTOM") return null;
+    if (!customStart || !customEnd) return "Please select start and end date";
+    if (customStart > customEnd) return "Start date must be before end date";
+    return null;
+  }, [timeFilter, customStart, customEnd]);
 
-    // Default today range (for non-custom)
-    let start = toStartOfDay(now);
-    let end = toEndOfDay(now);
-
-    if (timeFilter === "LAST_7_DAYS") {
-      end = toEndOfDay(now);
-      start = toStartOfDay(new Date(now));
-      start.setDate(start.getDate() - 6);
-    } else if (timeFilter === "LAST_30_DAYS") {
-      end = toEndOfDay(now);
-      start = toStartOfDay(new Date(now));
-      start.setDate(start.getDate() - 29);
-    } else if (timeFilter === "LAST_90_DAYS") {
-      end = toEndOfDay(now);
-      start = toStartOfDay(new Date(now));
-      start.setDate(start.getDate() - 89);
-    } else if (timeFilter === "YTD") {
-      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
-      end = toEndOfDay(now);
-    } else if (timeFilter === "ALL_TIME") {
-      return { start: null, end: null };
-    } else if (timeFilter === "CUSTOM") {
-      // ✅ IMPORTANT: no fallback to Today if missing
-      const s = clampDateInput(customStart);
-      if (!s) return { start: null, end: null, invalidCustom: true };
-
-      start = toStartOfDay(s);
-      end = toEndOfDay(s); // single-day custom
-    }
-
-    return { start, end, invalidCustom: false };
-  }, [timeFilter, customStart]);
-
-  /* =========================
-     2) Apply time range
-  ========================= */
+  // 1) Filter by time range
   const rangeActivities = useMemo(() => {
-    // Custom but missing date => show empty results
-    if (currentRange.invalidCustom) return [];
+    if (!range) return [];
+    if (range.start === null && range.end === null) return activities; // ALL_TIME
 
-    // All time => no range filter
-    if (!currentRange.start || !currentRange.end) return activities;
+    return activities.filter((a) => inRange(a.appointmentDate, range.start, range.end));
+  }, [activities, range]);
 
-    return activities.filter((a) =>
-      inRange(a.appointmentDate, currentRange.start, currentRange.end)
-    );
-  }, [activities, currentRange]);
-
-  /* =========================
-     3) Apply status filter
-  ========================= */
+  // 2) Filter by status
   const filteredActivities = useMemo(() => {
     if (statusFilter === "ALL") return rangeActivities;
-    return rangeActivities.filter(
-      (a) => (a.status || "").toUpperCase() === statusFilter
-    );
+    return rangeActivities.filter((a) => (a.status || "").toUpperCase() === statusFilter);
   }, [rangeActivities, statusFilter]);
 
-  /* =========================
-     4) Counts from filtered
-  ========================= */
+  // Counts from filtered range
   const localCounts = useMemo(() => {
     const counts = {
       total: filteredActivities.length,
@@ -987,14 +1026,19 @@ export default function AppointmentDashboard() {
     return counts;
   }, [filteredActivities]);
 
+  // KPI metrics
   const metrics = useMemo(() => {
     const total = localCounts.total || 1;
+    const completed = localCounts.completed || 0;
+    const noShow = localCounts.noShow || 0;
+
     return {
-      completionRate: Math.round(((localCounts.completed || 0) / total) * 100),
-      noShowRate: Math.round(((localCounts.noShow || 0) / total) * 100),
+      completionRate: Math.round((completed / total) * 100),
+      noShowRate: Math.round((noShow / total) * 100),
     };
   }, [localCounts]);
 
+  // Pie chart
   const pieData = useMemo(() => {
     const data = [
       { name: "Pending", value: localCounts.pending },
@@ -1005,14 +1049,7 @@ export default function AppointmentDashboard() {
     return data.filter((d) => d.value > 0);
   }, [localCounts]);
 
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-  }) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -1033,109 +1070,97 @@ export default function AppointmentDashboard() {
   };
 
   /* =========================
-     5) ACTIVITY VOLUME
+     ACTIVITY VOLUME (dynamic)
+     - If range <= 31 days => daily bars (Thu-19)
+     - Else => monthly bars
   ========================= */
-  const activityVolume = useMemo(() => {
-    const now = new Date();
+  const volumeData = useMemo(() => {
+    // If ALL_TIME: we still build monthly buckets based on available activities
+    let start = range?.start;
+    let end = range?.end;
 
-    const dayKey = (d) => {
-      const x = new Date(d);
-      return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(
-        x.getDate()
-      ).padStart(2, "0")}`;
-    };
+    if (!range) return [];
 
-    const countByDay = new Map();
-    filteredActivities.forEach((a) => {
-      if (!a.appointmentDate) return;
-      const k = dayKey(a.appointmentDate);
-      countByDay.set(k, (countByDay.get(k) || 0) + 1);
-    });
+    // If ALL_TIME, just bucket by month for all activities
+    const list = filteredActivities;
 
-    if (timeFilter === "TODAY") {
-      const k = dayKey(now);
-      return [{ name: fmtDayMon(now), value: countByDay.get(k) || 0 }];
-    }
+    // If CUSTOM missing, return empty (and UI shows alert)
+    if (timeFilter === "CUSTOM" && rangeError) return [];
 
-    const buildLastNDays = (n) => {
+    // Decide grouping
+    let days = 9999;
+    if (start && end) days = daysBetweenInclusive(start, end);
+
+    const useDaily = start && end && days <= 31;
+
+    const map = new Map();
+
+    if (useDaily) {
+      list.forEach((a) => {
+        if (!a.appointmentDate) return;
+        const d = toStartOfDay(new Date(a.appointmentDate));
+        const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+        map.set(key, (map.get(key) || 0) + 1);
+      });
+
+      // Fill missing days to keep chart stable
       const out = [];
-      const start = toStartOfDay(new Date(now));
-      start.setDate(start.getDate() - (n - 1));
-
-      for (let i = 0; i < n; i++) {
-        const d = new Date(start);
-        d.setDate(start.getDate() + i);
-        const label =
-          n <= 10
-            ? fmtDayMon(d)
-            : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-        const k = dayKey(d);
-        out.push({ name: label, value: countByDay.get(k) || 0 });
+      const cursor = new Date(start);
+      while (cursor <= end) {
+        const key = cursor.toISOString().slice(0, 10);
+        out.push({
+          key,
+          name: dayLabelWithDate(cursor), // Thu-19
+          date: new Date(cursor),
+          appointments: map.get(key) || 0,
+        });
+        cursor.setDate(cursor.getDate() + 1);
       }
       return out;
-    };
+    }
 
-    if (timeFilter === "LAST_7_DAYS") return buildLastNDays(7);
-    if (timeFilter === "LAST_30_DAYS") return buildLastNDays(30);
-    if (timeFilter === "LAST_90_DAYS") return buildLastNDays(90).slice(-30);
-
-    // Month grouping
-    const monthKey = (d) => {
-      const x = new Date(d);
-      return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}`;
-    };
-
-    const countByMonth = new Map();
-    filteredActivities.forEach((a) => {
+    // Monthly grouping
+    list.forEach((a) => {
       if (!a.appointmentDate) return;
-      const k = monthKey(a.appointmentDate);
-      countByMonth.set(k, (countByMonth.get(k) || 0) + 1);
+      const d = new Date(a.appointmentDate);
+      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+      const key = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, "0")}`;
+      map.set(key, (map.get(key) || 0) + 1);
     });
 
-    const buildLastNMonths = (n) => {
-      const out = [];
-      const start = new Date(now);
-      start.setMonth(start.getMonth() - (n - 1));
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
+    const out = Array.from(map.entries())
+      .map(([key, appointments]) => {
+        const [y, m] = key.split("-").map(Number);
+        const dt = new Date(y, m - 1, 1);
+        return {
+          key,
+          name: monthLabel(dt),
+          date: dt,
+          appointments,
+        };
+      })
+      .sort((a, b) => a.date - b.date);
 
-      for (let i = 0; i < n; i++) {
-        const d = new Date(start);
-        d.setMonth(start.getMonth() + i);
-        const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        out.push({ name: fmtMonthYear(d), value: countByMonth.get(k) || 0 });
-      }
-      return out;
+    return out;
+  }, [filteredActivities, range, timeFilter, rangeError]);
+
+  // Low/Medium/High colors based on min/max of current volumeData
+  const volumeMeta = useMemo(() => {
+    const vals = volumeData.map((x) => x.appointments);
+    const max = vals.length ? Math.max(...vals) : 0;
+
+    const getLevel = (v) => {
+      if (max <= 0) return "low";
+      const ratio = v / max;
+      if (ratio >= 0.67) return "high";
+      if (ratio >= 0.34) return "medium";
+      return "low";
     };
 
-    if (timeFilter === "YTD") {
-      const monthsSoFar =
-        new Date(now.getFullYear(), now.getMonth() + 1, 0).getMonth() + 1;
-      return buildLastNMonths(monthsSoFar);
-    }
+    return { max, getLevel };
+  }, [volumeData]);
 
-    if (timeFilter === "ALL_TIME") {
-      return buildLastNMonths(12);
-    }
-
-    if (timeFilter === "CUSTOM") {
-      // single day custom
-      const s = clampDateInput(customStart);
-      if (!s) return [];
-      const k = dayKey(s);
-      return [{ name: fmtDayMon(s), value: countByDay.get(k) || 0 }];
-    }
-
-    return [];
-  }, [filteredActivities, timeFilter, customStart]);
-
-  const maxVolume = useMemo(() => {
-    return activityVolume.reduce((m, x) => Math.max(m, x.value || 0), 0);
-  }, [activityVolume]);
-
-  /* =========================
-     6) Service charts
-  ========================= */
+  /* ===== Service charts based on filteredActivities ===== */
   const serviceDistributionData = useMemo(() => {
     const serviceMap = {};
     filteredActivities.forEach((app) => {
@@ -1148,26 +1173,33 @@ export default function AppointmentDashboard() {
       .slice(0, 5);
   }, [filteredActivities]);
 
-  const bookingTrendData = useMemo(() => {
+  const serviceTrendData = useMemo(() => {
+    // simple daily trend points (up to 14)
     const dailyMap = {};
     filteredActivities.forEach((app) => {
       const raw = app.appointmentDate;
       if (!raw) return;
-      const dt = new Date(raw);
-      const key = dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      const dt = toStartOfDay(new Date(raw));
+      const key = dt.toISOString().slice(0, 10);
       dailyMap[key] = (dailyMap[key] || 0) + 1;
     });
 
-    const temp = Object.entries(dailyMap).map(([label, value]) => ({
-      date: label,
-      value,
-    }));
-    return temp.slice(-10);
+    const out = Object.entries(dailyMap)
+      .map(([key, value]) => {
+        const dt = new Date(key);
+        return {
+          key,
+          date: dt.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+          value,
+        };
+      })
+      .sort((a, b) => (a.key > b.key ? 1 : -1))
+      .slice(-14);
+
+    return out;
   }, [filteredActivities]);
 
-  /* =========================
-     EXPORTS
-  ========================= */
+  /* ===== EXPORTS ===== */
   const handleExportExcel = () => {
     const data = filteredActivities.map((a) => ({
       Customer: a.customerId?.fullName || "N/A",
@@ -1219,6 +1251,26 @@ export default function AppointmentDashboard() {
     }
   };
 
+  // Range label shown in UI (for Custom)
+  const customRangeText = useMemo(() => {
+    if (timeFilter !== "CUSTOM") return "";
+    if (!customStart || !customEnd) return "Please select start/end";
+    if (customStart > customEnd) return "Please select valid range";
+    return formatRangeLabel({ start: customStart, end: customEnd });
+  }, [timeFilter, customStart, customEnd]);
+
+  // Close popover on outside click (simple)
+  useEffect(() => {
+    function onDocClick(e) {
+      if (!rangeOpen) return;
+      const el = e.target;
+      if (el?.closest?.("#customRangeWrap")) return;
+      setRangeOpen(false);
+    }
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [rangeOpen]);
+
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-[#f8fafc]">
@@ -1238,29 +1290,20 @@ export default function AppointmentDashboard() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
               <h3 className="text-lg font-black text-slate-800">Appointment Details</h3>
-              <button
-                onClick={closeModal}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
+              <button onClick={closeModal} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                 <X size={20} className="text-slate-400" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Customer
-                </label>
-                <p className="font-bold text-slate-700 text-lg">
-                  {selectedAppointment.customerId?.fullName}
-                </p>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Customer</label>
+                <p className="font-bold text-slate-700 text-lg">{selectedAppointment.customerId?.fullName}</p>
                 <p className="text-slate-500 text-sm">{selectedAppointment.customerId?.email}</p>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Assigned Staff
-                </label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Staff</label>
                 <p className="font-bold text-indigo-600">
                   {selectedAppointment.assignedUserId?.fullName || "Not Assigned"}
                 </p>
@@ -1268,9 +1311,7 @@ export default function AppointmentDashboard() {
 
               <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                 <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Status
-                  </label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Status</label>
                   <div
                     className={`mt-1 inline-block px-3 py-1 rounded-lg text-xs font-bold border ${getStatusStyle(
                       selectedAppointment.status
@@ -1281,9 +1322,7 @@ export default function AppointmentDashboard() {
                 </div>
 
                 <div className="text-right">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Date
-                  </label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Date</label>
                   <p className="font-bold text-slate-700">
                     {selectedAppointment.appointmentDate
                       ? new Date(selectedAppointment.appointmentDate).toLocaleDateString()
@@ -1315,9 +1354,7 @@ export default function AppointmentDashboard() {
               </div>
               <h1 className="text-2xl font-extrabold tracking-tight">Executive Overview</h1>
             </div>
-            <p className="text-slate-500 text-sm font-medium ml-12">
-              Performance metrics & activity tracking
-            </p>
+            <p className="text-slate-500 text-sm font-medium ml-12">Performance metrics & activity tracking</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -1395,21 +1432,6 @@ export default function AppointmentDashboard() {
           </div>
         </div>
 
-        {/* ✅ Custom missing alert */}
-        {customMissingDate && (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl px-5 py-4 flex items-start gap-3 shadow-sm">
-            <div className="mt-0.5">
-              <AlertTriangle size={18} />
-            </div>
-            <div>
-              <p className="font-extrabold">Please select start date</p>
-              <p className="text-sm font-medium text-amber-700/90">
-                Custom Range requires a date. Once you pick a date, the dashboard will update automatically.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* FILTERS */}
         <div className="bg-white p-2 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-2 items-stretch md:items-center shadow-sm">
           <div className="flex items-center gap-2 px-4 py-2 text-slate-400 border-r border-slate-100 hidden md:flex">
@@ -1417,14 +1439,18 @@ export default function AppointmentDashboard() {
             <span className="text-xs font-bold uppercase tracking-wider">Filters</span>
           </div>
 
-          {/* Time range */}
+          {/* Time Filter */}
           <div className="relative flex-1">
             <select
               value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
+              onChange={(e) => {
+                setTimeFilter(e.target.value);
+                setRangeTouched(false);
+                setRangeOpen(false);
+              }}
               className="w-full appearance-none bg-slate-50 border-none rounded-xl text-sm font-bold py-3 px-4 pr-10 focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
             >
-              {RANGE_OPTIONS.map((o) => (
+              {TIME_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
@@ -1433,19 +1459,84 @@ export default function AppointmentDashboard() {
             <ChevronDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={18} />
           </div>
 
-          {/* ✅ Custom range input (ONE date only) */}
+          {/* Custom Range (single field + popover) */}
           {timeFilter === "CUSTOM" && (
-            <div className="flex-[0.8]">
-              <input
-                type="date"
-                value={customStart}
-                onChange={(e) => setCustomStart(e.target.value)}
-                className="w-full bg-slate-50 rounded-xl text-sm font-bold py-3 px-4 focus:ring-2 focus:ring-indigo-500 border border-slate-200"
-              />
+            <div className="relative flex-1" id="customRangeWrap">
+              <button
+                type="button"
+                onClick={() => {
+                  setRangeOpen((s) => !s);
+                  setRangeTouched(true);
+                }}
+                className={`w-full text-left bg-slate-50 border-none rounded-xl text-sm font-bold py-3 px-4 pr-10 focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer ${
+                  rangeError && rangeTouched ? "ring-2 ring-rose-300" : ""
+                }`}
+              >
+                <span className={(!customStart || !customEnd) ? "text-slate-400" : "text-slate-800"}>
+                  {customRangeText || "Please select start/end"}
+                </span>
+              </button>
+              <ChevronDown className="absolute right-3 top-3 text-slate-400 pointer-events-none" size={18} />
+
+              {rangeOpen && (
+                <div className="absolute z-30 mt-2 w-full bg-white border border-slate-200 rounded-2xl shadow-xl p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={customStartStr}
+                        onChange={(e) => setCustomStartStr(e.target.value)}
+                        className="mt-1 w-full bg-slate-50 rounded-xl px-3 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={customEndStr}
+                        onChange={(e) => setCustomEndStr(e.target.value)}
+                        className="mt-1 w-full bg-slate-50 rounded-xl px-3 py-2 font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {rangeError && (
+                    <div className="mt-3 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+                      {rangeError}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomStartStr("");
+                        setCustomEndStr("");
+                        setRangeTouched(true);
+                      }}
+                      className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-sm hover:bg-slate-50"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRangeOpen(false)}
+                      className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Status */}
+          {/* Status Filter */}
           <div className="relative flex-1">
             <select
               value={statusFilter}
@@ -1465,7 +1556,7 @@ export default function AppointmentDashboard() {
 
         {/* CHARTS */}
         <div className="grid lg:grid-cols-5 gap-6">
-          {/* Status pie */}
+          {/* PIE */}
           <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden">
             <h3 className="text-lg font-black tracking-tight mb-1 text-slate-800">Status Distribution</h3>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-8">
@@ -1500,33 +1591,35 @@ export default function AppointmentDashboard() {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-3xl font-black text-slate-800">{localCounts.total}</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Total</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                  Total
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Activity volume */}
+          {/* VOLUME */}
           <div className="lg:col-span-3 bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-lg font-black tracking-tight mb-1 text-slate-800">
-                  {getRangeLabel(timeFilter)} Activity Volume
+                  {getVolumeTitle(timeFilter)}
                 </h3>
 
-                {/* Legend */}
-                <div className="flex items-center gap-4 mt-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#ef4444" }} />
-                    Low
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#f59e0b" }} />
-                    Medium
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "#10b981" }} />
-                    High
-                  </div>
+                {/* Legend (Low/Medium/High) */}
+                <div className="mt-2 flex items-center gap-4 text-xs font-bold text-slate-500">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{ background: LEVELS.low.color }} />
+                    {LEVELS.low.label}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{ background: LEVELS.medium.color }} />
+                    {LEVELS.medium.label}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{ background: LEVELS.high.color }} />
+                    {LEVELS.high.label}
+                  </span>
                 </div>
               </div>
 
@@ -1535,9 +1628,16 @@ export default function AppointmentDashboard() {
               </div>
             </div>
 
-            <div className="h-[260px] w-full">
+            {/* Custom Range warning (small, professional) */}
+            {timeFilter === "CUSTOM" && rangeError && (
+              <div className="mb-4 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+                {rangeError}
+              </div>
+            )}
+
+            <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={activityVolume} margin={{ top: 20 }}>
+                <BarChart data={volumeData} margin={{ top: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis
                     dataKey="name"
@@ -1545,7 +1645,6 @@ export default function AppointmentDashboard() {
                     tickLine={false}
                     tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 700 }}
                     dy={10}
-                    interval={timeFilter === "LAST_30_DAYS" || timeFilter === "LAST_90_DAYS" ? "preserveStartEnd" : 0}
                   />
                   <YAxis
                     axisLine={false}
@@ -1555,19 +1654,36 @@ export default function AppointmentDashboard() {
                   />
                   <Tooltip
                     cursor={{ fill: "#f8fafc" }}
+                    formatter={(value, name, props) => {
+                      // show “appointments: X”
+                      return [`${value}`, "appointments"];
+                    }}
+                    labelFormatter={(label, payload) => {
+                      // label is x-axis, but show nicer date
+                      const p = payload?.[0]?.payload;
+                      if (p?.date) {
+                        return new Date(p.date).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        });
+                      }
+                      return label;
+                    }}
                     contentStyle={{
                       borderRadius: "16px",
                       border: "none",
                       boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                     }}
-                    formatter={(v) => [`${v}`, "Appointments"]}
-                    labelFormatter={(label) => label}
                   />
-                  <Bar dataKey="value" radius={[8, 8, 8, 8]} barSize={32}>
-                    {activityVolume.map((d, i) => (
-                      <Cell key={i} fill={volumeColor(d.value, maxVolume)} />
-                    ))}
-                    <LabelList dataKey="value" position="top" fontSize={12} fontWeight={700} />
+                  <Bar dataKey="appointments" radius={[8, 8, 8, 8]} barSize={38}>
+                    {volumeData.map((entry, i) => {
+                      const lvl = volumeMeta.getLevel(entry.appointments);
+                      const color = LEVELS[lvl].color;
+                      return <Cell key={entry.key || i} fill={color} />;
+                    })}
+                    <LabelList dataKey="appointments" position="top" fontSize={12} fontWeight={800} fill="#475569" />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -1578,14 +1694,14 @@ export default function AppointmentDashboard() {
         {/* SERVICE PERFORMANCE */}
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-            <h3 className="text-lg font-black tracking-tight mb-1 text-slate-800">Booking Trend</h3>
+            <h3 className="text-lg font-black tracking-tight mb-1 text-slate-800">Booking Velocity</h3>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">
               Trend (current filters)
             </p>
 
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={bookingTrendData}>
+                <AreaChart data={serviceTrendData}>
                   <defs>
                     <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
@@ -1594,7 +1710,7 @@ export default function AppointmentDashboard() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} allowDecimals={false} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "16px",
@@ -1682,9 +1798,7 @@ export default function AppointmentDashboard() {
                     </td>
 
                     <td className="px-8 py-5">
-                      <span className="text-sm font-medium text-slate-500 italic">
-                        "{a.serviceId?.name}"
-                      </span>
+                      <span className="text-sm font-medium text-slate-500 italic">"{a.serviceId?.name}"</span>
                     </td>
 
                     <td className="px-8 py-5">
