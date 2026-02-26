@@ -267,67 +267,131 @@
 
 import { Link } from "react-router-dom";
 import girlImg from "../../assets/landing/landing-page.png";
-import arrowImg from "../../assets/landing/arrow.png";
 
 export default function LandingPage() {
+  // ===============================
+  // ✅ IMAGE CONTROL (NO LIMITS)
+  // ===============================
+  const GIRL = {
+    width: "650px",
+    x: 180, // + midig / - bidix
+    y: 120, // - kor / + hoos
+    scale: 2.2, // zoom
+    mb: 0, // margin-bottom
+  };
+
+  // ===============================
+  // ✅ TEXT CONTROL (FULL CONTROL)
+  // ===============================
+  const HEADLINE = {
+    x: -80,
+    y: -170,
+    scale: 1.6, // ✅ TEXT SIZE (zoom)
+
+    letterSpacing: "-2px", // ✅ spacing xarfaha
+    wordSpacing: "4px", // ✅ spacing erayada
+    lineHeight: "0.95", // ✅ spacing lines
+  };
+
+  const DESC = {
+    x: -60,
+    y: -40,
+    scale: 1, // ✅ TEXT SIZE (zoom)
+
+    letterSpacing: "0px",
+    wordSpacing: "1px",
+    lineHeight: "1.6",
+  };
+
+  const BTN = {
+    x: -60,
+    y: -40,
+    scale: 1, // ✅ button text/size (zoom)
+  };
+
   return (
     <section className="relative min-h-screen w-full bg-gradient-to-br from-[#EAF2FF] via-[#F5F9FF] to-white overflow-hidden">
-
-      {/* Soft background shapes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl animate-pulse"></div>
+      {/* BG */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-10 w-60 h-60 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative w-full max-w-[1600px] mx-auto px-8 sm:px-12 lg:px-20 flex items-center min-h-screen">
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 items-center w-full">
-
-          {/* LEFT CONTENT */}
-          <div className="lg:col-span-6 space-y-8 z-10">
-
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1] tracking-tight text-[#2563EB]">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 min-h-screen flex items-center">
+        <div className="grid lg:grid-cols-2 gap-10 items-center w-full">
+          {/* TEXT */}
+          <div className="space-y-6 text-center lg:text-left">
+            <h1
+              className="
+                font-extrabold text-[#2563EB]
+                text-4xl sm:text-5xl md:text-6xl lg:text-7xl
+                leading-tight
+              "
+              style={{
+                transform: `translate(${HEADLINE.x}px, ${HEADLINE.y}px) scale(${HEADLINE.scale})`,
+                transformOrigin: "left top",
+                letterSpacing: HEADLINE.letterSpacing,
+                wordSpacing: HEADLINE.wordSpacing,
+                lineHeight: HEADLINE.lineHeight,
+              }}
+            >
               Easy <br />
               scheduling <br />
               ahead
             </h1>
 
-            <p className="text-lg sm:text-xl text-gray-600 max-w-[520px] leading-relaxed font-medium">
-              Book your appointment effortlessly and monitor the progress of your application in real time.
+            <p
+              className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto lg:mx-0"
+              style={{
+                transform: `translate(${DESC.x}px, ${DESC.y}px) scale(${DESC.scale})`,
+                transformOrigin: "left top",
+                letterSpacing: DESC.letterSpacing,
+                wordSpacing: DESC.wordSpacing,
+                lineHeight: DESC.lineHeight,
+              }}
+            >
+              Book your appointment effortlessly and monitor <br /> the progress of your
+              application in real time.
             </p>
 
-            <Link
-              to="/services"
-              className="inline-flex items-center justify-center px-10 py-4 rounded-2xl
-                         text-lg font-bold text-white bg-gradient-to-r 
-                         from-[#2563EB] to-[#4F46E5]
-                         shadow-xl hover:shadow-2xl 
-                         transition-all duration-300 hover:scale-105"
+            <div
+              style={{
+                transform: `translate(${BTN.x}px, ${BTN.y}px) scale(${BTN.scale})`,
+                transformOrigin: "left top",
+              }}
             >
-              Book Now!
-            </Link>
+              <Link
+                to="/services"
+                className="
+                  inline-flex items-center justify-center
+                  px-8 py-3 text-base sm:text-lg
+                  rounded-xl text-white font-bold
+                  bg-gradient-to-r from-[#2563EB] to-[#4F46E5]
+                  shadow-xl hover:scale-105 transition
+                "
+              >
+                Book Now!
+              </Link>
+            </div>
+          </div>
 
+          {/* IMAGE */}
+          <div className="flex justify-center lg:justify-end">
+            <img
+              src={girlImg}
+              draggable="false"
+              alt="Hero"
+              className="w-[300px] sm:w-[400px] md:w-[500px] lg:w-[650px] object-contain drop-shadow-2xl"
+              style={{
+                width: GIRL.width,
+                transform: `translate(${GIRL.x}px, ${GIRL.y}px) scale(${GIRL.scale})`,
+                marginBottom: `${GIRL.mb}px`,
+                transformOrigin: "bottom right",
+              }}
+            />
           </div>
         </div>
       </div>
-
-      {/* RIGHT IMAGE */}
-      <div className="absolute bottom-0 right-0 h-full flex items-end">
-
-        <img
-          src={arrowImg}
-          alt=""
-          className="absolute right-[20%] top-[15%] w-[400px] opacity-20 pointer-events-none"
-        />
-
-        <img
-          src={girlImg}
-          alt="Hero"
-          draggable="false"
-          className="h-[95%] object-contain drop-shadow-2xl"
-        />
-      </div>
-
     </section>
   );
 }
