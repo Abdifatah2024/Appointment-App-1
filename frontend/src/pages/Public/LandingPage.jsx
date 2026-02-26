@@ -93,21 +93,16 @@ import bgVideo from "../../assets/landing/bg-home.mp4";
 export default function LandingPage() {
   const location = useLocation();
 
-  // ✅ HOME ONLY: scroll xiro (marka aad ka baxdana dib u fur)
   useEffect(() => {
     if (location.pathname === "/") document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = "");
   }, [location.pathname]);
 
   return (
-    <section className="relative w-full h-full overflow-hidden">
-      {/* ================= BACKGROUND VIDEO ================= */}
+    <section className="hero-glow relative w-full h-full overflow-hidden">
+      {/* Background video */}
       <video
-        className="
-          absolute inset-0 w-full h-full object-cover -z-30
-          scale-[1.05]              /* ✅ VIDEO ZOOM */
-          object-center
-        "
+        className="absolute inset-0 w-full h-full object-cover -z-30 scale-[1.05]"
         src={bgVideo}
         autoPlay
         loop
@@ -115,91 +110,54 @@ export default function LandingPage() {
         playsInline
       />
 
-      {/* ================= OVERLAY ================= */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/35 -z-20" />
 
-      {/* ================= CONTENT ================= */}
       <div className="relative z-10 w-full h-full px-6 sm:px-10 lg:px-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 h-full items-end">
-          {/* ================= LEFT TEXT ================= */}
+
+          {/* Left */}
           <div className="space-y-7 lg:pb-16">
-            {/* ✅ HEADLINE */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05]">
-              {/* Easy <br />
-              scheduling <br />
-              ahead */}
-            </h1>
-
-            {/* ✅ PARAGRAPH */}
-            {/* <p className="text-white/75 text-base sm:text-lg max-w-xl leading-relaxed">
-              Book appointments faster, stay organized,
-              <br />
-              and track requests with a clean and
-              <br />
-              simple experience.
-            </p> */}
-
-            {/* ✅ BUTTON (z-index sare + clickable) */}
             <div className="pt-1 relative z-20">
               <Link
                 to="/services"
                 className="
-                  relative inline-flex items-center justify-center rounded-full
-                  px-12 py-4
-                  text-xl font-extrabold text-white
-                  bg-[#2563EB]/30 border border-[#3B82F6]/45 backdrop-blur-md
+                  btn-glow relative inline-flex items-center justify-center rounded-full
+                  px-12 py-4 text-xl font-extrabold text-white
+                  bg-[#2563EB]/30 border border-[#3B82F6]/45
                   shadow-xl shadow-[#2563EB]/30
-                  hover:scale-[1.03] transition
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]
+                  transition
                 "
               >
                 <span className="absolute -inset-[3px] rounded-full glow-ring" />
-                Book Now!
+                <span className="btn-shine absolute inset-0 rounded-full" />
+                <span className="relative z-10">Book Now!</span>
               </Link>
             </div>
           </div>
 
-          {/* ================= RIGHT SIDE (GIRL) ================= */}
+          {/* Right */}
           <div className="relative h-full flex justify-center lg:justify-end items-end">
-            {/* ✅ GLOW CIRCLE */}
             <div
-              className="
-                absolute -z-10 right-0 bottom-28
-                h-[560px] w-[560px]
-                rounded-full blur-3xl opacity-70
-                animate-pulse-soft
-              "
+              className="absolute -z-10 right-0 bottom-28 h-[560px] w-[560px] rounded-full blur-3xl opacity-70 animate-pulse-soft"
               style={{
                 background:
                   "radial-gradient(circle at 40% 35%, rgba(59,130,246,0.55), transparent 65%)",
               }}
             />
 
-            {/* =========================================================
-               ✅ GIRL IMAGE
-               1) pointer-events-none -> si uusan u qaban click-ka button-ka
-               2) TRANSLATE X (bidix/midig):
-                    - translateX(-) => bidix
-                    - translateX(+) => midig
-                  Halkan waxaan ku siiyay inline style si aad si fudud u maamusho.
-            ========================================================== */}
             <img
               src={girlImg}
               alt="Hero"
               draggable="false"
-              className="
-                relative object-contain max-w-none
-                pointer-events-none      /* ✅ IMPORTANT: BUTTON ha shaqeeyo */
-                drop-shadow-[0_30px_70px_rgba(0,0,0,0.65)]
-              "
+              className="relative object-contain max-w-none pointer-events-none"
               style={{
-                width: "1300px",         // ✅ GIRL SIZE
-                marginBottom: "-40px",   // ✅ hoos u sii dhig (footer taabasho)
-                transform: "translateX(100px)", // ✅ MIDIG U DURKI: 20/40/60px (bidix = -20px)
+                width: "1100px",
+                transform: "translateX(90px)",
+                marginBottom: "8px",
               }}
             />
 
-            {/* ✅ GROUND SHADOW (la jaanqaad width-ka gabadha haddii loo baahdo) */}
             <div
               className="
                 absolute bottom-0 left-1/2 -translate-x-1/2
@@ -212,26 +170,95 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* ================= Animations ================= */}
       <style>{`
+        .hero-glow {
+          position: relative;
+        }
+
+        .hero-glow::before {
+          content: "";
+          position: absolute;
+          inset: 8px;
+          border-radius: 18px;
+          border: 1px solid rgba(59,130,246,0.35);
+          box-shadow:
+            0 0 20px rgba(59,130,246,0.3),
+            0 0 80px rgba(59,130,246,0.2);
+          pointer-events: none;
+          animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+          0%,100% {
+            box-shadow:
+              0 0 10px rgba(59,130,246,0.2),
+              0 0 40px rgba(59,130,246,0.15);
+          }
+          50% {
+            box-shadow:
+              0 0 35px rgba(96,165,250,0.7),
+              0 0 120px rgba(59,130,246,0.35);
+          }
+        }
+
+        /* Button hover */
+        .btn-glow {
+          transform: translateY(0);
+          transition: transform .25s ease, box-shadow .25s ease, background .25s ease, border-color .25s ease;
+          overflow: hidden;
+        }
+
+        .btn-glow:hover {
+          transform: translateY(-2px) scale(1.03);
+          background: rgba(37, 99, 235, 0.40);
+          border-color: rgba(96,165,250,0.75);
+          box-shadow:
+            0 18px 45px rgba(37,99,235,0.35),
+            0 0 28px rgba(96,165,250,0.45);
+        }
+
+        .btn-shine {
+          pointer-events: none;
+          background: linear-gradient(110deg,
+            transparent 0%,
+            rgba(255,255,255,0.15) 35%,
+            rgba(255,255,255,0.25) 50%,
+            rgba(255,255,255,0.12) 65%,
+            transparent 100%);
+          transform: translateX(-120%);
+          transition: transform .6s ease;
+          opacity: 0.9;
+        }
+
+        .btn-glow:hover .btn-shine {
+          transform: translateX(120%);
+        }
+
         .glow-ring {
           pointer-events: none;
           border: 2px solid rgba(59,130,246,0.35);
           animation: ringPulse 1.7s ease-in-out infinite;
         }
+
         @keyframes ringPulse {
-          0%,100% { opacity: 0.35; box-shadow: 0 0 0 rgba(59,130,246,0); }
-          50% { opacity: 1; box-shadow: 0 0 30px rgba(59,130,246,0.6); }
+          0%,100% { opacity: 0.35; }
+          50% { opacity: 1; box-shadow: 0 0 25px rgba(59,130,246,0.6); }
         }
 
         @keyframes pulseSoft {
           0%,100% { opacity: 0.7; transform: scale(1); }
           50% { opacity: 1; transform: scale(1.04); }
         }
-        .animate-pulse-soft { animation: pulseSoft 3.2s ease-in-out infinite; }
+
+        .animate-pulse-soft {
+          animation: pulseSoft 3.2s ease-in-out infinite;
+        }
 
         @media (prefers-reduced-motion: reduce) {
-          .glow-ring, .animate-pulse-soft { animation: none !important; }
+          * {
+            animation: none !important;
+            transition: none !important;
+          }
         }
       `}</style>
     </section>
