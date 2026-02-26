@@ -21,8 +21,8 @@ export default function PublicHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10">
-      <div className="bg-[#0F172A]/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 h-20 border-b border-white/10">
+      <div className="h-20 bg-[#0F172A]/70 backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-6 h-20 flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <img
