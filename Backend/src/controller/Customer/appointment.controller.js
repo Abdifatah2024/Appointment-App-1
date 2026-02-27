@@ -104,7 +104,7 @@ exports.getAppointments = async (req, res) => {
       .sort({ appointmentDate: -1 })
       .lean(); // 👈 IMPORTANT (allows mutation)
 
-  const baseUrl =
+const baseUrl =
   process.env.BACKEND_URL ||
   `${req.protocol}://${req.get("host")}`;
 
