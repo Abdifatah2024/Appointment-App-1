@@ -270,43 +270,41 @@ import girlImg from "../../assets/landing/landing-page.png";
 
 export default function LandingPage() {
   // ===============================
-  // ✅ IMAGE CONTROL (NO LIMITS)
+  // IMAGE CONTROL
   // ===============================
   const GIRL = {
     width: "650px",
-    x: 180, // + midig / - bidix
-    y: 120, // - kor / + hoos
-    scale: 2.2, // zoom
-    mb: 0, // margin-bottom
+    x: 280,
+    y: 230,
+    scale: 2.9,
+    mb: 0,
   };
 
   // ===============================
-  // ✅ TEXT CONTROL (FULL CONTROL)
+  // TEXT CONTROL
   // ===============================
   const HEADLINE = {
-    x: -80,
-    y: -170,
-    scale: 1.6, // ✅ TEXT SIZE (zoom)
-
-    letterSpacing: "-2px", // ✅ spacing xarfaha
-    wordSpacing: "4px", // ✅ spacing erayada
-    lineHeight: "0.95", // ✅ spacing lines
+    x: -240,
+    y: -240,
+    scale: 1.6,
+    letterSpacing: "-2px",
+    wordSpacing: "4px",
+    lineHeight: "0.95",
   };
 
   const DESC = {
-    x: -60,
-    y: -40,
-    scale: 1, // ✅ TEXT SIZE (zoom)
-
+    x: -230,
+    y: -100,
+    scale: 1,
     letterSpacing: "0px",
     wordSpacing: "1px",
     lineHeight: "1.6",
   };
 
   const BTN = {
-    x: -60,
+    x: -230,
     y: -40,
-    scale: 1, // ✅ button text/size (zoom)
+    scale: 1,
   };
 
   return (
@@ -319,14 +317,11 @@ export default function LandingPage() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 min-h-screen flex items-center">
         <div className="grid lg:grid-cols-2 gap-10 items-center w-full">
+
           {/* TEXT */}
           <div className="space-y-6 text-center lg:text-left">
             <h1
-              className="
-                font-extrabold text-[#2563EB]
-                text-4xl sm:text-5xl md:text-6xl lg:text-7xl
-                leading-tight
-              "
+              className="font-extrabold text-[#2563EB] text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight"
               style={{
                 transform: `translate(${HEADLINE.x}px, ${HEADLINE.y}px) scale(${HEADLINE.scale})`,
                 transformOrigin: "left top",
@@ -350,11 +345,13 @@ export default function LandingPage() {
                 lineHeight: DESC.lineHeight,
               }}
             >
-              Book your appointment effortlessly and monitor <br /> the progress of your
-              application in real time.
+              Book your appointment effortlessly and monitor <br />
+              the progress of your application in real time.
             </p>
 
+            {/* ✅ BUTTON FIXED */}
             <div
+              className="relative z-20" // ✅ muhiim
               style={{
                 transform: `translate(${BTN.x}px, ${BTN.y}px) scale(${BTN.scale})`,
                 transformOrigin: "left top",
@@ -390,6 +387,7 @@ export default function LandingPage() {
               }}
             />
           </div>
+
         </div>
       </div>
     </section>
