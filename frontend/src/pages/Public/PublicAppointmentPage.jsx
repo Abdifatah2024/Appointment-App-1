@@ -249,7 +249,7 @@ export default function PublicAppointmentPage() {
                   Booking Form
                 </h1>
                 <p className="mt-2 text-slate-700 font-semibold">
-                  Buuxi xogta → Check Availability → Submit.
+                  Enter your details. → Check Availability → Submit.
                 </p>
               </div>
 
