@@ -13,7 +13,7 @@ export default function PublicHeader() {
   const [open, setOpen] = useState(false);
 
   const POS = {
-    logo: { x: -90, y: 0 },
+    logo: { x: -190, y: 0 },
     nav: { x: -190, y: 0 },
     login: { x: 0, y: 0 },
     mobileBtn: { x: 0, y: 0 },

@@ -269,127 +269,300 @@ import { Link } from "react-router-dom";
 import girlImg from "../../assets/landing/landing-page.png";
 
 export default function LandingPage() {
-  // ===============================
-  // IMAGE CONTROL
-  // ===============================
-  const GIRL = {
-    width: "650px",
-    x: 280,
-    y: 230,
-    scale: 2.9,
-    mb: 0,
+  // =====================================================
+  // ✅ HERO IMAGE (GABADHA) — gooni u maamul (Desktop/Tablet/Mobile)
+  // 👉 sizeMin/sizeVW/sizeMax = cabbirka sawirka (responsive)
+  // 👉 shiftX / shiftY = bidix/midig & kor/hoos (gaar u ah device kasta)
+  // =====================================================
+  const HERO_DESKTOP = {
+    sizeMin: "900px",
+    sizeVW: "180vw",
+    sizeMax: "1800px",
+    shiftX: "60px", // + = midig, - = bidix
+    shiftY: "20px", // - = kor, + = hoos
+    anchorX: "right",
+    anchorY: "bottom", // footer-ka ha ku dhagsanaato
   };
 
-  // ===============================
-  // TEXT CONTROL
-  // ===============================
-  const HEADLINE = {
-    x: -240,
-    y: -240,
-    scale: 1.6,
-    letterSpacing: "-2px",
-    wordSpacing: "4px",
+  const HERO_TABLET = {
+    sizeMin: "650px",
+    sizeVW: "78vw",
+    sizeMax: "1100px",
+    shiftX: "0px",
+    shiftY: "-10px",
+    anchorX: "right",
+    anchorY: "bottom",
+  };
+
+  const HERO_MOBILE = {
+    sizeMin: "420px",
+    sizeVW: "92vw",
+    sizeMax: "720px",
+    shiftX: "0px",
+    shiftY: "0px",
+    anchorX: "center",
+    anchorY: "bottom",
+  };
+
+  // =====================================================
+  // ✅ TEXT GROUP (block-ka qoraalka) — gooni u maamul (Desktop/Tablet/Mobile)
+  // 👉 shiftX/shiftY = text block-ka dhan u rar
+  // =====================================================
+  const TEXT_DESKTOP = {
+    shiftX: "-40px",
+    shiftY: "-10px",
+    maxWidth: "640px",
+    align: "left",
+  };
+
+  const TEXT_TABLET = {
+    shiftX: "0px",
+    shiftY: "-10px",
+    maxWidth: "620px",
+    align: "left",
+  };
+
+  const TEXT_MOBILE = {
+    shiftX: "0px",
+    shiftY: "-10px",
+    maxWidth: "520px",
+    align: "center",
+  };
+
+  // =====================================================
+  // ✅ TITLE (Easy / scheduling / ahead) — gooni u maamul
+  // =====================================================
+  const TITLE = {
+    fontSize: "clamp(56px, 6vw, 120px)",
     lineHeight: "0.95",
+    letterSpacing: "-0.02em",
+    shiftX: "-140px",
+    shiftY: "-100px",
   };
 
+  // =====================================================
+  // ✅ DESCRIPTION — gooni u maamul (font + width + shift)
+  // (si “monitor” uusan line 2aad ugu dhicin -> width kordhi ama font yar dhig)
+  // =====================================================
   const DESC = {
-    x: -230,
-    y: -100,
-    scale: 1,
-    letterSpacing: "0px",
-    wordSpacing: "1px",
-    lineHeight: "1.6",
+    fontSize: "clamp(16px, 1.25vw, 22px)",
+    lineHeight: "1.65",
+    maxWidth: "clamp(520px, 42vw, 760px)", // ✅ ballaari si line 1 u sii joogo
+    shiftX: "-120px",
+    shiftY: "-80px",
   };
 
+  // =====================================================
+  // ✅ BUTTON — gooni u maamul (cabbir + position)
+  // =====================================================
   const BTN = {
-    x: -230,
-    y: -40,
-    scale: 1,
+    fontSize: "clamp(18px, 1.4vw, 28px)",
+    px: "clamp(26px, 2.6vw, 54px)",
+    py: "clamp(14px, 1.6vw, 22px)",
+    radius: "clamp(16px, 1.8vw, 28px)",
+    shiftX: "-120px",
+    shiftY: "-50px",
   };
 
   return (
-    <section className="relative min-h-screen w-full bg-gradient-to-br from-[#EAF2FF] via-[#F5F9FF] to-white overflow-hidden">
-      {/* BG */}
-      <div className="absolute inset-0">
+    <section
+      className="heroSection relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-[#EAF2FF] via-[#F5F9FF] to-white"
+      style={{
+        // ===== HERO (Desktop default) =====
+        ["--hero-img"]: `url(${girlImg})`,
+        ["--hero-size"]: `clamp(${HERO_DESKTOP.sizeMin}, ${HERO_DESKTOP.sizeVW}, ${HERO_DESKTOP.sizeMax})`,
+        ["--hero-anchor-x"]: HERO_DESKTOP.anchorX,
+        ["--hero-anchor-y"]: HERO_DESKTOP.anchorY,
+        ["--hero-shift-x"]: HERO_DESKTOP.shiftX,
+        ["--hero-shift-y"]: HERO_DESKTOP.shiftY,
+
+        // ===== TEXT GROUP (Desktop default) =====
+        ["--text-shift-x"]: TEXT_DESKTOP.shiftX,
+        ["--text-shift-y"]: TEXT_DESKTOP.shiftY,
+        ["--text-max-w"]: TEXT_DESKTOP.maxWidth,
+        ["--text-align"]: TEXT_DESKTOP.align,
+      }}
+    >
+      {/* BG glow */}
+      <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-60 h-60 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-20 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl animate-pulse" />
       </div>
 
+      {/* CONTENT */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 min-h-screen flex items-center">
-        <div className="grid lg:grid-cols-2 gap-10 items-center w-full">
+        <div
+          className="space-y-6"
+          style={{
+            maxWidth: `var(--text-max-w)`,
+            transform: `translate(var(--text-shift-x), var(--text-shift-y))`,
+            textAlign: `var(--text-align)`,
+          }}
+        >
+          {/* TITLE */}
+          <h1
+            className="font-extrabold text-[#2563EB]"
+            style={{
+              fontSize: TITLE.fontSize,
+              lineHeight: TITLE.lineHeight,
+              letterSpacing: TITLE.letterSpacing,
+              transform: `translate(${TITLE.shiftX}, ${TITLE.shiftY})`,
+            }}
+          >
+            Easy <br />
+            scheduling <br />
+            ahead
+          </h1>
 
-          {/* TEXT */}
-          <div className="space-y-6 text-center lg:text-left">
-            <h1
-              className="font-extrabold text-[#2563EB] text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight"
+          {/* DESCRIPTION (hal line-ka hore “monitor” ha la socdo) */}
+          <p
+            className="text-gray-600 font-medium"
+            style={{
+              fontSize: DESC.fontSize,
+              lineHeight: DESC.lineHeight,
+              maxWidth: DESC.maxWidth,
+              transform: `translate(${DESC.shiftX}, ${DESC.shiftY})`,
+            }}
+          >
+            Book your appointment effortlessly and monitor <br /> the progress of your
+            application in real time.
+          </p>
+
+          {/* BUTTON */}
+          <div style={{ transform: `translate(${BTN.shiftX}, ${BTN.shiftY})` }}>
+            <Link
+              to="/services"
+              className="inline-flex items-center justify-center text-white font-extrabold
+                         bg-gradient-to-r from-[#2563EB] to-[#4F46E5]
+                         shadow-xl hover:scale-105 transition"
               style={{
-                transform: `translate(${HEADLINE.x}px, ${HEADLINE.y}px) scale(${HEADLINE.scale})`,
-                transformOrigin: "left top",
-                letterSpacing: HEADLINE.letterSpacing,
-                wordSpacing: HEADLINE.wordSpacing,
-                lineHeight: HEADLINE.lineHeight,
+                fontSize: BTN.fontSize,
+                padding: `${BTN.py} ${BTN.px}`,
+                borderRadius: BTN.radius,
               }}
             >
-              Easy <br />
-              scheduling <br />
-              ahead
-            </h1>
-
-            <p
-              className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto lg:mx-0"
-              style={{
-                transform: `translate(${DESC.x}px, ${DESC.y}px) scale(${DESC.scale})`,
-                transformOrigin: "left top",
-                letterSpacing: DESC.letterSpacing,
-                wordSpacing: DESC.wordSpacing,
-                lineHeight: DESC.lineHeight,
-              }}
-            >
-              Book your appointment effortlessly and monitor <br />
-              the progress of your application in real time.
-            </p>
-
-            {/* ✅ BUTTON FIXED */}
-            <div
-              className="relative z-20" // ✅ muhiim
-              style={{
-                transform: `translate(${BTN.x}px, ${BTN.y}px) scale(${BTN.scale})`,
-                transformOrigin: "left top",
-              }}
-            >
-              <Link
-                to="/services"
-                className="
-                  inline-flex items-center justify-center
-                  px-8 py-3 text-base sm:text-lg
-                  rounded-xl text-white font-bold
-                  bg-gradient-to-r from-[#2563EB] to-[#4F46E5]
-                  shadow-xl hover:scale-105 transition
-                "
-              >
-                Book Now!
-              </Link>
-            </div>
+              Book Now!
+            </Link>
           </div>
-
-          {/* IMAGE */}
-          <div className="flex justify-center lg:justify-end">
-            <img
-              src={girlImg}
-              draggable="false"
-              alt="Hero"
-              className="w-[300px] sm:w-[400px] md:w-[500px] lg:w-[650px] object-contain drop-shadow-2xl"
-              style={{
-                width: GIRL.width,
-                transform: `translate(${GIRL.x}px, ${GIRL.y}px) scale(${GIRL.scale})`,
-                marginBottom: `${GIRL.mb}px`,
-                transformOrigin: "bottom right",
-              }}
-            />
-          </div>
-
         </div>
       </div>
+
+      {/* ✅ RESPONSIVE: media queries ayaa kala qaadaya values-ka (Tablet/Mobile) */}
+      <style>{`
+        .heroSection{
+          background-image: var(--hero-img);
+          background-repeat: no-repeat;
+          background-size: var(--hero-size);
+
+          /* anchor + shift */
+          background-position:
+            var(--hero-anchor-x)
+            var(--hero-anchor-y);
+          background-position:
+            calc(
+              ${
+                HERO_DESKTOP.anchorX === "center"
+                  ? "50%"
+                  : HERO_DESKTOP.anchorX === "left"
+                  ? "0%"
+                  : "100%"
+              } + var(--hero-shift-x)
+            )
+            calc(
+              ${
+                HERO_DESKTOP.anchorY === "top"
+                  ? "0%"
+                  : HERO_DESKTOP.anchorY === "center"
+                  ? "50%"
+                  : "100%"
+              } + var(--hero-shift-y)
+            );
+        }
+
+        /* ===== TABLET (<=1024px) ===== */
+        @media (max-width: 1024px){
+          .heroSection{
+            background-size: clamp(${HERO_TABLET.sizeMin}, ${HERO_TABLET.sizeVW}, ${HERO_TABLET.sizeMax});
+            background-position:
+              ${
+                HERO_TABLET.anchorX === "center"
+                  ? "50%"
+                  : HERO_TABLET.anchorX === "left"
+                  ? "0%"
+                  : "100%"
+              }
+              ${
+                HERO_TABLET.anchorY === "top"
+                  ? "0%"
+                  : HERO_TABLET.anchorY === "center"
+                  ? "50%"
+                  : "100%"
+              };
+            background-position:
+              calc(${
+                HERO_TABLET.anchorX === "center"
+                  ? "50%"
+                  : HERO_TABLET.anchorX === "left"
+                  ? "0%"
+                  : "100%"
+              } + ${HERO_TABLET.shiftX})
+              calc(${
+                HERO_TABLET.anchorY === "top"
+                  ? "0%"
+                  : HERO_TABLET.anchorY === "center"
+                  ? "50%"
+                  : "100%"
+              } + ${HERO_TABLET.shiftY});
+
+            --text-shift-x: ${TEXT_TABLET.shiftX};
+            --text-shift-y: ${TEXT_TABLET.shiftY};
+            --text-max-w: ${TEXT_TABLET.maxWidth};
+            --text-align: ${TEXT_TABLET.align};
+          }
+        }
+
+        /* ===== MOBILE (<=640px) ===== */
+        @media (max-width: 640px){
+          .heroSection{
+            background-size: clamp(${HERO_MOBILE.sizeMin}, ${HERO_MOBILE.sizeVW}, ${HERO_MOBILE.sizeMax});
+            background-position:
+              ${
+                HERO_MOBILE.anchorX === "center"
+                  ? "50%"
+                  : HERO_MOBILE.anchorX === "left"
+                  ? "0%"
+                  : "100%"
+              }
+              ${
+                HERO_MOBILE.anchorY === "top"
+                  ? "0%"
+                  : HERO_MOBILE.anchorY === "center"
+                  ? "50%"
+                  : "100%"
+              };
+            background-position:
+              calc(${
+                HERO_MOBILE.anchorX === "center"
+                  ? "50%"
+                  : HERO_MOBILE.anchorX === "left"
+                  ? "0%"
+                  : "100%"
+              } + ${HERO_MOBILE.shiftX})
+              calc(${
+                HERO_MOBILE.anchorY === "top"
+                  ? "0%"
+                  : HERO_MOBILE.anchorY === "center"
+                  ? "50%"
+                  : "100%"
+              } + ${HERO_MOBILE.shiftY});
+
+            --text-shift-x: ${TEXT_MOBILE.shiftX};
+            --text-shift-y: ${TEXT_MOBILE.shiftY};
+            --text-max-w: ${TEXT_MOBILE.maxWidth};
+            --text-align: ${TEXT_MOBILE.align};
+          }
+        }
+      `}</style>
     </section>
   );
 }
