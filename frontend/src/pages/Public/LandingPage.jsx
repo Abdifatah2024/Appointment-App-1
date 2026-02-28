@@ -276,9 +276,8 @@ export default function LandingPage() {
     sizeMin: "900px",
     sizeVW: "180vw",
     sizeMax: "1800px",
-
     posX: "right",
-    posY: "calc(100% + 0px)", // hoos ha u dhawaato
+    posY: "calc(100% + 0px)",
   };
 
   // ===============================
@@ -287,17 +286,16 @@ export default function LandingPage() {
   const TEXT = {
     x: "clamp(-120px, -13vw, -20px)",
     y: "clamp(-50px, -2vh, -80px)",
-    maxWidth: "clamp(360px, 44vw, 720px)", // ✅ wax yar ballaari
+    maxWidth: "clamp(360px, 44vw, 720px)",
   };
 
   // ===============================
   // ✅ HEADLINE CONTROL
   // ===============================
   const TITLE = {
-    sizeMin: "62px", // ✅ weyne
+    sizeMin: "62px",
     sizeVW: "6.4vw",
     sizeMax: "128px",
-
     letterSpacing: "-0.02em",
     lineHeight: "0.95",
   };
@@ -319,8 +317,7 @@ export default function LandingPage() {
     sizeMin: "16px",
     sizeVW: "1.2vw",
     sizeMax: "22px",
-
-    px: "clamp(26px, 2.8vw, 52px)", // ✅ weyne
+    px: "clamp(26px, 2.8vw, 52px)",
     py: "clamp(14px, 1.6vw, 20px)",
     radius: "clamp(16px, 1.8vw, 26px)",
   };
@@ -329,18 +326,15 @@ export default function LandingPage() {
     <section
       className="heroSection relative min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-[#EAF2FF] via-[#F5F9FF] to-white"
       style={{
-        // hero image
         ["--hero-img"]: `url(${girlImg})`,
         ["--hero-size"]: `clamp(${HERO.sizeMin}, ${HERO.sizeVW}, ${HERO.sizeMax})`,
         ["--hero-pos-x"]: HERO.posX,
         ["--hero-pos-y"]: HERO.posY,
 
-        // text group
         ["--text-x"]: TEXT.x,
         ["--text-y"]: TEXT.y,
         ["--text-max-w"]: TEXT.maxWidth,
 
-        // sizes
         ["--title-size"]: `clamp(${TITLE.sizeMin}, ${TITLE.sizeVW}, ${TITLE.sizeMax})`,
         ["--desc-size"]: `clamp(${DESC.sizeMin}, ${DESC.sizeVW}, ${DESC.sizeMax})`,
         ["--btn-size"]: `clamp(${BTN.sizeMin}, ${BTN.sizeVW}, ${BTN.sizeMax})`,
@@ -356,9 +350,9 @@ export default function LandingPage() {
       </div>
 
       {/* CONTENT */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 min-h-screen flex items-center">
+      <div className="heroInner relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 min-h-screen flex items-center">
         <div
-          className="space-y-6"
+          className="heroText space-y-6"
           style={{
             maxWidth: "var(--text-max-w)",
             transform: "translate(var(--text-x), var(--text-y))",
@@ -424,34 +418,43 @@ export default function LandingPage() {
             background-position: right calc(100% + 0px);
           }
 
-          /* text ha u soo galo */
-          .heroSection > div:nth-child(2) > div{
+          .heroText{
             transform: translate(0px, -10px) !important;
             max-width: 680px !important;
           }
         }
 
-        /* ✅ MOBILE */
+        /* ✅ MOBILE (PRO) */
         @media (max-width: 640px){
-          .heroSection{
-            /* mobile: sawirka hoos u dhig, center */
-            background-size: clamp(520px, 130vw, 900px);
-            background-position: 50% calc(100% + 40px);
+          /* 1) Text kor u qaad (header agtiisa) */
+          .heroInner{
+            align-items: flex-start !important;
+            padding-top: 22px !important;      /* ✅ text near header */
+            padding-bottom: 260px !important;  /* ✅ boos u sii sawirka hoos */
+            min-height: 100vh !important;
           }
 
-          /* mobile: text center + safe */
-          .heroSection > div:nth-child(2) > div{
-            transform: translate(0px, -10px) !important;
+          /* 2) Sawirka hoos dhig, si uu button-ka hoostiisa u noqdo */
+          .heroSection{
+            background-size: clamp(520px, 130vw, 900px);
+            background-position: 50% calc(100% - 40px); /* ✅ sawirka kor u soo qaad si la arko */
+          }
+
+          /* 3) Text center + safe (laakiin kor) */
+          .heroText{
+            transform: translate(0px, 0px) !important;
             max-width: 520px !important;
             text-align: center !important;
+            margin-left: auto;
+            margin-right: auto;
           }
 
-          /* mobile: title yar u deji si uusan u qarsoomin */
-          .heroSection h1{
+          /* 4) Title yar u deji (kaliya mobile) */
+          .heroText h1{
             font-size: clamp(44px, 10vw, 64px) !important;
           }
 
-          .heroSection p{
+          .heroText p{
             font-size: 16px !important;
             margin-left: auto;
             margin-right: auto;

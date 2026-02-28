@@ -134,17 +134,15 @@
 //     </div>
 //   );
 // }
+
 import { Outlet, Link } from "react-router-dom";
 import PublicHeader from "./PublicHeader";
 
 export default function PublicLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
-
       {/* Header */}
-      <header className="bg-[#4B5563]">
-        <PublicHeader />
-      </header>
+      <PublicHeader />
 
       {/* Content */}
       <main className="flex-1">
@@ -154,7 +152,6 @@ export default function PublicLayout() {
       {/* Footer */}
       <footer className="bg-[#4B5563] mt-auto">
         <div className="mx-auto max-w-7xl px-6 lg:px-12 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
-
           <p className="text-sm font-semibold text-white text-center md:text-left">
             © {new Date().getFullYear()} Appointify — Smart Booking System
           </p>
@@ -174,7 +171,6 @@ export default function PublicLayout() {
               </Link>
             ))}
           </div>
-
         </div>
       </footer>
     </div>

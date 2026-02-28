@@ -87,7 +87,8 @@
 
 import { NavLink, Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import { useState, useEffect } from "react"; // ✅ useState IMPORTED
+import { useState, useEffect } from "react";
+import logoImg from "../assets/brand/logo.png";
 
 const navClass = ({ isActive }) =>
   `block px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
@@ -99,14 +100,10 @@ const navClass = ({ isActive }) =>
 export default function PublicHeader() {
   const [open, setOpen] = useState(false);
 
-  // ✅ Close mobile menu marka screen-ku noqdo desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setOpen(false);
-      }
+      if (window.innerWidth >= 768) setOpen(false);
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -114,28 +111,44 @@ export default function PublicHeader() {
   return (
     <header className="sticky top-0 z-50 h-16 md:h-20 border-b border-white/10 bg-[#4b5563]/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
-
-        {/* LOGO */}
-        <Link to="/" className="flex items-center">
-          <img
-            src="/logo.png"
-            alt="Appointify Logo"
-            className="h-10 md:h-45 object-contain"
-          />
+        {/* ✅ LOGO (4x weyn) */}
+        <Link to="/" className="flex items-center shrink-0">
+          <div
+            style={{
+              height: "45px",
+              width: "320px", // ✅ ballaari si 4x u galo
+              display: "flex",
+              alignItems: "center",
+              overflow: "visible",
+            }}
+          >
+            <img
+              src={logoImg}
+              alt="Appointify Logo"
+              draggable="false"
+              className="logoImg block w-auto object-contain select-none"
+            />
+          </div>
         </Link>
 
         {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-3">
-          <NavLink to="/" className={navClass}>Home</NavLink>
-          <NavLink to="/services" className={navClass}>Services</NavLink>
-          <NavLink to="/track" className={navClass}>Track</NavLink>
-          <NavLink to="/about" className={navClass}>About</NavLink>
+          <NavLink to="/" className={navClass}>
+            Home
+          </NavLink>
+          <NavLink to="/services" className={navClass}>
+            Services
+          </NavLink>
+          <NavLink to="/track" className={navClass}>
+            Track
+          </NavLink>
+          <NavLink to="/about" className={navClass}>
+            About
+          </NavLink>
         </nav>
 
         {/* RIGHT SIDE */}
         <div className="flex items-center gap-2">
-
-          {/* LOGIN BUTTON (desktop + tablet) */}
           <Link
             to="/login"
             className="hidden sm:inline-flex px-4 py-2 rounded-xl text-white bg-[#2563EB] hover:bg-[#1D4ED8] transition"
@@ -143,25 +156,36 @@ export default function PublicHeader() {
             Login
           </Link>
 
-          {/* MOBILE MENU BUTTON */}
           <button
             className="md:hidden p-2 rounded-xl bg-white/10 text-white"
             onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
           >
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
-      {/* MOBILE NAV DROPDOWN */}
+      {/* MOBILE NAV */}
       {open && (
         <div className="md:hidden bg-[#4b5563] border-t border-white/10 px-4 py-3 space-y-2">
-          <NavLink to="/" className={navClass} onClick={() => setOpen(false)}>Home</NavLink>
-          <NavLink to="/services" className={navClass} onClick={() => setOpen(false)}>Services</NavLink>
-          <NavLink to="/track" className={navClass} onClick={() => setOpen(false)}>Track</NavLink>
-          <NavLink to="/about" className={navClass} onClick={() => setOpen(false)}>About</NavLink>
+          <NavLink to="/" className={navClass} onClick={() => setOpen(false)}>
+            Home
+          </NavLink>
+          <NavLink
+            to="/services"
+            className={navClass}
+            onClick={() => setOpen(false)}
+          >
+            Services
+          </NavLink>
+          <NavLink to="/track" className={navClass} onClick={() => setOpen(false)}>
+            Track
+          </NavLink>
+          <NavLink to="/about" className={navClass} onClick={() => setOpen(false)}>
+            About
+          </NavLink>
 
-          {/* Mobile Login */}
           <Link
             to="/login"
             onClick={() => setOpen(false)}
@@ -171,6 +195,28 @@ export default function PublicHeader() {
           </Link>
         </div>
       )}
+
+      {/* ✅ SCALE CONTROL */}
+      <style>{`
+        .logoImg{
+          height: 45px !important;
+          width: auto !important;
+
+          /* ✅ 4x */
+          transform: scale(4);
+          transform-origin: left center;
+
+          image-rendering: auto;
+          backface-visibility: hidden;
+        }
+
+        /* Mobile: u daa 2x */
+        @media (max-width: 640px){
+          .logoImg{
+            transform: scale(2);
+          }
+        }
+      `}</style>
     </header>
   );
 }
