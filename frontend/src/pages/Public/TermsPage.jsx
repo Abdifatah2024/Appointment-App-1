@@ -1,7 +1,7 @@
+// TermsPage.jsx (or .tsx)
 export default function TermsPage() {
   return (
     <main className="relative flex-1 overflow-hidden w-full">
-      {/* match PublicLayout dark premium */}
       <div className="absolute inset-0 bg-slate-950/55 pointer-events-none" />
 
       <div className="relative mx-auto max-w-5xl px-4 md:px-8 py-10 md:py-14">
@@ -10,7 +10,7 @@ export default function TermsPage() {
             Terms &amp; Conditions
           </h1>
           <p className="mt-3 text-slate-200/85 font-semibold max-w-2xl mx-auto">
-            Shuruudaha isticmaalka Appointify — si cad oo kooban.
+            Clear, simple terms for using Appointify.
           </p>
         </div>
 
@@ -19,24 +19,24 @@ export default function TermsPage() {
 
           <div className="p-6 md:p-8 grid gap-4">
             <TermCard
-              title="Isticmaalka adeegga"
-              text="Waxaad ogolaatay inaad isticmaasho Appointify si sharci ah oo aan waxyeello u geysan nidaamka."
+              title="Using the Service"
+              text="Use Appointify lawfully and responsibly. Do not misuse, disrupt, or attempt to access restricted areas of the system."
             />
             <TermCard
-              title="Xaqiijinta xogta"
-              text="Adiga ayaa mas’uul ka ah saxnaanta xogta aad geliso (magac, dokumenti, taariikh)."
+              title="Your Information"
+              text="You are responsible for the accuracy of the details you submit (name, documents, dates, and contact information)."
             />
             <TermCard
-              title="Ballan & jadwal"
-              text="Ballanta waxaa lagu xiraa helitaanka adeegga. Haddii jadwalka is beddelo, nidaamku wuu ku wargelin karaa."
+              title="Appointments & Scheduling"
+              text="Appointments depend on provider availability. Times may change, and we may notify you when updates occur."
             />
             <TermCard
-              title="Mas’uuliyadda"
-              text="Appointify waxay bixisaa hab fudud oo codsi/track ah; go’aanka ugu dambeeya wuxuu ku xirnaan karaa hay’adda adeegga."
+              title="Limitations"
+              text="Appointify helps you request and track appointments. Final decisions and service delivery remain with the provider."
             />
             <TermCard
-              title="Cusbooneysiinta shuruudaha"
-              text="Waxaan cusboonaysiin karnaa Terms mararka qaar. Isticmaalkaaga joogtada ah wuxuu ka dhigan yahay inaad aqbashay isbeddelada."
+              title="Updates to These Terms"
+              text="We may update these terms from time to time. Continued use of Appointify means you accept the latest version."
             />
           </div>
         </div>

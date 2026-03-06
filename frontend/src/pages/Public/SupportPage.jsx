@@ -1,3 +1,4 @@
+// SupportPage.jsx (or .tsx)
 import { Mail, Phone, MessageCircle } from "lucide-react";
 
 export default function SupportPage() {
@@ -11,7 +12,7 @@ export default function SupportPage() {
             Support
           </h1>
           <p className="mt-3 text-slate-200/85 font-semibold max-w-2xl mx-auto">
-            Haddii aad qabto dhibaato ama su’aal, halkan ka hel caawimaad.
+            Need help? Contact us and we’ll assist you as soon as possible.
           </p>
         </div>
 
@@ -33,15 +34,15 @@ export default function SupportPage() {
               <SupportCard
                 icon={<MessageCircle size={18} />}
                 title="Live Help"
-                text="Chat / Ticket (soon)"
+                text="Chat / Ticket (Coming soon)"
               />
             </div>
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 shadow-[0_22px_70px_-55px_rgba(37,99,235,0.40)]">
               <p className="text-sm md:text-[15px] font-semibold text-slate-200/85 leading-relaxed">
-                Talo: Track page-ka waxaad gelisaa{" "}
+                Tip: On the Track page, enter your{" "}
                 <span className="font-black text-white">Appointment ID</span>{" "}
-                (ObjectId), tusaale:{" "}
+                (ObjectId), for example:{" "}
                 <span className="font-black text-white">69943511355485cf07518640</span>.
               </p>
             </div>

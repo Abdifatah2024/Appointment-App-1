@@ -45,16 +45,16 @@ export default function RejectedAppointments() {
             <tbody>
               {rejected.map((a) => (
                 <tr key={a._id} className="border-t">
-                  <td className="p-3 font-semibold text-slate-800">
+                  <td className="p-3 font-semibold text-slate-800 ">
                     {a?.customerId?.fullName || "—"}
                     <div className="text-slate-500 font-normal">
                       {a?.customerId?.phone || ""}
                     </div>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 text-slate-500">
                     {a?.serviceId?.name || a?.service?.name || "—"}
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 text-slate-500">
                     {a?.appointmentDate
                       ? new Date(a.appointmentDate).toDateString()
                       : "—"}
